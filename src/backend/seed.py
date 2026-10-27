@@ -1,6 +1,6 @@
 from datetime import date
 
-from src.backend.db import Order, Payment, Refund, get_engine, get_session_factory, init_db
+from src.backend.db import Order, Payment, Refund, get_engine, get_session_factory, init_db, sample_owner
 
 ORDERS = [
     # order_id, customer_name, item, status, order_date, amount
@@ -47,6 +47,8 @@ REFUNDS = [
 
 def seed(session) -> None:
     for order_id, customer_name, item, status, order_date, amount in ORDERS:
+        existing = session.get(Order, order_id)
+        version = existing.version + 1 if existing is not None else 1
         session.merge(
             Order(
                 order_id=order_id,
@@ -55,6 +57,8 @@ def seed(session) -> None:
                 status=status,
                 order_date=order_date,
                 amount=amount,
+                customer_id=sample_owner(order_id),
+                version=version,
             )
         )
     for payment_id, order_id, status, method, amount in PAYMENTS:

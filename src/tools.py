@@ -5,11 +5,13 @@ Docstrings are written for the LLM to read when deciding which tool to call.
 import logging
 import uuid
 from functools import lru_cache
-from sqlalchemy import update
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import select, update
 
 from src.backend.db import Order, Payment, Refund, Ticket, get_engine, get_session_factory, init_db
 from src.backend.seed import seed as _seed_data
+from src.requests import RequestJournal
+from src.runtime_context import active_request
+from src.auth import require_principal
 
 logger = logging.getLogger("support_agent.tools")
 
@@ -42,21 +44,38 @@ def _session():
     return _SessionLocal()
 
 
+def request_journal():
+    return RequestJournal(_SessionLocal, _engine)
+
+
+ORDER_UNAVAILABLE = {'error': '未找到可访问的订单。'}
+
+
+def get_owned_order(db, order_id):
+    principal = require_principal()
+    return db.scalars(select(Order).where(Order.order_id == order_id, Order.customer_id == principal.customer_id)).first()
+
+
+def can_access_order(order_id):
+    with _session() as db:
+        return get_owned_order(db, order_id) is not None
+
+
 def get_order_status(order_id: int) -> dict:
     """Look up the current status (placed/shipped/delivered/cancelled) of an order."""
     with _session() as s:
-        order = s.get(Order, order_id)
+        order = get_owned_order(s, order_id)
         if not order:
-            return {"error": f"No order found with id {order_id}"}
+            return dict(ORDER_UNAVAILABLE)
         return {"order_id": order.order_id, "status": order.status}
 
 
 def get_order_details(order_id: int) -> dict:
     """Get full details of an order: customer, item, status, date, amount."""
     with _session() as s:
-        order = s.get(Order, order_id)
+        order = get_owned_order(s, order_id)
         if not order:
-            return {"error": f"No order found with id {order_id}"}
+            return dict(ORDER_UNAVAILABLE)
         return {
             "order_id": order.order_id,
             "customer_name": order.customer_name,
@@ -70,9 +89,9 @@ def get_order_details(order_id: int) -> dict:
 def track_shipment(order_id: int) -> dict:
     """Get shipment tracking info for an order based on its current status."""
     with _session() as s:
-        order = s.get(Order, order_id)
+        order = get_owned_order(s, order_id)
         if not order:
-            return {"error": f"No order found with id {order_id}"}
+            return dict(ORDER_UNAVAILABLE)
         messages = {
             "placed": "Order placed, not yet shipped.",
             "shipped": "In transit.",
@@ -90,60 +109,58 @@ def check_refund_eligibility(order_id: int) -> dict:
     """Check whether an order is eligible for a refund. Rule: order must be
     'delivered' and must not already have a requested/approved/completed refund."""
     with _session() as s:
-        order = s.get(Order, order_id)
+        order = get_owned_order(s, order_id)
         if not order:
-            return {"error": f"No order found with id {order_id}"}
-        refund = s.query(Refund).filter_by(order_id=order_id).first()
-        refund_status = refund.status if refund else "none"
+            return dict(ORDER_UNAVAILABLE)
+        return refund_eligibility(s, order)
 
-        if order.status != "delivered":
-            return {
-                "order_id": order_id,
-                "eligible": False,
-                "reason": f"Order status is '{order.status}'; only delivered orders are refund-eligible.",
-            }
-        if refund_status != "none":
-            return {
-                "order_id": order_id,
-                "eligible": False,
-                "reason": f"A refund is already '{refund_status}' for this order.",
-            }
-        return {"order_id": order_id, "eligible": True, "reason": "Order is delivered and has no existing refund."}
+
+def refund_eligibility(s, order):
+    refund = s.query(Refund).filter_by(order_id=order.order_id).first()
+    refund_status = refund.status if refund else 'none'
+    if order.status != 'delivered':
+        return {'order_id': order.order_id, 'eligible': False,
+                'reason': f"Order status is '{order.status}'; only delivered orders are refund-eligible."}
+    if refund_status != 'none':
+        return {'order_id': order.order_id, 'eligible': False, 'reason': f"A refund is already '{refund_status}' for this order."}
+    return {'order_id': order.order_id, 'eligible': True, 'reason': 'Order is delivered and has no existing refund.'}
 
 
 def initiate_refund(order_id: int, reason: str) -> dict:
-    """申请本地样例退款；工具内重查规则，用条件更新避免同订单重复申请。"""
-    with _session() as s:
-        order = s.get(Order, order_id)
-        if not order:
-            return {"error": f"No order found with id {order_id}"}
-        if order.status != "delivered":
-            return {"success": False, "order_id": order_id, "reason": "Only delivered orders are refund-eligible."}
-        refund = s.query(Refund).filter_by(order_id=order_id).first()
-        if refund:
-            changed = s.execute(update(Refund).where(Refund.order_id == order_id, Refund.status == "none").values(status="requested", reason=reason[:300]))
-            if changed.rowcount != 1:
-                return {"success": False, "order_id": order_id, "reason": "A refund is already requested/approved/completed."}
-            refund_id = refund.refund_id
-        else:
-            refund = Refund(order_id=order_id, status="requested", reason=reason[:300])
-            s.add(refund)
-            try:
-                s.flush()
-            except IntegrityError:
-                s.rollback()
-                return {"success": False, "order_id": order_id, "reason": "A refund is already requested."}
-            refund_id = refund.refund_id
-        s.commit()
-        return {"success": True, "order_id": order_id, "refund_id": refund_id, "status": "requested"}
+    """只生成本地退款提案；用户必须通过独立确认入口才能执行。"""
+    from src.actions import propose_action
+    return propose_action('initiate_refund', {'order_id': order_id, 'reason': reason[:300]})
+
+
+def apply_refund(s, order_id, reason):
+    from src.actions import require_confirmation
+    require_confirmation('initiate_refund', {'order_id': order_id, 'reason': reason})
+    order = get_owned_order(s, order_id)
+    if not order:
+        return dict(ORDER_UNAVAILABLE)
+    if order.status != "delivered":
+        return {"success": False, "order_id": order_id, "reason": "Only delivered orders are refund-eligible."}
+    refund = s.query(Refund).filter_by(order_id=order_id).first()
+    if refund:
+        changed = s.execute(update(Refund).where(Refund.order_id == order_id, Refund.status == "none").values(status="requested", reason=reason[:300]))
+        if changed.rowcount != 1:
+            return {"success": False, "order_id": order_id, "reason": "A refund is already requested/approved/completed."}
+    else:
+        refund = Refund(order_id=order_id, status="requested", reason=reason[:300])
+        s.add(refund)
+        s.flush()
+    order.version += 1
+    return {"success": True, "order_id": order_id, "refund_id": refund.refund_id, "status": "requested"}
 
 
 def get_payment_status(order_id: int) -> dict:
     """Look up the payment status (pending/paid/refunded) for an order."""
     with _session() as s:
+        if get_owned_order(s, order_id) is None:
+            return dict(ORDER_UNAVAILABLE)
         payment = s.query(Payment).filter_by(order_id=order_id).first()
         if not payment:
-            return {"error": f"No payment found for order {order_id}"}
+            return dict(ORDER_UNAVAILABLE)
         return {
             "order_id": order_id,
             "status": payment.status,
@@ -153,18 +170,25 @@ def get_payment_status(order_id: int) -> dict:
 
 
 def process_payment(order_id: int, method: str) -> dict:
-    """仅把本地 pending 支付状态改为 paid；不连接支付网关。"""
-    if method not in {"card", "paypal"}:
-        return {"success": False, "order_id": order_id, "reason": "Unsupported payment method."}
-    with _session() as s:
-        payment = s.query(Payment).filter_by(order_id=order_id).first()
-        if not payment:
-            return {"error": f"No payment found for order {order_id}"}
-        changed = s.execute(update(Payment).where(Payment.order_id == order_id, Payment.status == "pending").values(status="paid", method=method))
-        if changed.rowcount != 1:
-            return {"success": False, "order_id": order_id, "reason": "Only pending payments can be processed; it may already be paid or refunded."}
-        s.commit()
-        return {"success": True, "order_id": order_id, "status": "paid", "method": method}
+    """只生成本地付款提案，不会直接改变支付状态。"""
+    from src.actions import propose_action
+    return propose_action('process_payment', {'order_id': order_id, 'method': method})
+
+
+def apply_payment(s, order_id, method):
+    from src.actions import require_confirmation
+    require_confirmation('process_payment', {'order_id': order_id, 'method': method})
+    order = get_owned_order(s, order_id)
+    if order is None:
+        return dict(ORDER_UNAVAILABLE)
+    payment = s.query(Payment).filter_by(order_id=order_id).first()
+    if not payment:
+        return dict(ORDER_UNAVAILABLE)
+    changed = s.execute(update(Payment).where(Payment.order_id == order_id, Payment.status == "pending").values(status="paid", method=method))
+    if changed.rowcount != 1:
+        return {"success": False, "order_id": order_id, "reason": "Only pending payments can be processed; it may already be paid or refunded."}
+    order.version += 1
+    return {"success": True, "order_id": order_id, "status": "paid", "method": method}
 
 
 _FAQ = {
@@ -195,14 +219,14 @@ def answer_faq(question: str) -> str:
 
 def escalate_to_human(reason: str, context: str) -> dict:
     """Escalate the conversation to a human agent when the request can't be resolved automatically."""
-    ticket_id = uuid.uuid4().hex[:8]
-    with _session() as s:
+    require_principal()
+    def apply(s):
+        ticket_id = uuid.uuid4().hex[:8]
         s.add(Ticket(ticket_id=ticket_id, reason=reason[:300], context=context[:1000], status="pending"))
-        s.commit()
-    logger.warning("ESCALATION ticket=%s", ticket_id)
-    return {
-        "escalated": True,
-        "ticket_id": ticket_id,
-        "message": f"已生成本地待处理工单 #{ticket_id}。尚未连接人工通知渠道，不代表真人已接单。",
-    }
+        return {"escalated": True, "ticket_id": ticket_id,
+                "message": f"已生成本地待处理工单 #{ticket_id}。尚未连接人工通知渠道，不代表真人已接单。"}
+    result = request_journal().execute_action_once(
+        active_request.get(), 'escalate_to_human', {'reason': reason, 'context': context}, apply)
+    logger.warning("ESCALATION ticket=%s", result['ticket_id'])
+    return result
 

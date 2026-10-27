@@ -1,6 +1,8 @@
 import os
 
 from dotenv import load_dotenv
+from urllib.parse import urlsplit
+from src.errors import ModelConfigurationError, classify_error
 from src.runtime_context import active_mode
 
 load_dotenv()
@@ -27,8 +29,7 @@ def _load_gemini_keys() -> list[str]:
 
 
 def _is_quota_error(exc: Exception) -> bool:
-    text = str(exc)
-    return "RESOURCE_EXHAUSTED" in text or "429" in text
+    return classify_error(exc) == 'quota'
 
 
 class RotatingChatModel:
@@ -62,21 +63,50 @@ def get_llm(model: str | None = None, temperature: float = 0.0) -> RotatingChatM
     if active_mode.get() == "demo":
         from src.demo_model import DemoChatModel
         return DemoChatModel()
-    from langchain_google_genai import ChatGoogleGenerativeAI
+
+    provider = os.environ.get('LLM_PROVIDER', 'auto').strip().lower()
+    if provider not in {'auto', 'zhipu', 'gemini', 'groq'}:
+        raise ModelConfigurationError('LLM_PROVIDER 必须为 auto、zhipu、gemini 或 groq。')
+    zhipu_key = os.environ.get("ZHIPU_API_KEY", '').strip()
+    if provider == 'zhipu' or (provider == 'auto' and zhipu_key):
+        if not zhipu_key:
+            raise ModelConfigurationError('请配置 ZHIPU_API_KEY。')
+        from langchain_openai import ChatOpenAI
+
+        base_url = os.environ.get('ZHIPU_BASE_URL', 'https://open.bigmodel.cn/api/paas/v4/').strip().rstrip('/') + '/'
+        parsed = urlsplit(base_url)
+        if parsed.scheme not in {'http', 'https'} or not parsed.hostname or parsed.query or parsed.fragment or parsed.path.rstrip('/').endswith('/chat/completions'):
+            raise ModelConfigurationError('ZHIPU_BASE_URL 应为基础 URL，不能附加 chat/completions。')
+        zhipu_model = ChatOpenAI(
+            model=model or os.environ.get("ZHIPU_MODEL", "glm-4.7-flash"),
+            api_key=zhipu_key,
+            base_url=base_url,
+            temperature=1.0,
+            max_retries=0,
+            timeout=60,
+            use_responses_api=False,
+            disabled_params={'parallel_tool_calls': None},
+            extra_body={"thinking": {"type": "disabled"}},
+        )
+        return RotatingChatModel([zhipu_model], state=_rotation_state)
+
     model_name = model or DEFAULT_MODEL
-    models = [
-        ChatGoogleGenerativeAI(model=model_name, google_api_key=key, temperature=temperature, max_retries=0)
-        for key in _load_gemini_keys()
-    ]
+    models = []
+    if provider in {'auto', 'gemini'}:
+        from langchain_google_genai import ChatGoogleGenerativeAI
+        models = [
+            ChatGoogleGenerativeAI(model=model_name, google_api_key=key, temperature=temperature, max_retries=0)
+            for key in _load_gemini_keys()
+        ]
 
     groq_key = os.environ.get("GROQ_API_KEY")
-    if groq_key:
+    if groq_key and provider in {'auto', 'groq'}:
         from langchain_groq import ChatGroq
 
         models.append(ChatGroq(model=GROQ_MODEL, api_key=groq_key, temperature=temperature, max_retries=0))
 
     if not models:
-        raise RuntimeError("No LLM configured. Set GEMINI_API_KEY, GEMINI_API_KEYS, or GROQ_API_KEY in .env")
+        raise ModelConfigurationError("所选服务未配置 Key。请检查 LLM_PROVIDER 和 ZHIPU_API_KEY、GEMINI_API_KEY 或 GROQ_API_KEY。")
 
     return RotatingChatModel(models, state=_rotation_state)
 
@@ -85,7 +115,11 @@ def extract_usage(ai_message) -> dict:
     """Pull token usage out of a LangChain AIMessage, if present."""
     meta = getattr(ai_message, "usage_metadata", None)
     if not meta:
-        return {}
+        tokens = (getattr(ai_message, 'response_metadata', None) or {}).get('token_usage') or {}
+        if not tokens:
+            return {}
+        return {'input_tokens': tokens.get('prompt_tokens'), 'output_tokens': tokens.get('completion_tokens'),
+                'total_tokens': tokens.get('total_tokens')}
     return {
         "input_tokens": meta.get("input_tokens"),
         "output_tokens": meta.get("output_tokens"),

@@ -4,3 +4,5 @@ data/
 *.db
 __pycache__/
 .pytest_cache/
+*.before-v2-*.bak
+*.checkpoints.sqlite*

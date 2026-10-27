@@ -45,8 +45,8 @@ def test_orchestrator_routes_to_correct_agent(monkeypatch, user_message, fake_ro
     monkeypatch.setattr(orchestrator, "get_llm", lambda: FakeLLM(fake_route))
 
     fake_result = {"reply": "stub reply", "trace": [], "agent": expected_agent}
-    for name in ("run_order_agent", "run_refund_agent", "run_payment_agent", "run_faq_agent"):
-        monkeypatch.setattr(orchestrator, name, lambda *_a, **_k: fake_result)
+    monkeypatch.setattr(orchestrator, 'model_step', lambda _state: {'done': True})
+    monkeypatch.setattr(orchestrator, 'finalize_step', lambda _state: fake_result)
 
     graph = orchestrator.build_graph()
     result = graph.invoke({"user_message": user_message, "history": [], "trace": []})

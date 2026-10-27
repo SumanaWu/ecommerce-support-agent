@@ -35,7 +35,7 @@ def test_call_with_retry_escalates_after_exhausting_attempts():
 
     def flaky():
         attempts["count"] += 1
-        raise RuntimeError("simulated rate limit")
+        raise TimeoutError("simulated network timeout")
 
     result, escalation = call_with_retry(
         flaky,

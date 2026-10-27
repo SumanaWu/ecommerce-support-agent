@@ -12,7 +12,7 @@ def check_refund_eligibility(order_id: int) -> dict:
 
 @tool
 def initiate_refund(order_id: int, reason: str) -> dict:
-    """Start a refund for an order. Only succeeds if the order is refund-eligible."""
+    """Propose a refund for an eligible owned order. Does not execute; the user must click a separate confirmation."""
     return backend_tools.initiate_refund(order_id, reason)
 
 
@@ -28,6 +28,7 @@ SYSTEM_PROMPT = (
     "You are the Refund Agent for an e-commerce support system. "
     "Before initiating any refund, you must call check_refund_eligibility first. "
     "Only call initiate_refund if the order is eligible (delivered, no existing refund). "
+    "initiate_refund only creates a pending proposal. Never claim a refund was applied before user confirmation. "
     "If it isn't eligible, explain why to the customer instead of attempting the refund. "
     "Always call a tool to get real data before answering; never guess. "
     "Reply concisely and naturally to the customer."

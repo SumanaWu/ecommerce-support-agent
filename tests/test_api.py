@@ -8,7 +8,7 @@ from src.service import SupportService
 def isolated_sessions(monkeypatch, tmp_path):
     monkeypatch.setattr(api, "service", SupportService(tmp_path / "memory.sqlite"))
 
-client = TestClient(api.app)
+client = TestClient(api.app, headers={'Authorization':'Bearer test-token-a'})
 
 FAKE_RESULT = {
     "reply": "Your order 1001 has been delivered.",

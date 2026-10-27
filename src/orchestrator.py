@@ -1,18 +1,20 @@
 import logging
 import re
+import sqlite3
+from contextlib import closing
 from typing import TypedDict
 
+from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
 
-from src.agents.base import as_text, sum_usage
-from src.agents.faq_agent import run_faq_agent
-from src.agents.order_agent import run_order_agent
-from src.agents.payment_agent import run_payment_agent
-from src.agents.refund_agent import run_refund_agent
-from src.errors import call_with_retry
+from src.agents import base, faq_agent, order_agent, payment_agent, refund_agent
+from src.agents.base import as_text
+from src.auth import AccessError, require_principal
+from src.errors import invoke_with_retry
 from src.llm import extract_usage, get_llm
 from src.logging_config import configure_logging
 from src.tools import escalate_to_human
+from src.runtime_context import active_request, active_run
 
 configure_logging()
 logger = logging.getLogger("support_agent.orchestrator")
@@ -31,7 +33,7 @@ User message: {user_message}
 Answer with one word only."""
 
 
-class SupportState(TypedDict):
+class SupportState(TypedDict, total=False):
     user_message: str
     history: list
     route: str
@@ -40,6 +42,18 @@ class SupportState(TypedDict):
     agent: str
     usage: dict
     cached: bool
+    status: str
+    reply_source: str
+    error_type: str
+    binding: list
+    messages: list
+    tool_calls: list
+    tool_index: int
+    rounds: int
+    max_rounds: int
+    seen_calls: list
+    done: bool
+    model_reply: str
 
 
 def parse_route(text: str) -> str:
@@ -50,23 +64,36 @@ def parse_route(text: str) -> str:
 
 def route_node(state: SupportState) -> dict:
     llm = get_llm()
-    result = llm.invoke(ROUTER_PROMPT.format(user_message=state["user_message"]))
+    result = invoke_with_retry(lambda: llm.invoke(ROUTER_PROMPT.format(user_message=state["user_message"])))
     route = parse_route(as_text(result.content))
     return {"route": route, "usage": extract_usage(result)}
 
 
-def _make_agent_node(agent_name: str, run_fn):
-    def node(state: SupportState) -> dict:
-        result = run_fn(state["user_message"], state.get("history"))
-        return {
-            "reply": result["reply"],
-            "trace": result["trace"],
-            "agent": agent_name,
-            "usage": sum_usage(state.get("usage", {}), result.get("usage", {})),
-            "cached": result.get("cached", False),
-        }
+SPECIALISTS = {
+    'ORDER': ('order', order_agent.SYSTEM_PROMPT, order_agent.ORDER_TOOLS),
+    'REFUND': ('refund', refund_agent.SYSTEM_PROMPT, refund_agent.REFUND_TOOLS),
+    'PAYMENT': ('payment', payment_agent.SYSTEM_PROMPT, payment_agent.PAYMENT_TOOLS),
+    'FAQ': ('faq', faq_agent.SYSTEM_PROMPT, faq_agent.FAQ_TOOLS),
+}
 
-    return node
+
+def prepare_node(state):
+    name, prompt, _ = SPECIALISTS[state['route']]
+    return base.prepare_agent(name, prompt, state['user_message'], state.get('history'))
+
+
+def model_step(state):
+    return base.model_step(state, SPECIALISTS[state['route']][2])
+
+
+def tool_step(state):
+    # Write tools consult the transaction's action receipt before doing work.
+    # Re-running this node after a commit/checkpoint gap never repeats a write.
+    return base.tool_step(state, SPECIALISTS[state['route']][2])
+
+
+def finalize_step(state):
+    return base.finalize_step(state)
 
 
 def escalate_node(state: SupportState) -> dict:
@@ -82,44 +109,62 @@ def escalate_node(state: SupportState) -> dict:
     }
 
 
-def build_graph():
+def build_graph(checkpointer=None):
     graph = StateGraph(SupportState)
     graph.add_node("route", route_node)
-    graph.add_node("order", _make_agent_node("order", run_order_agent))
-    graph.add_node("refund", _make_agent_node("refund", run_refund_agent))
-    graph.add_node("payment", _make_agent_node("payment", run_payment_agent))
-    graph.add_node("faq", _make_agent_node("faq", run_faq_agent))
+    graph.add_node('prepare', prepare_node)
+    graph.add_node('model', model_step)
+    graph.add_node('tool', tool_step)
+    graph.add_node('finalize', finalize_step)
     graph.add_node("escalate", escalate_node)
 
     graph.add_edge(START, "route")
     graph.add_conditional_edges(
         "route",
         lambda state: state["route"],
-        {"ORDER": "order", "REFUND": "refund", "PAYMENT": "payment", "FAQ": "faq", "ESCALATE": "escalate"},
+        {route: 'prepare' for route in SPECIALISTS} | {'ESCALATE': 'escalate'},
     )
-    for node in ("order", "refund", "payment", "faq", "escalate"):
-        graph.add_edge(node, END)
+    graph.add_edge('prepare', 'model')
+    graph.add_conditional_edges('model', lambda state: 'finalize' if state['done'] else 'tool')
+    graph.add_conditional_edges('tool', lambda state: 'tool' if state['tool_index'] < len(state['tool_calls']) else 'model')
+    graph.add_edge('finalize', END)
+    graph.add_edge('escalate', END)
 
-    return graph.compile()
+    return graph.compile(checkpointer=checkpointer)
 
 
 _GRAPH = build_graph()
 
 
 def run_orchestrator(user_message: str, history: list | None = None) -> dict:
-    result, escalation = call_with_retry(
-        lambda: _GRAPH.invoke({"user_message": user_message, "history": history or [], "trace": []}),
-        escalate_reason="Agent pipeline failed (e.g. rate limit or API error)",
-        escalate_context=user_message,
-    )
-    if escalation is not None:
-        result = {
-            "reply": escalation["message"],
-            "trace": [{"agent": "escalate", "tool": "escalate_to_human", "args": {}, "result": escalation}],
-            "agent": "escalate",
-            "route": "ESCALATE",
-            "usage": {},
-        }
+    value = {'user_message': user_message, 'history': history or [], 'trace': []}
+    run = active_run.get()
+    if run is None:
+        result = _GRAPH.invoke(value, {'recursion_limit': 64})
+    else:
+        context = active_request.get()
+        binding = [require_principal().customer_id, context.mode, context.session_id, context.request_id]
+        if binding != [run['user_id'], run['mode'], run['session_id'], run['request_id']]:
+            raise AccessError('运行身份或会话不匹配。', 403)
+        with closing(sqlite3.connect(run['checkpoint_path'], timeout=20, check_same_thread=False)) as connection:
+            saver = SqliteSaver(connection)
+            graph = build_graph(saver)
+            config = {'configurable': {'thread_id': run['run_id']}, 'recursion_limit': 64}
+            snapshot = graph.get_state(config)
+            if snapshot.values:
+                if snapshot.values.get('binding') != binding:
+                    raise AccessError('运行身份或会话不匹配。', 403)
+                from src import tools
+                # A saved answer must not reveal an order whose owner changed.
+                for entry in snapshot.values.get('trace', []):
+                    if isinstance(entry.get('result'), dict) and entry['result'].get('error'):
+                        continue
+                    order_id = (entry.get('args') or {}).get('order_id')
+                    if order_id is not None and not tools.can_access_order(order_id):
+                        raise AccessError('运行涉及的订单权限已变化，不能继续恢复。', 409)
+                result = graph.invoke(None, config, durability='sync') if snapshot.next else snapshot.values
+            else:
+                result = graph.invoke({**value, 'binding': binding}, config, durability='sync')
 
     logger.info(
         "agent_decision",

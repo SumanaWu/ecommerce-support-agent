@@ -1,4 +1,8 @@
 import pytest
+from uuid import uuid4
+from src.auth import Principal
+from src.runtime_context import active_request
+from src.service import SupportService
 
 from src import tools
 from src.backend.db import get_engine, get_session_factory
@@ -6,12 +10,16 @@ from src.backend.seed import seed
 
 
 @pytest.fixture(autouse=True)
-def seeded_db():
+def seeded_db(tmp_path):
     engine = get_engine("sqlite:///:memory:")
     tools.configure_db(engine)
     session = get_session_factory(engine)()
     seed(session)
-    yield
+    context,_,_=tools.request_journal().begin_request('customer_a','demo',uuid4().hex,'tools','test')
+    token=active_request.set(context)
+    yield SupportService(tmp_path/'memory.sqlite')
+    active_request.reset(token)
+    engine.dispose()
 
 
 def test_get_order_status_found():
@@ -51,10 +59,12 @@ def test_refund_eligibility_already_requested():
     assert "already" in result["reason"]
 
 
-def test_initiate_refund_succeeds_when_eligible():
+def test_initiate_refund_succeeds_when_eligible(seeded_db):
     result = tools.initiate_refund(1001, "Item not as described")
-    assert result["success"] is True
-    assert result["status"] == "requested"
+    assert result['requires_confirmation']
+    assert tools.check_refund_eligibility(1001)['eligible'] is True
+    result=seeded_db.confirm_action(Principal('customer_a'),result['action_id'])
+    assert result['status']=='completed'
     # DB actually changed
     assert tools.check_refund_eligibility(1001)["eligible"] is False
 
@@ -70,9 +80,11 @@ def test_get_payment_status():
     assert result["status"] == "pending"
 
 
-def test_process_payment_succeeds_when_pending():
+def test_process_payment_succeeds_when_pending(seeded_db):
     result = tools.process_payment(1003, "paypal")
-    assert result["success"] is True
+    assert result['requires_confirmation']
+    assert tools.get_payment_status(1003)['status']=='pending'
+    assert seeded_db.confirm_action(Principal('customer_a'),result['action_id'])['status']=='completed'
     assert tools.get_payment_status(1003)["status"] == "paid"
 
 

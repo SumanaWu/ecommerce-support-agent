@@ -1,24 +1,53 @@
-import logging
 import time
 
-from src.tools import escalate_to_human
+import httpx
+from src.runtime_context import record_event
 
-logger = logging.getLogger("support_agent.errors")
+
+class ModelConfigurationError(ValueError):
+    pass
 
 
-def call_with_retry(fn, *, max_attempts: int = 2, backoff_seconds: float = 3.0, escalate_reason: str, escalate_context: str):
-    """Run fn(); on failure, retry once after a short backoff; if it still fails, escalate to a human
-    instead of crashing. Returns (result, escalation) — exactly one of which is non-None."""
-    last_exc: Exception | None = None
+def classify_error(exc):
+    code = getattr(exc, 'status_code', None) or getattr(exc, 'code', None)
+    if code in (401, 403, 404) or isinstance(exc, (ModelConfigurationError, ImportError)):
+        return 'configuration'
+    if code == 429 or 'RESOURCE_EXHAUSTED' in str(exc):
+        return 'quota'
+    if isinstance(exc, (TimeoutError, ConnectionError, httpx.TransportError)) or type(exc).__name__ in {
+        'APITimeoutError', 'APIConnectionError', 'ConnectError', 'ReadError', 'ReadTimeout',
+    } or (isinstance(code, int) and code >= 500):
+        return 'network'
+    if code in (400, 422) or isinstance(exc, (ValueError, TypeError)):
+        return 'validation'
+    return 'program'
+
+
+def error_message(kind):
+    return {'configuration': '模型配置或认证不可用，请检查服务商、Key、模型名称和依赖。',
+            'quota': '模型配额或请求频率受限，请稍后使用新的请求编号重试。',
+            'network': '模型服务暂时不可达，请稍后使用新的请求编号重试。',
+            'validation': '请求或模型工具参数无效，请检查后重新提交。',
+            'program': '处理过程出现内部错误，请根据请求编号检查日志。'}[kind]
+
+
+def invoke_with_retry(fn, *, max_attempts=2, backoff_seconds=0.25):
     for attempt in range(1, max_attempts + 1):
         try:
-            return fn(), None
-        except Exception as exc:  # noqa: BLE001 - deliberately broad: any agent/LLM failure should escalate, not crash
-            last_exc = exc
-            logger.warning("Attempt %d/%d failed: %s", attempt, max_attempts, exc)
-            if attempt < max_attempts:
-                time.sleep(backoff_seconds)
+            return fn()
+        except Exception as exc:
+            kind = classify_error(exc)
+            record_event('model_call_failed', attempt=attempt, error_type=kind, exception_type=type(exc).__name__)
+            if kind not in {'quota', 'network'} or attempt == max_attempts:
+                raise
+            time.sleep(backoff_seconds)
 
-    escalation = escalate_to_human(reason=escalate_reason, context=f"{escalate_context} | error: {last_exc}")
-    return None, escalation
+
+def call_with_retry(fn, *, max_attempts=2, backoff_seconds=0.25, escalate_reason, escalate_context):
+    """Compatibility helper for callers; never wrap a business graph in this."""
+    try:
+        return invoke_with_retry(fn, max_attempts=max_attempts, backoff_seconds=backoff_seconds), None
+    except Exception as exc:
+        from src.tools import escalate_to_human
+        return None, escalate_to_human(reason=escalate_reason, context=escalate_context + ' | ' + classify_error(exc))
 
