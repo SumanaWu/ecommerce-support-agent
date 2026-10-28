@@ -95,12 +95,14 @@ def test_process_payment_refuses_when_already_paid():
 
 def test_answer_faq_shipping():
     answer = tools.answer_faq("How long does shipping take?")
-    assert "3-5 business days" in answer
+    assert answer['found'] and "3-5 business days" in answer['answer']
+    assert answer['sources'][0]['policy_id'] == 'shipping'
 
 
 def test_answer_faq_fallback():
     answer = tools.answer_faq("What is the meaning of life?")
-    assert "support@example.com" in answer
+    assert not answer['found'] and not answer['sources']
+    assert '没有足够依据' in answer['answer']
 
 
 def test_escalate_to_human():

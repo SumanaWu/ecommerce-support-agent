@@ -57,6 +57,7 @@ def test_run_tool_agent_falls_back_when_model_never_answers(monkeypatch):
 
     assert result["reply"] == "echoed:x"  # falls back to the tool result, never blank
     assert len(result["trace"]) == 1  # loop-detection stopped after the first repeat
+    assert result['status'] == 'partial' and result['stop_reason'] == 'repeated_tool_call'
 
 
 def test_run_tool_agent_stops_on_repeated_identical_call(monkeypatch):
@@ -71,4 +72,5 @@ def test_run_tool_agent_stops_on_repeated_identical_call(monkeypatch):
 
     assert len(result["trace"]) == 1
     assert result["reply"] == "echoed:a"
+    assert result['status'] == 'partial'
 

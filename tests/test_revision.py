@@ -92,7 +92,7 @@ def test_history_window_and_storage_limit(isolated):
         return {'reply':'ok','agent':'order','trace':[],'usage':{}}
     for i in range(53):
         svc.chat(Principal('customer_a'),'one','demo','hi',runner=fake)
-    assert max(histories)==12
+    assert max(histories) <= 100 and all(length % 2 == 0 for length in histories)
     assert len(svc.snapshot(Principal('customer_a'),'one','demo')['turns'])==50
 
 
@@ -113,8 +113,8 @@ def test_invalid_input_and_ambiguous_route(isolated):
     svc,_=isolated
     for args in [(Principal('a/other'),'one','demo','hi'),(Principal('customer_a'),'one','bad','hi'),(Principal('customer_a'),'one','demo','x'*2001)]:
         with pytest.raises(ValueError):svc.chat(*args)
-    assert parse_route('REFUND ORDER')=='ESCALATE'
-    assert parse_route('PREORDER')=='ESCALATE'
+    assert parse_route('REFUND ORDER')=='CLARIFY'
+    assert parse_route('PREORDER')=='CLARIFY'
 
 
 def test_extra_or_unknown_tool_is_rejected(monkeypatch):

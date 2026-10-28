@@ -1,6 +1,5 @@
 """Model tools propose; authenticated entrypoints alone confirm or cancel."""
 from dataclasses import dataclass
-import hashlib
 import json
 import time
 from uuid import NAMESPACE_URL, uuid5
@@ -9,7 +8,9 @@ from sqlalchemy import select
 from src.auth import AccessError, principal_scope, require_principal
 from src.backend.db import Payment, PendingAction, Refund
 from src.requests import canonical
-from src.runtime_context import active_confirmation, active_request
+from src.money import money_view
+from src.rules import business_fingerprint
+from src.runtime_context import active_confirmation, active_request, active_order_reference, active_task
 
 
 @dataclass(frozen=True)
@@ -30,15 +31,12 @@ def require_confirmation(tool, args):
 def business_version(db, order):
     payment = db.scalars(select(Payment).where(Payment.order_id == order.order_id)).first()
     refund = db.scalars(select(Refund).where(Refund.order_id == order.order_id)).first()
-    facts = [order.customer_id, order.version, order.status, order.amount, order.item, order.order_date.isoformat(),
-             [payment.payment_id, payment.status, payment.method, payment.amount] if payment else None,
-             [refund.refund_id, refund.status, refund.reason] if refund else None]
-    return hashlib.sha256(canonical(facts).encode()).hexdigest()
+    return business_fingerprint(vars(order), vars(payment) if payment else None, vars(refund) if refund else None)
 
 
 def action_view(row):
     return {'action_id': row.action_id, 'order_id': row.order_id, 'tool': row.tool,
-            'amount': row.amount, 'args': json.loads(row.args), 'status': row.status,
+            **money_view(row), 'args': json.loads(row.args), 'status': row.status,
             'session_id': row.session_id, 'mode': row.mode,
             'result': json.loads(row.result) if row.result else None}
 
@@ -81,28 +79,35 @@ def propose_action(tool, args):
     context = active_request.get()
     if context is None or context.user_id != principal.customer_id:
         raise AccessError('请通过已认证的客服请求创建待确认动作。', 403)
+    task = active_task.get()
+    if task is not None and (not task['allow_write'] or
+            tool != {'REFUND': 'initiate_refund', 'PAYMENT': 'process_payment'}.get(task['route'])):
+        raise AccessError('本任务没有用户明确的办理请求，只能查询；模型不能自行生成写入提案。', 403)
+    reference = active_order_reference.get()
+    if reference is not None and (reference['status'] != 'resolved' or reference['order_id'] != args['order_id']):
+        raise AccessError('本轮订单尚未明确或与已确定订单不一致，请先澄清或更正当前订单。', 403)
 
     def propose(db):
         order = tools.get_owned_order(db, args['order_id'])
         if order is None:
             return dict(tools.ORDER_UNAVAILABLE)
-        amount = order.amount
+        price = order
         if tool == 'initiate_refund':
             eligibility = tools.refund_eligibility(db, order)
             if not eligibility['eligible']:
-                return {'success': False, 'order_id': order.order_id, 'reason': eligibility['reason']}
+                return {**eligibility, 'success': False}
         else:
             payment = db.scalars(select(Payment).where(Payment.order_id == order.order_id)).first()
             if payment is None or payment.status != 'pending':
                 return {'success': False, 'order_id': order.order_id, 'reason': 'Only pending payments can be processed; it may already be paid or refunded.'}
             if args['method'] not in {'card', 'paypal'}:
                 return {'success': False, 'order_id': order.order_id, 'reason': 'Unsupported payment method.'}
-            amount = payment.amount
+            price = payment
         action_id = uuid5(NAMESPACE_URL, canonical([*context.key, tool, order.order_id])).hex
         row = PendingAction(action_id=action_id, user_id=principal.customer_id, mode=context.mode,
                             session_id=context.session_id, source_request_id=context.request_id,
                             tool=tool, order_id=order.order_id, args=canonical(args),
-                            business_version=business_version(db, order), amount=amount,
+                            business_version=business_version(db, order), amount_minor=price.amount_minor, currency=price.currency,
                             status='pending', created_at=time.time())
         db.add(row)
         return {'order_id': order.order_id, 'action_id': action_id, 'status': 'pending_confirmation',

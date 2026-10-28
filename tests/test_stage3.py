@@ -61,13 +61,14 @@ def route(state):
     return original_route(state)
 def model(state):
     if stage=='before_model' and not state['trace']: os._exit(23)
-    if stage=='after_read_checkpoint' and state['trace']: os._exit(23)
+    if stage in {'after_read_checkpoint','bad_read_checkpoint'} and state['trace']: os._exit(23)
     if stage=='after_tool_checkpoint' and any(t['tool']=='initiate_refund' for t in state['trace']): os._exit(23)
     result=original_model(state)
     if stage=='model_checkpoint_gap' and not state['trace']: os._exit(23)
     return result
 def tool(state):
     if stage=='after_model_checkpoint' and not state['trace']: os._exit(23)
+    if stage=='bad_read_checkpoint': state['tool_calls'][state['tool_index']]['args']['order_id']=9999
     result=original_tool(state)
     if stage=='tool_commit_gap' and result['trace'][-1]['tool']=='initiate_refund': os._exit(23)
     return result
@@ -219,7 +220,10 @@ def test_resume_rechecks_order_permissions(setup):
 
 def test_unavailable_order_error_can_resume_without_disclosing_order_facts(setup):
     service, _, _, _ = setup
-    run = crash(setup, 'after_read_checkpoint', '查询订单 9999 的详情')
+    # New invalid user IDs are rejected before a graph starts (stage four).
+    result = service.chat(A, 'one', 'demo', '查询订单 9999 的详情')
+    assert result['status'] == 'rejected' and 'run_id' not in result
+    run = crash(setup, 'bad_read_checkpoint', '查询订单 1001 的详情')
     result = service.resume_run(A, run['run_id'])
     assert result['status'] == 'failed' and result['memory_saved']
     assert result['trace'][0]['result'] == tools.ORDER_UNAVAILABLE
@@ -289,7 +293,7 @@ def runner(*a,**k):
         time.sleep(.02)
     result=tools.initiate_refund(1001,'test')
     return fallback_result([{'agent':'refund','tool':'initiate_refund','args':{'order_id':1001,'reason':'test'},'result':result}])
-result=SupportService().chat(Principal('customer_a'),'one','demo','refund',runner=runner,request_id='slow')
+result=SupportService().chat(Principal('customer_a'),'one','demo','refund order 1001',runner=runner,request_id='slow')
 (directory/'result.json').write_text(json.dumps(result))
 '''.replace('DIRECTORY', repr(str(directory)))
     process = subprocess.Popen([sys.executable, '-c', code], env=env)
@@ -311,10 +315,10 @@ result=SupportService().chat(Principal('customer_a'),'one','demo','refund',runne
     assert conflict['memory_status'] == 'conflict' and not conflict['memory_saved']
     assert conflict['current_session_version'] == 1
     assert len(rows(engine, ActionRecord)) == 1
-    repaired = service.chat(A, 'one', 'demo', 'refund', request_id='slow',
+    repaired = service.chat(A, 'one', 'demo', 'refund order 1001', request_id='slow',
                             runner=lambda *a, **k: pytest.fail('repair reran side effects'))
     assert repaired['memory_saved'] and repaired['memory_rebased']
-    again = service.chat(A, 'one', 'demo', 'refund', request_id='slow')
+    again = service.chat(A, 'one', 'demo', 'refund order 1001', request_id='slow')
     payload = service.snapshot(A, 'one', 'demo')
     assert again['memory_saved'] and len(payload['turns']) == payload['version'] == 2
     assert payload['last_order_id'] == 1002

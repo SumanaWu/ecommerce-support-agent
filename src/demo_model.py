@@ -1,26 +1,28 @@
 """无密钥规则模拟器。产生标准工具请求，实际图与工具照常执行。"""
 import json
-import re
 from uuid import uuid4
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from src.memory import extract_order_ids
+from src.runtime_context import active_order_reference
+from src.planning import allows_write, explicit_escalation, negative_action
 
 
 def route_query(text):
     if text.startswith('(Context:'):
         text = text.split('\n', 1)[-1]
     q = text.lower()
-    if any(x in q for x in ['投诉', '人工', 'complaint', 'human']):
+    if explicit_escalation(q):
         return 'ESCALATE'
     # 通用规则问题与具体业务操作分开；并非语义分类模型。
-    if any(x in q for x in ['政策', '规则', 'policy', '多久', '退货条件']):
+    if any(x in q for x in ['政策', '规则', 'policy', '多久', '退货条件', 'shipping time', 'how long', 'internationally', 'support email']):
         return 'FAQ'
-    if any(x in q for x in ['退款', '退钱', 'refund']):
+    if not negative_action(q, 'REFUND') and any(x in q for x in ['退款', '退钱', '退掉', '退那笔', '退这笔', 'refund', 'money back', 'return order']):
         return 'REFUND'
-    if any(x in q for x in ['支付', '付款', 'payment', 'pay ']):
+    if not negative_action(q, 'PAYMENT') and any(x in q for x in ['支付', '付款', 'payment', 'pay ', 'card get charged']):
         return 'PAYMENT'
-    if any(x in q for x in ['订单', 'order', '物流', '快递', 'tracking']):
+    if any(x in q for x in ['订单', 'order', '物流', '快递', 'tracking', 'package', '详情']):
         return 'ORDER'
-    return 'ESCALATE'
+    return 'CLARIFY'
 
 
 class DemoChatModel:
@@ -40,8 +42,9 @@ class DemoChatModel:
         last_user = max(i for i,m in enumerate(messages) if isinstance(m, HumanMessage))
         query = str(messages[last_user].content)
         # 上下文备注在前，用户显式输入在后；明确编号优先于记住的旧编号。
-        ids = re.findall(r'\b\d{4,8}\b', query)
-        order_id = int(ids[-1]) if ids else None
+        reference = active_order_reference.get()
+        ids = extract_order_ids(query)
+        order_id = reference['order_id'] if reference is not None else ids[0] if len(ids) == 1 else None
         results = [m for m in messages[last_user+1:] if isinstance(m, ToolMessage)]
         used = {m.name for m in results}
         q = query.lower()
@@ -54,14 +57,14 @@ class DemoChatModel:
             if 'check_refund_eligibility' not in used:
                 return self._call('check_refund_eligibility', {'order_id': order_id})
             data = json.loads(results[-1].content)
-            wants_write = any(x in q for x in ['申请', '办理', '帮我退', '退款吧', 'refund it', 'want a refund', 'request refund'])
+            wants_write = allows_write(query, 'REFUND')
             if data.get('eligible') and wants_write and 'initiate_refund' not in used:
                 return self._call('initiate_refund', {'order_id': order_id, 'reason': '客户申请：'+query[-150:]})
         elif 'process_payment' in self.tools:
             if 'get_payment_status' not in used:
                 return self._call('get_payment_status', {'order_id': order_id})
             data = json.loads(results[-1].content)
-            wants_write = any(x in q for x in ['办理支付', '帮我付款', '支付吧', 'process payment', 'pay it'])
+            wants_write = allows_write(query, 'PAYMENT')
             if data.get('status') == 'pending' and wants_write and 'process_payment' not in used:
                 method = 'paypal' if 'paypal' in q else 'card'
                 return self._call('process_payment', {'order_id': order_id, 'method': method})

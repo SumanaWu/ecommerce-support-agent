@@ -9,6 +9,9 @@ class ModelConfigurationError(ValueError):
 
 
 def classify_error(exc):
+    from src.budget import ExecutionBudgetExceeded
+    if isinstance(exc, ExecutionBudgetExceeded):
+        return 'budget'
     code = getattr(exc, 'status_code', None) or getattr(exc, 'code', None)
     if code in (401, 403, 404) or isinstance(exc, (ModelConfigurationError, ImportError)):
         return 'configuration'
@@ -28,7 +31,8 @@ def error_message(kind):
             'quota': '模型配额或请求频率受限，请稍后使用新的请求编号重试。',
             'network': '模型服务暂时不可达，请稍后使用新的请求编号重试。',
             'validation': '请求或模型工具参数无效，请检查后重新提交。',
-            'program': '处理过程出现内部错误，请根据请求编号检查日志。'}[kind]
+            'program': '处理过程出现内部错误，请根据请求编号检查日志。',
+            'budget': '请求调用或耗时预算已用完；已保存结果保留，请核对尚未完成的任务。'}[kind]
 
 
 def invoke_with_retry(fn, *, max_attempts=2, backoff_seconds=0.25):
@@ -38,8 +42,15 @@ def invoke_with_retry(fn, *, max_attempts=2, backoff_seconds=0.25):
         except Exception as exc:
             kind = classify_error(exc)
             record_event('model_call_failed', attempt=attempt, error_type=kind, exception_type=type(exc).__name__)
-            if kind not in {'quota', 'network'} or attempt == max_attempts:
+            if kind not in {'quota', 'network'}:
                 raise
+            from src.budget import check_execution_budget
+            remaining = check_execution_budget()
+            if attempt == max_attempts:
+                raise
+            if remaining is not None and remaining <= backoff_seconds:
+                from src.budget import ExecutionBudgetExceeded
+                raise ExecutionBudgetExceeded('剩余耗时不足以重试，已停止继续调用。') from None
             time.sleep(backoff_seconds)
 
 

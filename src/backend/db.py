@@ -5,7 +5,7 @@ from pathlib import Path
 from uuid import uuid4
 from dotenv import load_dotenv
 
-from sqlalchemy import create_engine, Date, Float, ForeignKey, Integer, String, Text, inspect, text
+from sqlalchemy import create_engine, BigInteger, CheckConstraint, Date, Float, ForeignKey, Integer, String, Text, inspect, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 load_dotenv()
@@ -24,7 +24,10 @@ class Order(Base):
     item: Mapped[str] = mapped_column(String(200))
     status: Mapped[str] = mapped_column(String(20))  # placed/shipped/delivered/cancelled
     order_date: Mapped[date] = mapped_column(Date)
-    amount: Mapped[float] = mapped_column(Float)
+    amount_minor: Mapped[int] = mapped_column(BigInteger)
+    currency: Mapped[str] = mapped_column(String(3))
+    __table_args__ = (CheckConstraint("amount_minor >= 0 AND typeof(amount_minor) = 'integer'"),
+                      CheckConstraint("currency IN ('CNY', 'USD')"))
     customer_id: Mapped[str | None] = mapped_column(String(40), nullable=True)
     version: Mapped[int] = mapped_column(Integer, default=1, server_default='1')
 
@@ -36,7 +39,10 @@ class Payment(Base):
     order_id: Mapped[int] = mapped_column(ForeignKey("orders.order_id"), unique=True)
     status: Mapped[str] = mapped_column(String(20))  # pending/paid/refunded
     method: Mapped[str] = mapped_column(String(30))
-    amount: Mapped[float] = mapped_column(Float)
+    amount_minor: Mapped[int] = mapped_column(BigInteger)
+    currency: Mapped[str] = mapped_column(String(3))
+    __table_args__ = (CheckConstraint("amount_minor >= 0 AND typeof(amount_minor) = 'integer'"),
+                      CheckConstraint("currency IN ('CNY', 'USD')"))
 
 
 class Refund(Base):
@@ -81,9 +87,17 @@ def init_db(engine) -> None:
                 for order_id in range(1001, 1011):
                     connection.execute(text('UPDATE orders SET customer_id=:owner WHERE order_id=:id AND customer_id IS NULL'),
                                        {'owner': sample_owner(order_id), 'id': order_id})
+    from src.backend.migrations import migrate_money
+    migrate_money(engine)
+    inspector = inspect(engine)
+    if inspector.has_table('orders') and not inspector.has_table('execution_budgets'):
+        database = engine.url.database
+        if database and database != ':memory:':
+            with sqlite3.connect(database) as source, sqlite3.connect(str(Path(database)) + '.before-v4-' + uuid4().hex + '.bak') as target:
+                source.backup(target)
     Base.metadata.create_all(engine)
     with engine.begin() as connection:
-        for version in (1, 2):
+        for version in (1, 2, 3, 4):
             if connection.execute(SchemaMigration.__table__.select().where(SchemaMigration.version == version)).first() is None:
                 connection.execute(SchemaMigration.__table__.insert().values(version=version))
 
@@ -148,7 +162,45 @@ class PendingAction(Base):
     order_id: Mapped[int] = mapped_column(ForeignKey('orders.order_id'))
     args: Mapped[str] = mapped_column(Text)
     business_version: Mapped[str] = mapped_column(String(64))
-    amount: Mapped[float] = mapped_column(Float)
+    amount_minor: Mapped[int] = mapped_column(BigInteger)
+    currency: Mapped[str] = mapped_column(String(3))
+    __table_args__ = (CheckConstraint("amount_minor >= 0 AND typeof(amount_minor) = 'integer'"),
+                      CheckConstraint("currency IN ('CNY', 'USD')"))
     status: Mapped[str] = mapped_column(String(20), default='pending')
     result: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[float] = mapped_column(Float)
+
+
+class PolicyDocument(Base):
+    __tablename__ = 'policy_documents'
+    policy_id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    version: Mapped[str] = mapped_column(String(40), primary_key=True)
+    title: Mapped[str] = mapped_column(String(200))
+    source: Mapped[str] = mapped_column(Text)
+    effective_from: Mapped[date] = mapped_column(Date)
+    keywords: Mapped[str] = mapped_column(Text)
+    content_hash: Mapped[str] = mapped_column(String(64))
+    revision: Mapped[int] = mapped_column(Integer, unique=True)
+
+
+class PolicyChunk(Base):
+    __tablename__ = 'policy_chunks'
+    policy_id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    version: Mapped[str] = mapped_column(String(40), primary_key=True)
+    chunk_index: Mapped[int] = mapped_column(Integer, primary_key=True)
+    section: Mapped[str] = mapped_column(String(200))
+    content: Mapped[str] = mapped_column(Text)
+    search_text: Mapped[str] = mapped_column(Text)
+
+
+class ExecutionBudgetRecord(Base):
+    __tablename__ = 'execution_budgets'
+    user_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    mode: Mapped[str] = mapped_column(String(10), primary_key=True)
+    request_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    model_calls: Mapped[int] = mapped_column(Integer, default=0)
+    tool_calls: Mapped[int] = mapped_column(Integer, default=0)
+    max_model_calls: Mapped[int] = mapped_column(Integer)
+    max_tool_calls: Mapped[int] = mapped_column(Integer)
+    started_at: Mapped[float] = mapped_column(Float)
+    deadline_at: Mapped[float] = mapped_column(Float)

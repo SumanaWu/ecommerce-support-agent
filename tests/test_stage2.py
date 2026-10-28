@@ -161,7 +161,7 @@ def test_confirmation_rejects_stale_business_facts(setup, change):
     action_id = propose(service)
     with get_session_factory(engine).begin() as db:
         if change == 'amount':
-            db.get(Order, 1001).amount += 1
+            db.get(Order, 1001).amount_minor += 100
         elif change == 'version':
             db.get(Order, 1001).version += 1
         elif change == 'order_status':
@@ -233,7 +233,7 @@ def test_backend_corrects_model_claim_of_success_before_confirmation(setup):
         result = tools.initiate_refund(1001, 'test')
         return {'reply': '退款已成功', 'agent': 'refund', 'trace': [
             {'agent': 'refund', 'tool': 'initiate_refund', 'args': {'order_id': 1001}, 'result': result}], 'usage': {}}
-    response = service.chat(A, 'one', 'demo', 'refund', runner=runner)
+    response = service.chat(A, 'one', 'demo', 'refund order 1001', runner=runner)
     assert response['status'] == 'pending_confirmation' and '尚未办理' in response['reply']
     assert state(engine) == 'none'
 
@@ -284,8 +284,8 @@ def test_migration_backs_up_and_does_not_guess_unknown_owners(tmp_path):
             assert 'customer_id' not in [row[1] for row in db.execute('PRAGMA table_info(orders)')]
             assert db.execute('SELECT count(*) FROM orders').fetchone()[0] == 3
         with get_session_factory(engine)() as db:
-            assert [(db.get(Order, i).customer_id, db.get(Order, i).amount) for i in (1001, 1008, 4242)] == [
-                ('customer_a', 12.34), ('customer_b', 12.34), (None, 12.34)]
+            assert [(db.get(Order, i).customer_id, db.get(Order, i).amount_minor, db.get(Order, i).currency) for i in (1001, 1008, 4242)] == [
+                ('customer_a', 1234, 'CNY'), ('customer_b', 1234, 'CNY'), (None, 1234, 'CNY')]
     finally:
         engine.dispose()
 

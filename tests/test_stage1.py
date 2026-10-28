@@ -314,7 +314,7 @@ def test_rejected_business_action_does_not_retry_or_create_ticket(setup):
         result = tools.process_payment(1001, 'card')
         return {'reply': 'already paid', 'agent': 'payment', 'trace': [
             {'agent': 'payment', 'tool': 'process_payment', 'args': {'order_id': 1001}, 'result': result}], 'usage': {}}
-    response = service.chat(Principal('customer_a'), 'one', 'demo', 'pay', runner=runner, request_id='refused')
+    response = service.chat(Principal('customer_a'), 'one', 'demo', 'pay order 1001', runner=runner, request_id='refused')
     assert response['status'] == 'rejected' and len(runs) == 1
     assert len(rows(engine, ActionRecord)) == 1
 
@@ -372,8 +372,8 @@ def test_additive_migration_preserves_legacy_business_rows(tmp_path):
         init_db(engine)
         init_db(engine)
         with sqlite3.connect(path) as db:
-            assert db.execute('SELECT amount FROM orders').fetchall() == [(12.34,)]
-        assert len(rows(engine, SchemaMigration)) == 2
+            assert db.execute('SELECT amount_minor,currency FROM orders').fetchall() == [(1234, 'CNY')]
+        assert len(rows(engine, SchemaMigration)) == 4
         assert not rows(engine, RequestRecord)
     finally:
         engine.dispose()
@@ -390,10 +390,13 @@ def test_memory_migration_preserves_legacy_history_and_profile(tmp_path):
         db.execute('INSERT INTO sessions VALUES(?,?,?,?,?)', ('customer_a', 'demo', 'one', json.dumps(payload), 'old'))
         db.execute('INSERT INTO profiles VALUES(?,?,?)', ('customer_a', '{"tone":"brief"}', 'old'))
     store = SupportStore(path)
-    assert store.load_session('customer_a', 'demo', 'one') == {**payload, 'version': 0}
+    restored = store.load_session('customer_a', 'demo', 'one')
+    assert {key: restored[key] for key in payload} == payload
+    assert restored['version'] == 0 and restored['issue']['candidate_order_ids'] == [1001]
+    assert restored['issue']['active_order_id'] is None
     assert store.profile('customer_a') == {'tone': 'brief'}
     with store.connect() as db:
-        assert db.execute('SELECT version FROM schema_migrations').fetchall() == [(1,), (2,)]
+        assert db.execute('SELECT version FROM schema_migrations').fetchall() == [(1,), (2,), (3,)]
     assert len(list(tmp_path.glob('legacy-memory.sqlite.before-v2-*.bak'))) == 1
 
 

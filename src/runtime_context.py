@@ -8,6 +8,9 @@ active_request = ContextVar('active_request', default=None)
 active_principal = ContextVar('active_principal', default=None)
 active_confirmation = ContextVar('active_confirmation', default=None)
 active_run = ContextVar('active_run', default=None)
+active_order_reference = ContextVar('active_order_reference', default=None)
+active_task = ContextVar('active_task', default=None)
+active_budget = ContextVar('active_budget', default=None)
 
 
 def record_event(event, **fields):

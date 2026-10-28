@@ -23,8 +23,8 @@ class FakeLLM:
         ("refund", "REFUND"),
         ("  Payment  ", "PAYMENT"),
         ("I think this is FAQ related", "FAQ"),
-        ("this is unclear and abusive", "ESCALATE"),
-        ("something totally unrelated", "ESCALATE"),
+        ("this is unclear and abusive", "CLARIFY"),
+        ("something totally unrelated", "CLARIFY"),
     ],
 )
 def test_parse_route(raw_response, expected):
@@ -36,9 +36,9 @@ def test_parse_route(raw_response, expected):
     [
         ("Where is order 1001?", "ORDER", "order"),
         ("I want a refund for order 1004", "REFUND", "refund"),
-        ("Has my payment gone through?", "PAYMENT", "payment"),
+        ("Has payment for order 1003 gone through?", "PAYMENT", "payment"),
         ("What's your return policy?", "FAQ", "faq"),
-        ("asdkjhasd nonsense", "ESCALATE", "escalate"),
+        ("我要投诉", "ESCALATE", "escalate"),
     ],
 )
 def test_orchestrator_routes_to_correct_agent(monkeypatch, user_message, fake_route, expected_agent):

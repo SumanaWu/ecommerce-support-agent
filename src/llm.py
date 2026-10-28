@@ -1,9 +1,12 @@
+import json
 import os
 
 from dotenv import load_dotenv
 from urllib.parse import urlsplit
 from src.errors import ModelConfigurationError, classify_error
 from src.runtime_context import active_mode
+from src.budget import check_execution_budget
+from src.runtime_context import record_event
 
 load_dotenv()
 
@@ -36,30 +39,38 @@ class RotatingChatModel:
     """Wraps multiple chat model clients (across API keys and/or providers)
     and rotates to the next one when the current one hits a quota/rate-limit error."""
 
-    def __init__(self, models: list, state: dict):
+    _counts_attempts = True
+
+    def __init__(self, models: list, state: dict, labels=None):
         self._models = models
         self._state = state
+        self._labels = labels or ['configured-model'] * len(models)
 
     def bind_tools(self, tools):
-        return RotatingChatModel([m.bind_tools(tools) for m in self._models], state=self._state)
+        return RotatingChatModel([m.bind_tools(tools) for m in self._models], state=self._state, labels=self._labels)
 
     def invoke(self, messages):
         n = len(self._models)
+        start = self._state['index']
         last_exc: Exception | None = None
         for offset in range(n):
-            idx = (self._state["index"] + offset) % n
+            idx = (start + offset) % n
+            remaining = check_execution_budget('model', consume=True)
+            record_event('model_call_started', model=self._labels[idx], pool_offset=offset, simulated=False)
             try:
-                result = self._models[idx].invoke(messages)
+                options = {'timeout': min(60, remaining)} if remaining is not None else {}
+                result = self._models[idx].invoke(messages, **options)
                 self._state["index"] = idx
                 return result
             except Exception as exc:  # noqa: BLE001 - re-raised below if not a quota error
                 last_exc = exc
+                record_event('model_attempt_failed', model=self._labels[idx], error_type=classify_error(exc), exception_type=type(exc).__name__)
                 if not _is_quota_error(exc):
                     raise
         raise last_exc
 
 
-def get_llm(model: str | None = None, temperature: float = 0.0) -> RotatingChatModel:
+def create_chat_model(model: str | None = None, temperature: float = 0.0):
     if active_mode.get() == "demo":
         from src.demo_model import DemoChatModel
         return DemoChatModel()
@@ -67,8 +78,35 @@ def get_llm(model: str | None = None, temperature: float = 0.0) -> RotatingChatM
     provider = os.environ.get('LLM_PROVIDER', 'auto').strip().lower()
     if provider not in {'auto', 'zhipu', 'gemini', 'groq'}:
         raise ModelConfigurationError('LLM_PROVIDER 必须为 auto、zhipu、gemini 或 groq。')
-    zhipu_key = os.environ.get("ZHIPU_API_KEY", '').strip()
-    if provider == 'zhipu' or (provider == 'auto' and zhipu_key):
+    if provider == 'auto':
+        provider = ('zhipu' if os.environ.get('ZHIPU_API_KEY', '').strip() else
+                    'gemini' if _load_gemini_keys() else 'groq')
+    try:
+        fallbacks = json.loads(os.environ.get('LLM_FALLBACKS') or '[]')
+        if not isinstance(fallbacks, list) or len(fallbacks) > 8 or any(
+                not isinstance(item, dict) or set(item) != {'provider', 'model'} or
+                item['provider'] not in {'zhipu', 'gemini', 'groq'} or
+                not isinstance(item['model'], str) or not item['model'].strip() for item in fallbacks):
+            raise ValueError()
+    except (ValueError, TypeError):
+        raise ModelConfigurationError('LLM_FALLBACKS 应为最多八项的 provider/model JSON 列表；密钥仍从各服务环境变量读取。') from None
+    specs = [{'provider': provider, 'model': model}, *fallbacks]
+    models, labels = [], []
+    for spec in specs:
+        for client in _provider_clients(spec['provider'], spec['model'], temperature):
+            models.append(client)
+            labels.append(spec['provider'] + ':' + str(spec['model'] or _default_model(spec['provider'])))
+    return RotatingChatModel(models, state=_rotation_state, labels=labels)
+
+
+def _default_model(provider):
+    return os.environ.get({'zhipu': 'ZHIPU_MODEL', 'gemini': 'GEMINI_MODEL', 'groq': 'GROQ_MODEL'}[provider]) or {
+        'zhipu': 'glm-4.7-flash', 'gemini': DEFAULT_MODEL, 'groq': GROQ_MODEL}[provider]
+
+
+def _provider_clients(provider, model, temperature):
+    if provider == 'zhipu':
+        zhipu_key = os.environ.get('ZHIPU_API_KEY', '').strip()
         if not zhipu_key:
             raise ModelConfigurationError('请配置 ZHIPU_API_KEY。')
         from langchain_openai import ChatOpenAI
@@ -78,7 +116,7 @@ def get_llm(model: str | None = None, temperature: float = 0.0) -> RotatingChatM
         if parsed.scheme not in {'http', 'https'} or not parsed.hostname or parsed.query or parsed.fragment or parsed.path.rstrip('/').endswith('/chat/completions'):
             raise ModelConfigurationError('ZHIPU_BASE_URL 应为基础 URL，不能附加 chat/completions。')
         zhipu_model = ChatOpenAI(
-            model=model or os.environ.get("ZHIPU_MODEL", "glm-4.7-flash"),
+            model=model or _default_model(provider),
             api_key=zhipu_key,
             base_url=base_url,
             temperature=1.0,
@@ -88,27 +126,33 @@ def get_llm(model: str | None = None, temperature: float = 0.0) -> RotatingChatM
             disabled_params={'parallel_tool_calls': None},
             extra_body={"thinking": {"type": "disabled"}},
         )
-        return RotatingChatModel([zhipu_model], state=_rotation_state)
+        return [zhipu_model]
 
-    model_name = model or DEFAULT_MODEL
-    models = []
-    if provider in {'auto', 'gemini'}:
+    model_name = model or _default_model(provider)
+    if provider == 'gemini':
         from langchain_google_genai import ChatGoogleGenerativeAI
         models = [
-            ChatGoogleGenerativeAI(model=model_name, google_api_key=key, temperature=temperature, max_retries=0)
+            ChatGoogleGenerativeAI(model=model_name, google_api_key=key, temperature=temperature, max_retries=0, timeout=60)
             for key in _load_gemini_keys()
         ]
 
+    else:
+        models = []
     groq_key = os.environ.get("GROQ_API_KEY")
-    if groq_key and provider in {'auto', 'groq'}:
+    if groq_key and provider == 'groq':
         from langchain_groq import ChatGroq
 
-        models.append(ChatGroq(model=GROQ_MODEL, api_key=groq_key, temperature=temperature, max_retries=0))
+        models.append(ChatGroq(model=model_name, api_key=groq_key, temperature=temperature, max_retries=0, timeout=60))
 
     if not models:
         raise ModelConfigurationError("所选服务未配置 Key。请检查 LLM_PROVIDER 和 ZHIPU_API_KEY、GEMINI_API_KEY 或 GROQ_API_KEY。")
 
-    return RotatingChatModel(models, state=_rotation_state)
+    return models
+
+
+def get_llm(model: str | None = None, temperature: float = 0.0):
+    """Compatibility entrypoint; construction and explicit fallback selection live above."""
+    return create_chat_model(model, temperature)
 
 
 def extract_usage(ai_message) -> dict:

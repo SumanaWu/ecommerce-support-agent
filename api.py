@@ -10,8 +10,10 @@ from src.auth import AccessError, resolve_principal
 from src.service import SupportService
 from src.orchestrator import run_orchestrator
 from src.requests import RequestConflict
+from src.storage import ProfileConflict, SessionConflict
+from src import tools
 
-app = FastAPI(title='电商订单与售后助手 API', version='1.3.0')
+app = FastAPI(title='电商订单与售后助手 API', version='1.6.0')
 service = SupportService()
 bearer = HTTPBearer(auto_error=False)
 
@@ -39,12 +41,32 @@ class ActionDecision(BaseModel):
     model_config = ConfigDict(extra='forbid')
 
 
+class SessionEdit(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    session_id: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
+    mode: Literal['demo', 'online'] = 'demo'
+    expected_version: int = Field(ge=0, strict=True)
+
+
+class OrderSelection(SessionEdit):
+    order_id: int | None = Field(default=None, gt=0, strict=True)
+
+
+class ProfileVersion(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    expected_version: int = Field(ge=0, strict=True)
+
+
+class ProfileUpdate(ProfileVersion):
+    fields: dict[str, str] = Field(min_length=1, max_length=2)
+
+
 def response_for(fn):
     try:
         result = fn()
     except AccessError as exc:
         raise HTTPException(status_code=exc.status_code, detail=str(exc)) from None
-    except RequestConflict as exc:
+    except (RequestConflict, SessionConflict, ProfileConflict) as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from None
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from None
@@ -59,6 +81,11 @@ def response_for(fn):
 @app.get('/health')
 def health():
     return {'status': 'ok'}
+
+
+@app.get('/policies/search')
+def policies(question: str = Query(min_length=1, max_length=2000), principal=Depends(current_principal)):
+    return response_for(lambda: tools.answer_faq(question))
 
 
 @app.post('/chat', responses={202: {'description': '同一请求处理中'}, 409: {'description': '请求编号与内容冲突'}})
@@ -104,3 +131,34 @@ def run(run_id: str, principal=Depends(current_principal)):
 @app.post('/runs/{run_id}/resume')
 def resume(run_id: str, body: ActionDecision | None = None, principal=Depends(current_principal)):
     return response_for(lambda: service.resume_run(principal, run_id))
+
+
+@app.get('/memory/session')
+def memory_session(session_id: str = Query(default='case_1', pattern=r'^[A-Za-z0-9_-]{1,40}$'),
+                   mode: Literal['demo', 'online'] = 'demo', principal=Depends(current_principal)):
+    return response_for(lambda: service.snapshot(principal, session_id, mode))
+
+
+@app.patch('/memory/session/order')
+def select_order(body: OrderSelection, principal=Depends(current_principal)):
+    return response_for(lambda: service.set_active_order(principal, body.session_id, body.mode, body.order_id, body.expected_version))
+
+
+@app.delete('/memory/session/history')
+def clear_history(body: SessionEdit, principal=Depends(current_principal)):
+    return response_for(lambda: service.clear_history(principal, body.session_id, body.mode, body.expected_version))
+
+
+@app.get('/profile')
+def profile(principal=Depends(current_principal)):
+    return response_for(lambda: service.profile_details(principal))
+
+
+@app.patch('/profile')
+def update_profile(body: ProfileUpdate, principal=Depends(current_principal)):
+    return response_for(lambda: service.update_profile(principal, body.fields, body.expected_version, source='user_api'))
+
+
+@app.delete('/profile/{field}')
+def delete_profile_field(field: str, body: ProfileVersion, principal=Depends(current_principal)):
+    return response_for(lambda: service.delete_profile_field(principal, field, body.expected_version, source='user_api'))
