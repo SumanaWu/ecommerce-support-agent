@@ -13,7 +13,7 @@ from sqlalchemy import case, func, select
 from src.backend.db import PolicyChunk, PolicyDocument, PROJECT_ROOT
 
 DEFAULT_POLICY_DIR = PROJECT_ROOT / 'policies'
-NO_EVIDENCE = '当前已生效的本地政策资料没有足够依据回答这个问题。请补充问题或导入对应政策；不会编造条款或来源。'
+NO_EVIDENCE = '当前已生效的政策资料没有足够依据回答这个问题，请补充具体问题。'
 _cache = OrderedDict()
 _cache_lock = RLock()
 
@@ -145,7 +145,7 @@ def answer_with_sources(question, session_factory, *, as_of=None):
     result = search_policy(question, session_factory, as_of=as_of)
     if not result['found']:
         return {**result, 'answer': NO_EVIDENCE}
-    parts = ['以下是本地样例政策的原文片段，不代表真实商家的承诺；具体办理仍需业务工具检查：']
+    parts = ['相关政策如下：']
     for index, source in enumerate(result['sources'], 1):
         parts.append(f"[{index}] {source['excerpt']}\n来源：{source['source']} · {source['section']} · 版本 {source['version']} · 生效 {source['effective_from']}")
     return {**result, 'answer': '\n\n'.join(parts)}

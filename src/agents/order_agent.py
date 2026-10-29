@@ -22,7 +22,25 @@ def track_shipment(order_id: int) -> dict:
     return backend_tools.track_shipment(order_id)
 
 
-ORDER_TOOLS = [get_order_status, get_order_details, track_shipment]
+@tool
+def get_order_status_batch(order_ids: list[int]) -> dict:
+    """Read current status for up to 20 specified orders. Inaccessible and missing orders have the same result."""
+    return backend_tools.get_order_status_batch(order_ids)
+
+
+@tool
+def get_order_details_batch(order_ids: list[int]) -> dict:
+    """Read details for up to 20 specified orders. Inaccessible and missing orders have the same result."""
+    return backend_tools.get_order_details_batch(order_ids)
+
+
+@tool
+def track_shipments_batch(order_ids: list[int]) -> dict:
+    """Read shipment tracking for up to 20 specified orders. Inaccessible and missing orders have the same result."""
+    return backend_tools.track_shipments_batch(order_ids)
+
+
+ORDER_TOOLS = [get_order_status, get_order_details, track_shipment, get_order_status_batch, get_order_details_batch, track_shipments_batch]
 
 SYSTEM_PROMPT = (
     "You are the Order Agent for an e-commerce support system. "

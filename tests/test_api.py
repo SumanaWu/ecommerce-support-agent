@@ -6,7 +6,16 @@ from src.service import SupportService
 
 @pytest.fixture(autouse=True)
 def isolated_sessions(monkeypatch, tmp_path):
+    from src import tools
+    from src.backend.db import get_engine, get_session_factory
+    from src.backend.seed import seed
+    engine = get_engine('sqlite:///' + str(tmp_path / 'business.sqlite'))
+    tools.configure_db(engine)
+    with get_session_factory(engine)() as db:
+        seed(db)
     monkeypatch.setattr(api, "service", SupportService(tmp_path / "memory.sqlite"))
+    yield
+    engine.dispose()
 
 client = TestClient(api.app, headers={'Authorization':'Bearer test-token-a'})
 
@@ -39,7 +48,7 @@ def test_chat_returns_agent_reply_and_trace(monkeypatch):
 
     assert response.status_code == 200
     body = response.json()
-    assert body["reply"] == "Your order 1001 has been delivered."
+    assert body["reply"] == "订单 1001：订单状态为已送达。"
     assert body["agent"] == "order"
     assert body["trace"][0]["tool"] == "get_order_status"
     assert body["usage"]["total_tokens"] == 15

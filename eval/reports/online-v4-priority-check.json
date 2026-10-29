@@ -1,0 +1,3644 @@
+{
+  "evaluation": "online_model",
+  "data_isolation": "temporary_databases",
+  "dataset": "/tmp/support-v4-priority-cases.json",
+  "dataset_cases": 5,
+  "requested_limit": 5,
+  "repetitions": 1,
+  "actual_cases": 5,
+  "actual_turns": 31,
+  "provider": "zhipu",
+  "model": "glm-4-flash-250414",
+  "pipeline_version": "online-v4",
+  "implementation_sha256": "4364943175e7a571f5c1746cd7c07542d6e1e6d6df98017746f7bd94150ea98c",
+  "context_budget_tokens": 12000,
+  "cases": [
+    {
+      "id": "ordinal_wording_variants",
+      "tags": [
+        "wording_variant",
+        "pending"
+      ],
+      "turns": [
+        {
+          "message": "帮我看看1006以及1001的订单详情，按这个顺序",
+          "expected": {
+            "kind": "tasks",
+            "status": "completed",
+            "tasks": [
+              {
+                "operation": "order_details",
+                "order_ids": [
+                  1006,
+                  1001
+                ],
+                "expert": "ORDER",
+                "intent": "read",
+                "answer_mode": "result"
+              }
+            ],
+            "pending_orders": [],
+            "facts": [
+              {
+                "tool": "get_order_details",
+                "order_id": 1006
+              },
+              {
+                "tool": "get_order_details",
+                "order_id": 1001
+              }
+            ]
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "| 订单 | 订单状态 | 金额 | 商品 | 下单日期 | 收件人 |\n| --- | --- | --- | --- | --- | --- |\n| 1006 | 已送达 | 59.99 CNY | Bluetooth Speaker | 2026-06-05 | Farid Haidari |\n| 1001 | 已送达 | 79.99 CNY | Wireless Headphones | 2026-06-01 | Alice Chen |",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "order_details",
+                "context_use": "none",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "list",
+                  "group_id": null,
+                  "positions": [],
+                  "ids": [
+                    1006,
+                    1001
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "按1006、1001顺序查询详情",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "ORDER",
+                "intent": "read"
+              }
+            ],
+            "mentioned_order_ids": [],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 5407,
+            "output_tokens": 221,
+            "total_tokens": 5628
+          },
+          "model_diagnostics": [],
+          "trace": [
+            {
+              "agent": "order",
+              "tool": "get_order_details_batch",
+              "args": {
+                "order_ids": [
+                  1006,
+                  1001
+                ]
+              },
+              "result": {
+                "items": [
+                  {
+                    "order_id": 1006,
+                    "result": {
+                      "order_id": 1006,
+                      "customer_name": "Farid Haidari",
+                      "item": "Bluetooth Speaker",
+                      "status": "delivered",
+                      "order_date": "2026-06-05",
+                      "amount_minor": 5999,
+                      "currency": "CNY",
+                      "amount_display": "59.99",
+                      "amount": 59.99
+                    }
+                  },
+                  {
+                    "order_id": 1001,
+                    "result": {
+                      "order_id": 1001,
+                      "customer_name": "Alice Chen",
+                      "item": "Wireless Headphones",
+                      "status": "delivered",
+                      "order_date": "2026-06-01",
+                      "amount_minor": 7999,
+                      "currency": "CNY",
+                      "amount_display": "79.99",
+                      "amount": 79.99
+                    }
+                  }
+                ]
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 7.397,
+          "execution_budget": {
+            "model_calls": 3,
+            "tool_calls": 1,
+            "real_model_calls": 3,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 7.389,
+            "remaining_seconds": 112.611
+          }
+        },
+        {
+          "message": "替那单办下退款",
+          "expected": {
+            "kind": "clarify",
+            "status": "needs_clarification",
+            "tasks": [],
+            "pending_orders": [],
+            "missing_fields": [
+              "orders"
+            ],
+            "pending_operation": "propose_refund"
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "needs_clarification",
+          "reply": "要给1006还是1001申请退款？",
+          "understanding": {
+            "kind": "clarify",
+            "continues_pending": false,
+            "message": "要给1006还是1001申请退款？",
+            "tasks": [],
+            "mentioned_order_ids": [
+              1006,
+              1001
+            ],
+            "missing_fields": [
+              "orders"
+            ],
+            "pending_operation": "propose_refund"
+          },
+          "error_type": null,
+          "stop_reason": "needs_clarification",
+          "usage": {
+            "input_tokens": 6059,
+            "output_tokens": 130,
+            "total_tokens": 6189
+          },
+          "model_diagnostics": [
+            {
+              "stage": "reference_check",
+              "attempt": 1,
+              "reason": "ambiguous_reference",
+              "context_info": {
+                "budget_tokens": 12000,
+                "is_estimate": true,
+                "estimator": "utf8_bytes_div3",
+                "estimated_input_tokens": 2116,
+                "removed_turns": 0,
+                "history_turns": 1,
+                "history_format": "conversation_facts",
+                "removed_facts": 0,
+                "fact_count": 0,
+                "tool_results_truncated": false
+              },
+              "selections": [
+                {
+                  "task_id": "task_1",
+                  "orders": null,
+                  "message": "要给1006还是1001申请退款？",
+                  "status": "ambiguous"
+                }
+              ]
+            }
+          ],
+          "trace": [],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 5.751,
+          "execution_budget": {
+            "model_calls": 2,
+            "tool_calls": 0,
+            "real_model_calls": 2,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 5.743,
+            "remaining_seconds": 114.257
+          }
+        },
+        {
+          "message": "谢谢",
+          "expected": {
+            "kind": "reply",
+            "status": "completed",
+            "tasks": [],
+            "pending_orders": []
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "谢谢！有什么可以帮您的吗？",
+          "understanding": {
+            "kind": "reply",
+            "continues_pending": true,
+            "message": "谢谢！有什么可以帮您的吗？",
+            "tasks": [],
+            "mentioned_order_ids": [],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 4567,
+            "output_tokens": 47,
+            "total_tokens": 4614
+          },
+          "model_diagnostics": [],
+          "trace": [],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 2.405,
+          "execution_budget": {
+            "model_calls": 1,
+            "tool_calls": 0,
+            "real_model_calls": 1,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 2.396,
+            "remaining_seconds": 117.604
+          }
+        },
+        {
+          "message": "替那单办下退款",
+          "expected": {
+            "kind": "clarify",
+            "status": "needs_clarification",
+            "tasks": [],
+            "pending_orders": [],
+            "missing_fields": [
+              "orders"
+            ],
+            "pending_operation": "propose_refund"
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "needs_clarification",
+          "reply": "要给1006还是1001申请退款？",
+          "understanding": {
+            "kind": "clarify",
+            "continues_pending": true,
+            "message": "要给1006还是1001申请退款？",
+            "tasks": [],
+            "mentioned_order_ids": [
+              1006,
+              1001
+            ],
+            "missing_fields": [
+              "orders"
+            ],
+            "pending_operation": "propose_refund"
+          },
+          "error_type": null,
+          "stop_reason": "needs_clarification",
+          "usage": {
+            "input_tokens": 6417,
+            "output_tokens": 123,
+            "total_tokens": 6540
+          },
+          "model_diagnostics": [
+            {
+              "stage": "reference_check",
+              "attempt": 1,
+              "reason": "ambiguous_reference",
+              "context_info": {
+                "budget_tokens": 12000,
+                "is_estimate": true,
+                "estimator": "utf8_bytes_div3",
+                "estimated_input_tokens": 2307,
+                "removed_turns": 0,
+                "history_turns": 3,
+                "history_format": "conversation_facts",
+                "removed_facts": 0,
+                "fact_count": 0,
+                "tool_results_truncated": false
+              },
+              "selections": [
+                {
+                  "task_id": "task_1",
+                  "orders": null,
+                  "message": "要给1006还是1001申请退款？",
+                  "status": "ambiguous"
+                }
+              ]
+            }
+          ],
+          "trace": [],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 5.185,
+          "execution_budget": {
+            "model_calls": 2,
+            "tool_calls": 0,
+            "real_model_calls": 2,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 5.176,
+            "remaining_seconds": 114.824
+          }
+        },
+        {
+          "message": "前面列出的最后一单吧，个人不需要了",
+          "expected": {
+            "kind": "tasks",
+            "status": "pending_confirmation",
+            "tasks": [
+              {
+                "operation": "propose_refund",
+                "order_ids": [
+                  1001
+                ],
+                "expert": "REFUND",
+                "intent": "propose",
+                "answer_mode": "result"
+              }
+            ],
+            "pending_orders": [
+              1001
+            ],
+            "action_args": {
+              "1001": {
+                "reason": "个人不需要了"
+              }
+            }
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "pending_confirmation",
+          "reply": "订单 1001：退款申请待确认，金额 79.99 CNY。请检查后点击确认；当前尚未办理。",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "propose_refund",
+                "context_use": "order",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "reference",
+                  "group_id": "list_1",
+                  "positions": [
+                    2
+                  ],
+                  "ids": [
+                    1001
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "申请1001退款，原因个人不需要了",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "REFUND",
+                "intent": "propose"
+              }
+            ],
+            "mentioned_order_ids": [],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 12091,
+            "output_tokens": 314,
+            "total_tokens": 12405
+          },
+          "model_diagnostics": [
+            {
+              "stage": "reference_check",
+              "attempt": 1,
+              "reason": "checked",
+              "context_info": {
+                "budget_tokens": 12000,
+                "is_estimate": true,
+                "estimator": "utf8_bytes_div3",
+                "estimated_input_tokens": 2391,
+                "removed_turns": 0,
+                "history_turns": 4,
+                "history_format": "conversation_facts",
+                "removed_facts": 0,
+                "fact_count": 0,
+                "tool_results_truncated": false
+              },
+              "selections": [
+                {
+                  "task_id": "task_1",
+                  "orders": {
+                    "kind": "reference",
+                    "group_id": "list_1",
+                    "positions": [
+                      2
+                    ],
+                    "ids": [
+                      1001
+                    ],
+                    "start": null,
+                    "end": null
+                  },
+                  "message": "客户明确选择原列表第二个位置。",
+                  "status": "unique"
+                }
+              ]
+            },
+            {
+              "stage": "propose",
+              "attempt": 1,
+              "reason": "missing_tool_call",
+              "context_info": {
+                "budget_tokens": 12000,
+                "is_estimate": true,
+                "estimator": "utf8_bytes_div3",
+                "estimated_input_tokens": 1797,
+                "removed_turns": 0,
+                "tool_results_truncated": false
+              },
+              "finish_reason": "stop"
+            }
+          ],
+          "trace": [
+            {
+              "agent": "refund",
+              "tool": "check_refund_eligibility",
+              "args": {
+                "order_id": 1001
+              },
+              "result": {
+                "order_id": 1001,
+                "order_status": "delivered",
+                "rule_version": "local-refund-v1",
+                "checks": {
+                  "delivered": true,
+                  "no_existing_refund": true
+                },
+                "eligible": true,
+                "reason_code": "eligible",
+                "reason": "Order is delivered and has no existing refund."
+              },
+              "task_id": "task_1"
+            },
+            {
+              "agent": "refund",
+              "tool": "initiate_refund",
+              "args": {
+                "order_id": 1001,
+                "reason": "个人不需要了"
+              },
+              "result": {
+                "order_id": 1001,
+                "action_id": "28b633b2f29c5516aa97735411d8faae",
+                "status": "pending_confirmation",
+                "requires_confirmation": true,
+                "message": "已生成待确认动作；请检查订单和金额后点击确认，尚未办理。"
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 12.007,
+          "execution_budget": {
+            "model_calls": 6,
+            "tool_calls": 2,
+            "real_model_calls": 6,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 11.996,
+            "remaining_seconds": 108.004
+          }
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "user_ambiguous_repeat_and_cancel",
+      "tags": [
+        "user_full_conversation",
+        "reference_check",
+        "cancel_reapply"
+      ],
+      "turns": [
+        {
+          "message": "查询1001和1006的详情",
+          "expected": {
+            "kind": "tasks",
+            "status": "completed",
+            "tasks": [
+              {
+                "operation": "order_details",
+                "order_ids": [
+                  1001,
+                  1006
+                ],
+                "expert": "ORDER",
+                "intent": "read",
+                "answer_mode": "result"
+              }
+            ],
+            "pending_orders": [],
+            "facts": [
+              {
+                "tool": "get_order_details",
+                "order_id": 1001
+              },
+              {
+                "tool": "get_order_details",
+                "order_id": 1006
+              }
+            ]
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "| 订单 | 订单状态 | 金额 | 商品 | 下单日期 | 收件人 |\n| --- | --- | --- | --- | --- | --- |\n| 1001 | 已送达 | 79.99 CNY | Wireless Headphones | 2026-06-01 | Alice Chen |\n| 1006 | 已送达 | 59.99 CNY | Bluetooth Speaker | 2026-06-05 | Farid Haidari |",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "order_details",
+                "context_use": "none",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "list",
+                  "group_id": null,
+                  "positions": [],
+                  "ids": [
+                    1001,
+                    1006
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "查询订单1001和1006的详情",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "ORDER",
+                "intent": "read"
+              }
+            ],
+            "mentioned_order_ids": [],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 5389,
+            "output_tokens": 219,
+            "total_tokens": 5608
+          },
+          "model_diagnostics": [],
+          "trace": [
+            {
+              "agent": "order",
+              "tool": "get_order_details_batch",
+              "args": {
+                "order_ids": [
+                  1001,
+                  1006
+                ]
+              },
+              "result": {
+                "items": [
+                  {
+                    "order_id": 1001,
+                    "result": {
+                      "order_id": 1001,
+                      "customer_name": "Alice Chen",
+                      "item": "Wireless Headphones",
+                      "status": "delivered",
+                      "order_date": "2026-06-01",
+                      "amount_minor": 7999,
+                      "currency": "CNY",
+                      "amount_display": "79.99",
+                      "amount": 79.99
+                    }
+                  },
+                  {
+                    "order_id": 1006,
+                    "result": {
+                      "order_id": 1006,
+                      "customer_name": "Farid Haidari",
+                      "item": "Bluetooth Speaker",
+                      "status": "delivered",
+                      "order_date": "2026-06-05",
+                      "amount_minor": 5999,
+                      "currency": "CNY",
+                      "amount_display": "59.99",
+                      "amount": 59.99
+                    }
+                  }
+                ]
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 7.749,
+          "execution_budget": {
+            "model_calls": 3,
+            "tool_calls": 1,
+            "real_model_calls": 3,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 7.739,
+            "remaining_seconds": 112.261
+          }
+        },
+        {
+          "message": "给那笔申请退款",
+          "expected": {
+            "kind": "clarify",
+            "status": "needs_clarification",
+            "tasks": [],
+            "pending_orders": [],
+            "missing_fields": [
+              "orders"
+            ],
+            "pending_operation": "propose_refund"
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "needs_clarification",
+          "reply": "要给1001还是1006申请退款？",
+          "understanding": {
+            "kind": "clarify",
+            "continues_pending": false,
+            "message": "要给1001还是1006申请退款？",
+            "tasks": [],
+            "mentioned_order_ids": [
+              1001,
+              1006
+            ],
+            "missing_fields": [
+              "orders"
+            ],
+            "pending_operation": "propose_refund"
+          },
+          "error_type": null,
+          "stop_reason": "needs_clarification",
+          "usage": {
+            "input_tokens": 4438,
+            "output_tokens": 58,
+            "total_tokens": 4496
+          },
+          "model_diagnostics": [],
+          "trace": [],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 2.728,
+          "execution_budget": {
+            "model_calls": 1,
+            "tool_calls": 0,
+            "real_model_calls": 1,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 2.718,
+            "remaining_seconds": 117.282
+          }
+        },
+        {
+          "message": "你好",
+          "expected": {
+            "kind": "reply",
+            "status": "completed",
+            "tasks": [],
+            "pending_orders": []
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "你好！有什么可以帮您的吗？",
+          "understanding": {
+            "kind": "reply",
+            "continues_pending": true,
+            "message": "你好！有什么可以帮您的吗？",
+            "tasks": [],
+            "mentioned_order_ids": [],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 4557,
+            "output_tokens": 47,
+            "total_tokens": 4604
+          },
+          "model_diagnostics": [],
+          "trace": [],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 2.262,
+          "execution_budget": {
+            "model_calls": 1,
+            "tool_calls": 0,
+            "real_model_calls": 1,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 2.251,
+            "remaining_seconds": 117.749
+          }
+        },
+        {
+          "message": "给那笔申请退款",
+          "expected": {
+            "kind": "clarify",
+            "status": "needs_clarification",
+            "tasks": [],
+            "pending_orders": [],
+            "missing_fields": [
+              "orders"
+            ],
+            "pending_operation": "propose_refund"
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "needs_clarification",
+          "reply": "要给1001还是1006申请退款？",
+          "understanding": {
+            "kind": "clarify",
+            "continues_pending": false,
+            "message": "要给1001还是1006申请退款？",
+            "tasks": [],
+            "mentioned_order_ids": [
+              1001,
+              1006
+            ],
+            "missing_fields": [
+              "orders"
+            ],
+            "pending_operation": "propose_refund"
+          },
+          "error_type": null,
+          "stop_reason": "needs_clarification",
+          "usage": {
+            "input_tokens": 4617,
+            "output_tokens": 58,
+            "total_tokens": 4675
+          },
+          "model_diagnostics": [],
+          "trace": [],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 2.445,
+          "execution_budget": {
+            "model_calls": 1,
+            "tool_calls": 0,
+            "real_model_calls": 1,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 2.436,
+            "remaining_seconds": 117.564
+          }
+        },
+        {
+          "message": "第一笔，原因是个人不需要了",
+          "expected": {
+            "kind": "tasks",
+            "status": "pending_confirmation",
+            "tasks": [
+              {
+                "operation": "propose_refund",
+                "order_ids": [
+                  1001
+                ],
+                "expert": "REFUND",
+                "intent": "propose",
+                "answer_mode": "result"
+              }
+            ],
+            "pending_orders": [
+              1001
+            ],
+            "action_args": {
+              "1001": {
+                "reason": "个人不需要了"
+              }
+            }
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "pending_confirmation",
+          "reply": "订单 1001：退款申请待确认，金额 79.99 CNY。请检查后点击确认；当前尚未办理。",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "propose_refund",
+                "context_use": "order",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "reference",
+                  "group_id": "list_1",
+                  "positions": [
+                    1
+                  ],
+                  "ids": [
+                    1001
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "申请1001退款，原因个人不需要了",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "REFUND",
+                "intent": "propose"
+              }
+            ],
+            "mentioned_order_ids": [
+              1001,
+              1006
+            ],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 11986,
+            "output_tokens": 283,
+            "total_tokens": 12269
+          },
+          "model_diagnostics": [
+            {
+              "stage": "reference_check",
+              "attempt": 1,
+              "reason": "checked",
+              "context_info": {
+                "budget_tokens": 12000,
+                "is_estimate": true,
+                "estimator": "utf8_bytes_div3",
+                "estimated_input_tokens": 2367,
+                "removed_turns": 0,
+                "history_turns": 4,
+                "history_format": "conversation_facts",
+                "removed_facts": 0,
+                "fact_count": 0,
+                "tool_results_truncated": false
+              },
+              "selections": [
+                {
+                  "task_id": "task_1",
+                  "orders": {
+                    "kind": "reference",
+                    "group_id": "list_1",
+                    "positions": [
+                      1
+                    ],
+                    "ids": [
+                      1001
+                    ],
+                    "start": null,
+                    "end": null
+                  },
+                  "message": "客户明确选择原列表第一个位置。",
+                  "status": "unique"
+                }
+              ]
+            },
+            {
+              "stage": "propose",
+              "attempt": 1,
+              "reason": "missing_tool_call",
+              "context_info": {
+                "budget_tokens": 12000,
+                "is_estimate": true,
+                "estimator": "utf8_bytes_div3",
+                "estimated_input_tokens": 1782,
+                "removed_turns": 0,
+                "tool_results_truncated": false
+              },
+              "finish_reason": "stop"
+            }
+          ],
+          "trace": [
+            {
+              "agent": "refund",
+              "tool": "check_refund_eligibility",
+              "args": {
+                "order_id": 1001
+              },
+              "result": {
+                "order_id": 1001,
+                "order_status": "delivered",
+                "rule_version": "local-refund-v1",
+                "checks": {
+                  "delivered": true,
+                  "no_existing_refund": true
+                },
+                "eligible": true,
+                "reason_code": "eligible",
+                "reason": "Order is delivered and has no existing refund."
+              },
+              "task_id": "task_1"
+            },
+            {
+              "agent": "refund",
+              "tool": "initiate_refund",
+              "args": {
+                "order_id": 1001,
+                "reason": "个人不需要了"
+              },
+              "result": {
+                "order_id": 1001,
+                "action_id": "3bebd24b8877502b9f0e2798762100de",
+                "status": "pending_confirmation",
+                "requires_confirmation": true,
+                "message": "已生成待确认动作；请检查订单和金额后点击确认，尚未办理。"
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 10.734,
+          "execution_budget": {
+            "model_calls": 6,
+            "tool_calls": 2,
+            "real_model_calls": 6,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 10.725,
+            "remaining_seconds": 109.275
+          }
+        },
+        {
+          "message": "点击取消订单1001的提案",
+          "expected": {
+            "kind": "action",
+            "status": "cancelled",
+            "tasks": [],
+            "pending_orders": [],
+            "order_id": 1001
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "side_effects": true,
+            "answer_mode": true,
+            "action_parameters": true
+          },
+          "passed": true,
+          "status": "cancelled",
+          "reply": "订单 1001：操作已取消，未执行业务办理。",
+          "understanding": null,
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {},
+          "model_diagnostics": [],
+          "trace": [
+            {
+              "agent": "refund",
+              "tool": "cancel_action",
+              "args": {
+                "order_id": 1001,
+                "action_id": "3bebd24b8877502b9f0e2798762100de"
+              },
+              "result": {
+                "success": true,
+                "status": "cancelled",
+                "order_id": 1001,
+                "action_id": "3bebd24b8877502b9f0e2798762100de",
+                "message": "动作已取消，未执行业务操作。"
+              }
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "unknown_or_zero",
+          "elapsed_seconds": 0.017,
+          "execution_budget": {
+            "model_calls": 0,
+            "tool_calls": 1,
+            "real_model_calls": 0,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 0.011,
+            "remaining_seconds": 119.989
+          }
+        },
+        {
+          "message": "给第一笔退款，原因是个人不需要了",
+          "expected": {
+            "kind": "tasks",
+            "status": "pending_confirmation",
+            "tasks": [
+              {
+                "operation": "propose_refund",
+                "order_ids": [
+                  1001
+                ],
+                "expert": "REFUND",
+                "intent": "propose",
+                "answer_mode": "result"
+              }
+            ],
+            "pending_orders": [
+              1001
+            ],
+            "action_args": {
+              "1001": {
+                "reason": "个人不需要了"
+              }
+            }
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "pending_confirmation",
+          "reply": "订单 1001：退款申请待确认，金额 79.99 CNY。请检查后点击确认；当前尚未办理。",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "propose_refund",
+                "context_use": "order",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "reference",
+                  "group_id": "list_1",
+                  "positions": [
+                    1
+                  ],
+                  "ids": [
+                    1001
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "申请1001退款，原因个人不需要了",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "REFUND",
+                "intent": "propose"
+              }
+            ],
+            "mentioned_order_ids": [],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 13044,
+            "output_tokens": 266,
+            "total_tokens": 13310
+          },
+          "model_diagnostics": [
+            {
+              "stage": "reference_check",
+              "attempt": 1,
+              "reason": "checked",
+              "context_info": {
+                "budget_tokens": 12000,
+                "is_estimate": true,
+                "estimator": "utf8_bytes_div3",
+                "estimated_input_tokens": 2509,
+                "removed_turns": 0,
+                "history_turns": 5,
+                "history_format": "conversation_facts",
+                "removed_facts": 0,
+                "fact_count": 0,
+                "tool_results_truncated": false
+              },
+              "selections": [
+                {
+                  "task_id": "task_1",
+                  "orders": {
+                    "kind": "reference",
+                    "group_id": "list_1",
+                    "positions": [
+                      1
+                    ],
+                    "ids": [
+                      1001
+                    ],
+                    "start": null,
+                    "end": null
+                  },
+                  "message": "客户明确选择原列表第一个位置。",
+                  "status": "unique"
+                }
+              ]
+            },
+            {
+              "stage": "propose",
+              "attempt": 1,
+              "reason": "missing_tool_call",
+              "context_info": {
+                "budget_tokens": 12000,
+                "is_estimate": true,
+                "estimator": "utf8_bytes_div3",
+                "estimated_input_tokens": 1929,
+                "removed_turns": 0,
+                "tool_results_truncated": false
+              },
+              "finish_reason": "stop"
+            }
+          ],
+          "trace": [
+            {
+              "agent": "refund",
+              "tool": "check_refund_eligibility",
+              "args": {
+                "order_id": 1001
+              },
+              "result": {
+                "order_id": 1001,
+                "order_status": "delivered",
+                "rule_version": "local-refund-v1",
+                "checks": {
+                  "delivered": true,
+                  "no_existing_refund": true
+                },
+                "eligible": true,
+                "reason_code": "eligible",
+                "reason": "Order is delivered and has no existing refund."
+              },
+              "task_id": "task_1"
+            },
+            {
+              "agent": "refund",
+              "tool": "initiate_refund",
+              "args": {
+                "order_id": 1001,
+                "reason": "个人不需要了"
+              },
+              "result": {
+                "order_id": 1001,
+                "action_id": "8ecf9ba90fbb5511aa069b63e0f13dad",
+                "status": "pending_confirmation",
+                "requires_confirmation": true,
+                "message": "已生成待确认动作；请检查订单和金额后点击确认，尚未办理。"
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 15.618,
+          "execution_budget": {
+            "model_calls": 6,
+            "tool_calls": 2,
+            "real_model_calls": 6,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 15.609,
+            "remaining_seconds": 104.391
+          }
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "user_full_repeated_queries",
+      "tags": [
+        "user_full_conversation",
+        "multi_agent",
+        "context_switch",
+        "repeated_read_requests"
+      ],
+      "turns": [
+        {
+          "message": "查询1001到1007的详情",
+          "expected": {
+            "kind": "tasks",
+            "status": "completed",
+            "tasks": [
+              {
+                "operation": "order_details",
+                "order_ids": [
+                  1001,
+                  1002,
+                  1003,
+                  1004,
+                  1005,
+                  1006,
+                  1007
+                ],
+                "expert": "ORDER",
+                "intent": "read",
+                "answer_mode": "result"
+              }
+            ],
+            "pending_orders": [],
+            "facts": [
+              {
+                "tool": "get_order_details",
+                "order_id": 1001
+              },
+              {
+                "tool": "get_order_details",
+                "order_id": 1002
+              },
+              {
+                "tool": "get_order_details",
+                "order_id": 1003
+              },
+              {
+                "tool": "get_order_details",
+                "order_id": 1004
+              },
+              {
+                "tool": "get_order_details",
+                "order_id": 1005
+              },
+              {
+                "tool": "get_order_details",
+                "order_id": 1006
+              },
+              {
+                "tool": "get_order_details",
+                "order_id": 1007
+              }
+            ]
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "| 订单 | 订单状态 | 金额 | 商品 | 下单日期 | 收件人 |\n| --- | --- | --- | --- | --- | --- |\n| 1001 | 已送达 | 79.99 CNY | Wireless Headphones | 2026-06-01 | Alice Chen |\n| 1002 | 运输中 | 129.00 CNY | Mechanical Keyboard | 2026-06-20 | Ben Torres |\n| 1003 | 已下单 | 34.50 CNY | USB-C Hub | 2026-06-28 | Carla Diaz |\n| 1004 | 已送达 | 349.00 CNY | Standing Desk | 2026-05-15 | Dev Patel |\n| 1005 | 已取消 | 24.99 CNY | Desk Lamp | 2026-06-10 | Elena Novak |\n| 1006 | 已送达 | 59.99 CNY | Bluetooth Speaker | 2026-06-05 | Farid Haidari |\n| 1007 | 运输中 | 42.00 CNY | Laptop Stand | 2026-06-25 | Grace Kim |",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "order_details",
+                "context_use": "none",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "range",
+                  "group_id": null,
+                  "positions": [],
+                  "ids": [],
+                  "start": 1001,
+                  "end": 1007
+                },
+                "instruction": "查询1001到1007的订单详情",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "ORDER",
+                "intent": "read"
+              }
+            ],
+            "mentioned_order_ids": [],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 5923,
+            "output_tokens": 405,
+            "total_tokens": 6328
+          },
+          "model_diagnostics": [],
+          "trace": [
+            {
+              "agent": "order",
+              "tool": "get_order_details_batch",
+              "args": {
+                "order_ids": [
+                  1001,
+                  1002,
+                  1003,
+                  1004,
+                  1005,
+                  1006,
+                  1007
+                ]
+              },
+              "result": {
+                "items": [
+                  {
+                    "order_id": 1001,
+                    "result": {
+                      "order_id": 1001,
+                      "customer_name": "Alice Chen",
+                      "item": "Wireless Headphones",
+                      "status": "delivered",
+                      "order_date": "2026-06-01",
+                      "amount_minor": 7999,
+                      "currency": "CNY",
+                      "amount_display": "79.99",
+                      "amount": 79.99
+                    }
+                  },
+                  {
+                    "order_id": 1002,
+                    "result": {
+                      "order_id": 1002,
+                      "customer_name": "Ben Torres",
+                      "item": "Mechanical Keyboard",
+                      "status": "shipped",
+                      "order_date": "2026-06-20",
+                      "amount_minor": 12900,
+                      "currency": "CNY",
+                      "amount_display": "129.00",
+                      "amount": 129.0
+                    }
+                  },
+                  {
+                    "order_id": 1003,
+                    "result": {
+                      "order_id": 1003,
+                      "customer_name": "Carla Diaz",
+                      "item": "USB-C Hub",
+                      "status": "placed",
+                      "order_date": "2026-06-28",
+                      "amount_minor": 3450,
+                      "currency": "CNY",
+                      "amount_display": "34.50",
+                      "amount": 34.5
+                    }
+                  },
+                  {
+                    "order_id": 1004,
+                    "result": {
+                      "order_id": 1004,
+                      "customer_name": "Dev Patel",
+                      "item": "Standing Desk",
+                      "status": "delivered",
+                      "order_date": "2026-05-15",
+                      "amount_minor": 34900,
+                      "currency": "CNY",
+                      "amount_display": "349.00",
+                      "amount": 349.0
+                    }
+                  },
+                  {
+                    "order_id": 1005,
+                    "result": {
+                      "order_id": 1005,
+                      "customer_name": "Elena Novak",
+                      "item": "Desk Lamp",
+                      "status": "cancelled",
+                      "order_date": "2026-06-10",
+                      "amount_minor": 2499,
+                      "currency": "CNY",
+                      "amount_display": "24.99",
+                      "amount": 24.99
+                    }
+                  },
+                  {
+                    "order_id": 1006,
+                    "result": {
+                      "order_id": 1006,
+                      "customer_name": "Farid Haidari",
+                      "item": "Bluetooth Speaker",
+                      "status": "delivered",
+                      "order_date": "2026-06-05",
+                      "amount_minor": 5999,
+                      "currency": "CNY",
+                      "amount_display": "59.99",
+                      "amount": 59.99
+                    }
+                  },
+                  {
+                    "order_id": 1007,
+                    "result": {
+                      "order_id": 1007,
+                      "customer_name": "Grace Kim",
+                      "item": "Laptop Stand",
+                      "status": "shipped",
+                      "order_date": "2026-06-25",
+                      "amount_minor": 4200,
+                      "currency": "CNY",
+                      "amount_display": "42.00",
+                      "amount": 42.0
+                    }
+                  }
+                ]
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 13.784,
+          "execution_budget": {
+            "model_calls": 3,
+            "tool_calls": 1,
+            "real_model_calls": 3,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 13.774,
+            "remaining_seconds": 106.226
+          }
+        },
+        {
+          "message": "1006付款了吗",
+          "expected": {
+            "kind": "tasks",
+            "status": "completed",
+            "tasks": [
+              {
+                "operation": "payment_status",
+                "order_ids": [
+                  1006
+                ],
+                "expert": "PAYMENT",
+                "intent": "read",
+                "answer_mode": "result"
+              }
+            ],
+            "pending_orders": [],
+            "facts": [
+              {
+                "tool": "get_payment_status",
+                "order_id": 1006
+              }
+            ]
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "订单 1006：当前已付款，金额 59.99 CNY，支付方式银行卡。",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "payment_status",
+                "context_use": "order",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "single",
+                  "group_id": null,
+                  "positions": [],
+                  "ids": [
+                    1006
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "查询订单1006的付款状态",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "PAYMENT",
+                "intent": "read"
+              }
+            ],
+            "mentioned_order_ids": [
+              1006
+            ],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 7686,
+            "output_tokens": 137,
+            "total_tokens": 7823
+          },
+          "model_diagnostics": [],
+          "trace": [
+            {
+              "agent": "payment",
+              "tool": "get_payment_status",
+              "args": {
+                "order_id": 1006
+              },
+              "result": {
+                "order_id": 1006,
+                "status": "paid",
+                "method": "card",
+                "amount_minor": 5999,
+                "currency": "CNY",
+                "amount_display": "59.99",
+                "amount": 59.99
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 5.549,
+          "execution_budget": {
+            "model_calls": 3,
+            "tool_calls": 1,
+            "real_model_calls": 3,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 5.539,
+            "remaining_seconds": 114.461
+          }
+        },
+        {
+          "message": "只查1007能不能退款，不要申请",
+          "expected": {
+            "kind": "tasks",
+            "status": "completed",
+            "tasks": [
+              {
+                "operation": "refund_eligibility",
+                "order_ids": [
+                  1007
+                ],
+                "expert": "REFUND",
+                "intent": "read",
+                "answer_mode": "result"
+              }
+            ],
+            "pending_orders": [],
+            "facts": [
+              {
+                "tool": "check_refund_eligibility",
+                "order_id": 1007
+              }
+            ]
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "订单 1007：暂不能申请退款：订单尚未送达。",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "refund_eligibility",
+                "context_use": "topic",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "single",
+                  "group_id": null,
+                  "positions": [],
+                  "ids": [
+                    1007
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "查询并返回1007的退款资格",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "REFUND",
+                "intent": "read"
+              }
+            ],
+            "mentioned_order_ids": [
+              1007
+            ],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 7840,
+            "output_tokens": 153,
+            "total_tokens": 7993
+          },
+          "model_diagnostics": [],
+          "trace": [
+            {
+              "agent": "refund",
+              "tool": "check_refund_eligibility",
+              "args": {
+                "order_id": 1007
+              },
+              "result": {
+                "order_id": 1007,
+                "order_status": "shipped",
+                "rule_version": "local-refund-v1",
+                "checks": {
+                  "delivered": false,
+                  "no_existing_refund": true
+                },
+                "eligible": false,
+                "reason_code": "not_delivered",
+                "reason": "Order status is 'shipped'; only delivered orders are refund-eligible."
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 6.674,
+          "execution_budget": {
+            "model_calls": 3,
+            "tool_calls": 1,
+            "real_model_calls": 3,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 6.666,
+            "remaining_seconds": 113.334
+          }
+        },
+        {
+          "message": "只查1007能不能退款，不要申请",
+          "expected": {
+            "kind": "tasks",
+            "status": "completed",
+            "tasks": [
+              {
+                "operation": "refund_eligibility",
+                "order_ids": [
+                  1007
+                ],
+                "expert": "REFUND",
+                "intent": "read",
+                "answer_mode": "result"
+              }
+            ],
+            "pending_orders": [],
+            "facts": [
+              {
+                "tool": "check_refund_eligibility",
+                "order_id": 1007
+              }
+            ]
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "订单 1007：暂不能申请退款：订单尚未送达。",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "refund_eligibility",
+                "context_use": "topic",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "single",
+                  "group_id": null,
+                  "positions": [],
+                  "ids": [
+                    1007
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "继续查询1007退款资格",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "REFUND",
+                "intent": "read"
+              }
+            ],
+            "mentioned_order_ids": [
+              1007
+            ],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 8461,
+            "output_tokens": 142,
+            "total_tokens": 8603
+          },
+          "model_diagnostics": [],
+          "trace": [
+            {
+              "agent": "refund",
+              "tool": "check_refund_eligibility",
+              "args": {
+                "order_id": 1007
+              },
+              "result": {
+                "order_id": 1007,
+                "order_status": "shipped",
+                "rule_version": "local-refund-v1",
+                "checks": {
+                  "delivered": false,
+                  "no_existing_refund": true
+                },
+                "eligible": false,
+                "reason_code": "not_delivered",
+                "reason": "Order status is 'shipped'; only delivered orders are refund-eligible."
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 5.694,
+          "execution_budget": {
+            "model_calls": 3,
+            "tool_calls": 1,
+            "real_model_calls": 3,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 5.683,
+            "remaining_seconds": 114.317
+          }
+        },
+        {
+          "message": "为什么",
+          "expected": {
+            "kind": "tasks",
+            "status": "completed",
+            "tasks": [
+              {
+                "operation": "refund_eligibility",
+                "order_ids": [
+                  1007
+                ],
+                "expert": "REFUND",
+                "intent": "read",
+                "answer_mode": "explain"
+              }
+            ],
+            "pending_orders": [],
+            "facts": [
+              {
+                "tool": "check_refund_eligibility",
+                "order_id": 1007
+              }
+            ]
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "订单 1007：当前订单状态为运输中。退款规则要求订单已送达且没有已有退款记录，因此暂不能申请退款。",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "refund_eligibility",
+                "context_use": "topic",
+                "answer_mode": "explain",
+                "orders": {
+                  "kind": "single",
+                  "group_id": null,
+                  "positions": [],
+                  "ids": [
+                    1007
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "查询并解释1007不能退款的原因",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "REFUND",
+                "intent": "read"
+              }
+            ],
+            "mentioned_order_ids": [
+              1007
+            ],
+            "missing_fields": [],
+            "pending_operation": "refund_eligibility"
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 9067,
+            "output_tokens": 162,
+            "total_tokens": 9229
+          },
+          "model_diagnostics": [],
+          "trace": [
+            {
+              "agent": "refund",
+              "tool": "check_refund_eligibility",
+              "args": {
+                "order_id": 1007
+              },
+              "result": {
+                "order_id": 1007,
+                "order_status": "shipped",
+                "rule_version": "local-refund-v1",
+                "checks": {
+                  "delivered": false,
+                  "no_existing_refund": true
+                },
+                "eligible": false,
+                "reason_code": "not_delivered",
+                "reason": "Order status is 'shipped'; only delivered orders are refund-eligible."
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 8.008,
+          "execution_budget": {
+            "model_calls": 3,
+            "tool_calls": 1,
+            "real_model_calls": 3,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 7.998,
+            "remaining_seconds": 112.002
+          }
+        },
+        {
+          "message": "查询1003付款状态",
+          "expected": {
+            "kind": "tasks",
+            "status": "completed",
+            "tasks": [
+              {
+                "operation": "payment_status",
+                "order_ids": [
+                  1003
+                ],
+                "expert": "PAYMENT",
+                "intent": "read",
+                "answer_mode": "result"
+              }
+            ],
+            "pending_orders": [],
+            "facts": [
+              {
+                "tool": "get_payment_status",
+                "order_id": 1003
+              }
+            ]
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "订单 1003：当前待付款，金额 34.50 CNY，支付方式银行卡。",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "payment_status",
+                "context_use": "order",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "single",
+                  "group_id": null,
+                  "positions": [],
+                  "ids": [
+                    1003
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "查询订单1003的付款状态",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "PAYMENT",
+                "intent": "read"
+              }
+            ],
+            "mentioned_order_ids": [
+              1003
+            ],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 8137,
+            "output_tokens": 136,
+            "total_tokens": 8273
+          },
+          "model_diagnostics": [],
+          "trace": [
+            {
+              "agent": "payment",
+              "tool": "get_payment_status",
+              "args": {
+                "order_id": 1003
+              },
+              "result": {
+                "order_id": 1003,
+                "status": "pending",
+                "method": "card",
+                "amount_minor": 3450,
+                "currency": "CNY",
+                "amount_display": "34.50",
+                "amount": 34.5
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 7.34,
+          "execution_budget": {
+            "model_calls": 3,
+            "tool_calls": 1,
+            "real_model_calls": 3,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 7.332,
+            "remaining_seconds": 112.668
+          }
+        },
+        {
+          "message": "查询1003付款状态",
+          "expected": {
+            "kind": "tasks",
+            "status": "completed",
+            "tasks": [
+              {
+                "operation": "payment_status",
+                "order_ids": [
+                  1003
+                ],
+                "expert": "PAYMENT",
+                "intent": "read",
+                "answer_mode": "result"
+              }
+            ],
+            "pending_orders": [],
+            "facts": [
+              {
+                "tool": "get_payment_status",
+                "order_id": 1003
+              }
+            ]
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "订单 1003：当前待付款，金额 34.50 CNY，支付方式银行卡。",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "payment_status",
+                "context_use": "order",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "single",
+                  "group_id": null,
+                  "positions": [],
+                  "ids": [
+                    1003
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "查询订单1003的付款状态",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "PAYMENT",
+                "intent": "read"
+              }
+            ],
+            "mentioned_order_ids": [],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 8622,
+            "output_tokens": 103,
+            "total_tokens": 8725
+          },
+          "model_diagnostics": [],
+          "trace": [
+            {
+              "agent": "payment",
+              "tool": "get_payment_status",
+              "args": {
+                "order_id": 1003
+              },
+              "result": {
+                "order_id": 1003,
+                "status": "pending",
+                "method": "card",
+                "amount_minor": 3450,
+                "currency": "CNY",
+                "amount_display": "34.50",
+                "amount": 34.5
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 5.54,
+          "execution_budget": {
+            "model_calls": 3,
+            "tool_calls": 1,
+            "real_model_calls": 3,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 5.532,
+            "remaining_seconds": 114.468
+          }
+        },
+        {
+          "message": "你好",
+          "expected": {
+            "kind": "reply",
+            "status": "completed",
+            "tasks": [],
+            "pending_orders": []
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "你好！有什么可以帮您的吗？",
+          "understanding": {
+            "kind": "reply",
+            "continues_pending": true,
+            "message": "你好！有什么可以帮您的吗？",
+            "tasks": [],
+            "mentioned_order_ids": [],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 5562,
+            "output_tokens": 47,
+            "total_tokens": 5609
+          },
+          "model_diagnostics": [],
+          "trace": [],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 2.653,
+          "execution_budget": {
+            "model_calls": 1,
+            "tool_calls": 0,
+            "real_model_calls": 1,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 2.644,
+            "remaining_seconds": 117.356
+          }
+        },
+        {
+          "message": "查1002物流，再申请1002退款，原因个人不需要了",
+          "expected": {
+            "kind": "tasks",
+            "status": "partial",
+            "tasks": [
+              {
+                "operation": "shipment",
+                "order_ids": [
+                  1002
+                ],
+                "expert": "ORDER",
+                "intent": "read",
+                "answer_mode": "result"
+              },
+              {
+                "operation": "propose_refund",
+                "order_ids": [
+                  1002
+                ],
+                "expert": "REFUND",
+                "intent": "propose",
+                "answer_mode": "result"
+              }
+            ],
+            "pending_orders": [],
+            "facts": [
+              {
+                "tool": "track_shipment",
+                "order_id": 1002
+              }
+            ]
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "partial",
+          "reply": "1. 物流查询\n\n订单 1002：物流状态为运输中。\n\n2. 退款申请\n\n订单 1002：暂不能申请退款：订单尚未送达。",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "shipment",
+                "context_use": "none",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "single",
+                  "group_id": null,
+                  "positions": [],
+                  "ids": [
+                    1002
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "查询订单1002物流",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "ORDER",
+                "intent": "read"
+              },
+              {
+                "task_id": "task_2",
+                "operation": "propose_refund",
+                "context_use": "none",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "single",
+                  "group_id": null,
+                  "positions": [],
+                  "ids": [
+                    1002
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "申请1002退款，原因个人不需要了",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "REFUND",
+                "intent": "propose"
+              }
+            ],
+            "mentioned_order_ids": [
+              1002
+            ],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "business_rejected",
+          "usage": {
+            "input_tokens": 8710,
+            "output_tokens": 240,
+            "total_tokens": 8950
+          },
+          "model_diagnostics": [],
+          "trace": [
+            {
+              "agent": "order",
+              "tool": "track_shipment",
+              "args": {
+                "order_id": 1002
+              },
+              "result": {
+                "order_id": 1002,
+                "status": "shipped",
+                "tracking_message": "In transit."
+              },
+              "task_id": "task_1"
+            },
+            {
+              "agent": "refund",
+              "tool": "check_refund_eligibility",
+              "args": {
+                "order_id": 1002
+              },
+              "result": {
+                "order_id": 1002,
+                "order_status": "shipped",
+                "rule_version": "local-refund-v1",
+                "checks": {
+                  "delivered": false,
+                  "no_existing_refund": true
+                },
+                "eligible": false,
+                "reason_code": "not_delivered",
+                "reason": "Order status is 'shipped'; only delivered orders are refund-eligible."
+              },
+              "task_id": "task_2"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 12.248,
+          "execution_budget": {
+            "model_calls": 5,
+            "tool_calls": 2,
+            "real_model_calls": 5,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 12.239,
+            "remaining_seconds": 107.761
+          }
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "mixed_context_switch",
+      "tags": [
+        "multi_turn",
+        "colloquial",
+        "context_switch"
+      ],
+      "turns": [
+        {
+          "message": "只查1007能不能退款，不要申请",
+          "expected": {
+            "kind": "tasks",
+            "status": "completed",
+            "tasks": [
+              {
+                "operation": "refund_eligibility",
+                "expert": "REFUND",
+                "intent": "read",
+                "order_ids": [
+                  1007
+                ],
+                "answer_mode": "result"
+              }
+            ],
+            "facts": [
+              {
+                "tool": "check_refund_eligibility",
+                "order_id": 1007,
+                "eligible": false
+              }
+            ],
+            "pending_orders": []
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "订单 1007：暂不能申请退款：订单尚未送达。",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "refund_eligibility",
+                "context_use": "order",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "single",
+                  "group_id": null,
+                  "positions": [],
+                  "ids": [
+                    1007
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "查询1007退款资格",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "REFUND",
+                "intent": "read"
+              }
+            ],
+            "mentioned_order_ids": [
+              1007
+            ],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 5265,
+            "output_tokens": 154,
+            "total_tokens": 5419
+          },
+          "model_diagnostics": [],
+          "trace": [
+            {
+              "agent": "refund",
+              "tool": "check_refund_eligibility",
+              "args": {
+                "order_id": 1007
+              },
+              "result": {
+                "order_id": 1007,
+                "order_status": "shipped",
+                "rule_version": "local-refund-v1",
+                "checks": {
+                  "delivered": false,
+                  "no_existing_refund": true
+                },
+                "eligible": false,
+                "reason_code": "not_delivered",
+                "reason": "Order status is 'shipped'; only delivered orders are refund-eligible."
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 6.291,
+          "execution_budget": {
+            "model_calls": 3,
+            "tool_calls": 1,
+            "real_model_calls": 3,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 6.285,
+            "remaining_seconds": 113.715
+          }
+        },
+        {
+          "message": "为什么",
+          "expected": {
+            "kind": "tasks",
+            "status": "completed",
+            "tasks": [
+              {
+                "operation": "refund_eligibility",
+                "expert": "REFUND",
+                "intent": "read",
+                "order_ids": [
+                  1007
+                ],
+                "answer_mode": "explain"
+              }
+            ],
+            "facts": [
+              {
+                "tool": "check_refund_eligibility",
+                "order_id": 1007,
+                "reason_code": "not_delivered"
+              }
+            ],
+            "pending_orders": []
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "订单 1007：当前订单状态为运输中。退款规则要求订单已送达且没有已有退款记录，因此暂不能申请退款。",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "refund_eligibility",
+                "context_use": "topic",
+                "answer_mode": "explain",
+                "orders": {
+                  "kind": "single",
+                  "group_id": null,
+                  "positions": [],
+                  "ids": [
+                    1007
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "查询并解释1007不能退款的原因",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "REFUND",
+                "intent": "read"
+              }
+            ],
+            "mentioned_order_ids": [
+              1007
+            ],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 6077,
+            "output_tokens": 147,
+            "total_tokens": 6224
+          },
+          "model_diagnostics": [],
+          "trace": [
+            {
+              "agent": "refund",
+              "tool": "check_refund_eligibility",
+              "args": {
+                "order_id": 1007
+              },
+              "result": {
+                "order_id": 1007,
+                "order_status": "shipped",
+                "rule_version": "local-refund-v1",
+                "checks": {
+                  "delivered": false,
+                  "no_existing_refund": true
+                },
+                "eligible": false,
+                "reason_code": "not_delivered",
+                "reason": "Order status is 'shipped'; only delivered orders are refund-eligible."
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 5.371,
+          "execution_budget": {
+            "model_calls": 3,
+            "tool_calls": 1,
+            "real_model_calls": 3,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 5.365,
+            "remaining_seconds": 114.635
+          }
+        },
+        {
+          "message": "查订单",
+          "expected": {
+            "kind": "clarify",
+            "status": "needs_clarification",
+            "tasks": [],
+            "facts": [],
+            "pending_orders": [],
+            "missing_fields": [
+              "orders"
+            ],
+            "pending_operation": "order_details"
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "needs_clarification",
+          "reply": "想查刚才的1007还是其他订单？请提供订单编号。",
+          "understanding": {
+            "kind": "clarify",
+            "continues_pending": false,
+            "message": "想查刚才的1007还是其他订单？请提供订单编号。",
+            "tasks": [],
+            "mentioned_order_ids": [
+              1007
+            ],
+            "missing_fields": [
+              "orders"
+            ],
+            "pending_operation": "order_details"
+          },
+          "error_type": null,
+          "stop_reason": "needs_clarification",
+          "usage": {
+            "input_tokens": 4471,
+            "output_tokens": 57,
+            "total_tokens": 4528
+          },
+          "model_diagnostics": [],
+          "trace": [],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 2.98,
+          "execution_budget": {
+            "model_calls": 1,
+            "tool_calls": 0,
+            "real_model_calls": 1,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 2.97,
+            "remaining_seconds": 117.03
+          }
+        },
+        {
+          "message": "你好",
+          "expected": {
+            "kind": "reply",
+            "status": "completed",
+            "tasks": [],
+            "facts": [],
+            "pending_orders": []
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "你好！有什么可以帮您的吗？",
+          "understanding": {
+            "kind": "reply",
+            "continues_pending": true,
+            "message": "你好！有什么可以帮您的吗？",
+            "tasks": [],
+            "mentioned_order_ids": [],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 4585,
+            "output_tokens": 47,
+            "total_tokens": 4632
+          },
+          "model_diagnostics": [],
+          "trace": [],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 2.365,
+          "execution_budget": {
+            "model_calls": 1,
+            "tool_calls": 0,
+            "real_model_calls": 1,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 2.352,
+            "remaining_seconds": 117.648
+          }
+        },
+        {
+          "message": "1004",
+          "expected": {
+            "kind": "tasks",
+            "status": "completed",
+            "tasks": [
+              {
+                "operation": "order_details",
+                "expert": "ORDER",
+                "intent": "read",
+                "order_ids": [
+                  1004
+                ],
+                "answer_mode": "result"
+              }
+            ],
+            "facts": [
+              {
+                "tool": "get_order_details",
+                "order_id": 1004,
+                "status": "delivered"
+              }
+            ],
+            "pending_orders": []
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "订单 1004：订单状态为已送达，金额 349.00 CNY。 商品：Standing Desk。 下单日期：2026-05-15。 收件人：Dev Patel。",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "order_details",
+                "context_use": "order",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "single",
+                  "group_id": null,
+                  "positions": [],
+                  "ids": [
+                    1004
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "查询订单1004详情",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "ORDER",
+                "intent": "read"
+              }
+            ],
+            "mentioned_order_ids": [
+              1004
+            ],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 5998,
+            "output_tokens": 169,
+            "total_tokens": 6167
+          },
+          "model_diagnostics": [],
+          "trace": [
+            {
+              "agent": "order",
+              "tool": "get_order_details",
+              "args": {
+                "order_id": 1004
+              },
+              "result": {
+                "order_id": 1004,
+                "customer_name": "Dev Patel",
+                "item": "Standing Desk",
+                "status": "delivered",
+                "order_date": "2026-05-15",
+                "amount_minor": 34900,
+                "currency": "CNY",
+                "amount_display": "349.00",
+                "amount": 349.0
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 8.507,
+          "execution_budget": {
+            "model_calls": 3,
+            "tool_calls": 1,
+            "real_model_calls": 3,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 8.489,
+            "remaining_seconds": 111.511
+          }
+        },
+        {
+          "message": "我可以退款吗",
+          "expected": {
+            "kind": "tasks",
+            "status": "completed",
+            "tasks": [
+              {
+                "operation": "refund_eligibility",
+                "expert": "REFUND",
+                "intent": "read",
+                "order_ids": [
+                  1004
+                ]
+              }
+            ],
+            "facts": [
+              {
+                "tool": "check_refund_eligibility",
+                "order_id": 1004,
+                "eligible": false,
+                "reason_code": "existing_refund"
+              }
+            ]
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "订单 1004：暂不能申请退款：已有退款记录，不能重复申请。",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "refund_eligibility",
+                "context_use": "order",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "single",
+                  "group_id": null,
+                  "positions": [],
+                  "ids": [
+                    1004
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "查询当前订单1004的退款资格",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "REFUND",
+                "intent": "read"
+              }
+            ],
+            "mentioned_order_ids": [
+              1004
+            ],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 6631,
+            "output_tokens": 145,
+            "total_tokens": 6776
+          },
+          "model_diagnostics": [],
+          "trace": [
+            {
+              "agent": "refund",
+              "tool": "check_refund_eligibility",
+              "args": {
+                "order_id": 1004
+              },
+              "result": {
+                "order_id": 1004,
+                "order_status": "delivered",
+                "rule_version": "local-refund-v1",
+                "checks": {
+                  "delivered": true,
+                  "no_existing_refund": false
+                },
+                "eligible": false,
+                "reason_code": "existing_refund",
+                "reason": "A refund is already 'requested' for this order."
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 6.274,
+          "execution_budget": {
+            "model_calls": 3,
+            "tool_calls": 1,
+            "real_model_calls": 3,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 6.268,
+            "remaining_seconds": 113.732
+          }
+        },
+        {
+          "message": "1005呢",
+          "expected": {
+            "kind": "tasks",
+            "status": "completed",
+            "tasks": [
+              {
+                "operation": "refund_eligibility",
+                "expert": "REFUND",
+                "intent": "read",
+                "order_ids": [
+                  1005
+                ]
+              }
+            ],
+            "facts": [
+              {
+                "tool": "check_refund_eligibility",
+                "order_id": 1005,
+                "eligible": false,
+                "reason_code": "not_delivered"
+              }
+            ]
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "订单 1005：暂不能申请退款：订单尚未送达。",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "refund_eligibility",
+                "context_use": "topic",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "single",
+                  "group_id": null,
+                  "positions": [],
+                  "ids": [
+                    1005
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "继续查询1005退款资格",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "REFUND",
+                "intent": "read"
+              }
+            ],
+            "mentioned_order_ids": [
+              1005
+            ],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 6423,
+            "output_tokens": 158,
+            "total_tokens": 6581
+          },
+          "model_diagnostics": [],
+          "trace": [
+            {
+              "agent": "refund",
+              "tool": "check_refund_eligibility",
+              "args": {
+                "order_id": 1005
+              },
+              "result": {
+                "order_id": 1005,
+                "order_status": "cancelled",
+                "rule_version": "local-refund-v1",
+                "checks": {
+                  "delivered": false,
+                  "no_existing_refund": false
+                },
+                "eligible": false,
+                "reason_code": "not_delivered",
+                "reason": "Order status is 'cancelled'; only delivered orders are refund-eligible."
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 5.549,
+          "execution_budget": {
+            "model_calls": 3,
+            "tool_calls": 1,
+            "real_model_calls": 3,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 5.538,
+            "remaining_seconds": 114.462
+          }
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "second_in_reverse_list",
+      "tags": [
+        "ordinal_variant",
+        "reverse_order"
+      ],
+      "turns": [
+        {
+          "message": "按1006、1001顺序查询订单详情",
+          "expected": {
+            "kind": "tasks",
+            "status": "completed",
+            "tasks": [
+              {
+                "operation": "order_details",
+                "order_ids": [
+                  1006,
+                  1001
+                ],
+                "expert": "ORDER",
+                "intent": "read",
+                "answer_mode": "result"
+              }
+            ],
+            "pending_orders": [],
+            "facts": [
+              {
+                "tool": "get_order_details",
+                "order_id": 1006
+              },
+              {
+                "tool": "get_order_details",
+                "order_id": 1001
+              }
+            ]
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "completed",
+          "reply": "| 订单 | 订单状态 | 金额 | 商品 | 下单日期 | 收件人 |\n| --- | --- | --- | --- | --- | --- |\n| 1006 | 已送达 | 59.99 CNY | Bluetooth Speaker | 2026-06-05 | Farid Haidari |\n| 1001 | 已送达 | 79.99 CNY | Wireless Headphones | 2026-06-01 | Alice Chen |",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "order_details",
+                "context_use": "none",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "list",
+                  "group_id": null,
+                  "positions": [],
+                  "ids": [
+                    1006,
+                    1001
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "按1006、1001顺序查询订单详情",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "ORDER",
+                "intent": "read"
+              }
+            ],
+            "mentioned_order_ids": [],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 5399,
+            "output_tokens": 209,
+            "total_tokens": 5608
+          },
+          "model_diagnostics": [],
+          "trace": [
+            {
+              "agent": "order",
+              "tool": "get_order_details_batch",
+              "args": {
+                "order_ids": [
+                  1006,
+                  1001
+                ]
+              },
+              "result": {
+                "items": [
+                  {
+                    "order_id": 1006,
+                    "result": {
+                      "order_id": 1006,
+                      "customer_name": "Farid Haidari",
+                      "item": "Bluetooth Speaker",
+                      "status": "delivered",
+                      "order_date": "2026-06-05",
+                      "amount_minor": 5999,
+                      "currency": "CNY",
+                      "amount_display": "59.99",
+                      "amount": 59.99
+                    }
+                  },
+                  {
+                    "order_id": 1001,
+                    "result": {
+                      "order_id": 1001,
+                      "customer_name": "Alice Chen",
+                      "item": "Wireless Headphones",
+                      "status": "delivered",
+                      "order_date": "2026-06-01",
+                      "amount_minor": 7999,
+                      "currency": "CNY",
+                      "amount_display": "79.99",
+                      "amount": 79.99
+                    }
+                  }
+                ]
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 6.943,
+          "execution_budget": {
+            "model_calls": 3,
+            "tool_calls": 1,
+            "real_model_calls": 3,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 6.936,
+            "remaining_seconds": 113.064
+          }
+        },
+        {
+          "message": "给那笔申请退款",
+          "expected": {
+            "kind": "clarify",
+            "status": "needs_clarification",
+            "tasks": [],
+            "pending_orders": [],
+            "missing_fields": [
+              "orders"
+            ],
+            "pending_operation": "propose_refund"
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "needs_clarification",
+          "reply": "要给1006还是1001申请退款？",
+          "understanding": {
+            "kind": "clarify",
+            "continues_pending": false,
+            "message": "要给1006还是1001申请退款？",
+            "tasks": [],
+            "mentioned_order_ids": [
+              1006,
+              1001
+            ],
+            "missing_fields": [
+              "orders"
+            ],
+            "pending_operation": "propose_refund"
+          },
+          "error_type": null,
+          "stop_reason": "needs_clarification",
+          "usage": {
+            "input_tokens": 4432,
+            "output_tokens": 58,
+            "total_tokens": 4490
+          },
+          "model_diagnostics": [],
+          "trace": [],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 2.583,
+          "execution_budget": {
+            "model_calls": 1,
+            "tool_calls": 0,
+            "real_model_calls": 1,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 2.572,
+            "remaining_seconds": 117.428
+          }
+        },
+        {
+          "message": "第二笔，原因是个人不需要了",
+          "expected": {
+            "kind": "tasks",
+            "status": "pending_confirmation",
+            "tasks": [
+              {
+                "operation": "propose_refund",
+                "order_ids": [
+                  1001
+                ],
+                "expert": "REFUND",
+                "intent": "propose",
+                "answer_mode": "result"
+              }
+            ],
+            "pending_orders": [
+              1001
+            ],
+            "action_args": {
+              "1001": {
+                "reason": "个人不需要了"
+              }
+            }
+          },
+          "metrics": {
+            "operations": true,
+            "expert_selection": true,
+            "objects": true,
+            "write_intent": true,
+            "clarification": true,
+            "tool_facts": true,
+            "task_completion": true,
+            "answer_mode": true,
+            "action_parameters": true,
+            "side_effects": true
+          },
+          "passed": true,
+          "status": "pending_confirmation",
+          "reply": "订单 1001：退款申请待确认，金额 79.99 CNY。请检查后点击确认；当前尚未办理。",
+          "understanding": {
+            "kind": "tasks",
+            "continues_pending": false,
+            "message": "",
+            "tasks": [
+              {
+                "task_id": "task_1",
+                "operation": "propose_refund",
+                "context_use": "order",
+                "answer_mode": "result",
+                "orders": {
+                  "kind": "reference",
+                  "group_id": "list_1",
+                  "positions": [
+                    2
+                  ],
+                  "ids": [
+                    1001
+                  ],
+                  "start": null,
+                  "end": null
+                },
+                "instruction": "申请1001退款，原因个人不需要了",
+                "depends_on": [],
+                "conditions": [],
+                "expert": "REFUND",
+                "intent": "propose"
+              }
+            ],
+            "mentioned_order_ids": [],
+            "missing_fields": [],
+            "pending_operation": null
+          },
+          "error_type": null,
+          "stop_reason": "completed",
+          "usage": {
+            "input_tokens": 11409,
+            "output_tokens": 264,
+            "total_tokens": 11673
+          },
+          "model_diagnostics": [
+            {
+              "stage": "reference_check",
+              "attempt": 1,
+              "reason": "checked",
+              "context_info": {
+                "budget_tokens": 12000,
+                "is_estimate": true,
+                "estimator": "utf8_bytes_div3",
+                "estimated_input_tokens": 2247,
+                "removed_turns": 0,
+                "history_turns": 2,
+                "history_format": "conversation_facts",
+                "removed_facts": 0,
+                "fact_count": 0,
+                "tool_results_truncated": false
+              },
+              "selections": [
+                {
+                  "task_id": "task_1",
+                  "orders": {
+                    "kind": "reference",
+                    "group_id": "list_1",
+                    "positions": [
+                      2
+                    ],
+                    "ids": [
+                      1001
+                    ],
+                    "start": null,
+                    "end": null
+                  },
+                  "message": "客户明确选择原列表第二个位置。",
+                  "status": "unique"
+                }
+              ]
+            },
+            {
+              "stage": "propose",
+              "attempt": 1,
+              "reason": "missing_tool_call",
+              "context_info": {
+                "budget_tokens": 12000,
+                "is_estimate": true,
+                "estimator": "utf8_bytes_div3",
+                "estimated_input_tokens": 1720,
+                "removed_turns": 0,
+                "tool_results_truncated": false
+              },
+              "finish_reason": "stop"
+            }
+          ],
+          "trace": [
+            {
+              "agent": "refund",
+              "tool": "check_refund_eligibility",
+              "args": {
+                "order_id": 1001
+              },
+              "result": {
+                "order_id": 1001,
+                "order_status": "delivered",
+                "rule_version": "local-refund-v1",
+                "checks": {
+                  "delivered": true,
+                  "no_existing_refund": true
+                },
+                "eligible": true,
+                "reason_code": "eligible",
+                "reason": "Order is delivered and has no existing refund."
+              },
+              "task_id": "task_1"
+            },
+            {
+              "agent": "refund",
+              "tool": "initiate_refund",
+              "args": {
+                "order_id": 1001,
+                "reason": "个人不需要了"
+              },
+              "result": {
+                "order_id": 1001,
+                "action_id": "ea7116e2c52e5ae4a3ed3d6a05a82659",
+                "status": "pending_confirmation",
+                "requires_confirmation": true,
+                "message": "已生成待确认动作；请检查订单和金额后点击确认，尚未办理。"
+              },
+              "task_id": "task_1"
+            }
+          ],
+          "business_state_unchanged": true,
+          "usage_status": "reported_positive",
+          "elapsed_seconds": 12.448,
+          "execution_budget": {
+            "model_calls": 6,
+            "tool_calls": 2,
+            "real_model_calls": 6,
+            "max_model_calls": 24,
+            "max_tool_calls": 24,
+            "timeout_seconds": 120.0,
+            "elapsed_seconds": 12.432,
+            "remaining_seconds": 107.568
+          }
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "unconfirmed_business_changes": 0,
+  "metrics": {
+    "operations": 1.0,
+    "expert_selection": 1.0,
+    "objects": 1.0,
+    "write_intent": 1.0,
+    "clarification": 1.0,
+    "tool_facts": 1.0,
+    "task_completion": 1.0,
+    "side_effects": 1.0,
+    "answer_mode": 1.0,
+    "action_parameters": 1.0
+  },
+  "case_pass_rate": 1.0,
+  "reported_usage": {
+    "input_tokens": 209270,
+    "output_tokens": 4699,
+    "total_tokens": 213969
+  },
+  "usage_complete": false,
+  "limitations": "结构化指标验证声明的预期与本地副作用；追问合理性、替代的有效任务拆分需人工复核。缺失或零用量不被认定为已知零消耗。",
+  "status": "measured"
+}

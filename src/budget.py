@@ -3,7 +3,7 @@ import os
 import time
 
 from src.backend.db import ExecutionBudgetRecord
-from src.runtime_context import active_budget, active_mode, record_event
+from src.runtime_context import active_budget, record_event
 
 
 class ExecutionBudgetExceeded(RuntimeError):
@@ -53,7 +53,7 @@ class RequestBudget:
         with self.sessions() as db:
             row = db.get(ExecutionBudgetRecord, self.context.key)
             return {'model_calls': row.model_calls, 'tool_calls': row.tool_calls,
-                    'real_model_calls': row.model_calls if self.context.mode == 'online' else 0,
+                    'real_model_calls': row.model_calls,
                     'max_model_calls': row.max_model_calls, 'max_tool_calls': row.max_tool_calls,
                     'timeout_seconds': row.deadline_at - row.started_at,
                     'elapsed_seconds': round(max(0, time.time() - row.started_at), 3),
@@ -66,8 +66,8 @@ def check_execution_budget(kind=None, *, consume=False):
 
 
 def invoke_model(model, messages):
-    # A pool counts each actual client attempt itself; mocks/demo count here.
+    # The adapter counts SDK attempts itself; scripted test models count here.
     if not getattr(model, '_counts_attempts', False):
         check_execution_budget('model', consume=True)
-        record_event('model_call_started', simulated=active_mode.get() == 'demo')
+        record_event('model_call_started')
     return model.invoke(messages)

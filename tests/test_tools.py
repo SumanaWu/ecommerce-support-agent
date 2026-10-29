@@ -15,7 +15,7 @@ def seeded_db(tmp_path):
     tools.configure_db(engine)
     session = get_session_factory(engine)()
     seed(session)
-    context,_,_=tools.request_journal().begin_request('customer_a','demo',uuid4().hex,'tools','test')
+    context,_,_=tools.request_journal().begin_request('customer_a','online',uuid4().hex,'tools','test')
     token=active_request.set(context)
     yield SupportService(tmp_path/'memory.sqlite')
     active_request.reset(token)
@@ -95,7 +95,7 @@ def test_process_payment_refuses_when_already_paid():
 
 def test_answer_faq_shipping():
     answer = tools.answer_faq("How long does shipping take?")
-    assert answer['found'] and "3-5 business days" in answer['answer']
+    assert answer['found'] and "3—5个工作日" in answer['answer']
     assert answer['sources'][0]['policy_id'] == 'shipping'
 
 

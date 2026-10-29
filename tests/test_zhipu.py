@@ -8,7 +8,6 @@ from langchain_core.tools import tool
 
 from src import llm
 from src.errors import ModelConfigurationError, classify_error, invoke_with_retry
-from src.runtime_context import active_mode
 
 
 @pytest.fixture
@@ -17,9 +16,7 @@ def online(monkeypatch):
     monkeypatch.setenv('ZHIPU_API_KEY', 'unit-test-key')
     monkeypatch.setenv('ZHIPU_MODEL', 'glm-4.7-flash')
     monkeypatch.setenv('ZHIPU_BASE_URL', 'https://unit.invalid/api/paas/v4/')
-    token = active_mode.set('online')
     yield
-    active_mode.reset(token)
 
 
 @tool
@@ -67,7 +64,7 @@ def test_real_sdk_zhipu_chat_tools_result_and_usage(online, monkeypatch):
     assert len(requests) == 2
 
 
-@pytest.mark.parametrize('code,count,kind', [(401, 1, 'configuration'), (429, 2, 'quota'), (503, 2, 'network')])
+@pytest.mark.parametrize('code,count,kind', [(401, 1, 'authentication'), (429, 2, 'rate_limit'), (503, 2, 'service')])
 def test_zhipu_http_errors_have_no_sdk_or_graph_retry(online, monkeypatch, code, count, kind):
     import langchain_openai
     original = langchain_openai.ChatOpenAI
@@ -101,19 +98,6 @@ def test_usage_can_be_read_from_compatible_response_metadata():
     assert llm.extract_usage(message)['total_tokens'] == 5
 
 
-def test_eval_sets_explicit_mode_and_restores_on_failure(monkeypatch):
-    from eval import run_eval
-    seen = []
-    def route(_):
-        seen.append(active_mode.get())
-        raise ValueError('test')
-    monkeypatch.setattr(run_eval, 'route_node', route)
-    before = active_mode.get()
-    with pytest.raises(ValueError):
-        run_eval.classify('query', 'online')
-    assert seen == ['online'] and active_mode.get() == before
-
-
 def test_single_zhipu_client_does_not_silently_fallback(online, monkeypatch):
     import langchain_openai
     monkeypatch.setenv('GEMINI_API_KEY', 'unused')
@@ -121,5 +105,5 @@ def test_single_zhipu_client_does_not_silently_fallback(online, monkeypatch):
     captured = []
     monkeypatch.setattr(langchain_openai, 'ChatOpenAI', lambda **kwargs: captured.append(kwargs) or object())
     model = llm.get_llm()
-    assert len(model._models) == 1
+    assert model.provider == 'zhipu'
     assert captured[0]['max_retries'] == 0 and captured[0]['use_responses_api'] is False

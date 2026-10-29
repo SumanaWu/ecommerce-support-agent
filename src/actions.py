@@ -10,7 +10,7 @@ from src.backend.db import Payment, PendingAction, Refund
 from src.requests import canonical
 from src.money import money_view
 from src.rules import business_fingerprint
-from src.runtime_context import active_confirmation, active_request, active_order_reference, active_task
+from src.runtime_context import STORAGE_MODE, active_confirmation, active_request, active_order_reference, active_task
 
 
 @dataclass(frozen=True)
@@ -37,7 +37,7 @@ def business_version(db, order):
 def action_view(row):
     return {'action_id': row.action_id, 'order_id': row.order_id, 'tool': row.tool,
             **money_view(row), 'args': json.loads(row.args), 'status': row.status,
-            'session_id': row.session_id, 'mode': row.mode,
+            'session_id': row.session_id,
             'result': json.loads(row.result) if row.result else None}
 
 
@@ -45,7 +45,7 @@ def _owned_action(db, action_id):
     from src import tools
     principal = require_principal()
     row = db.get(PendingAction, action_id)
-    if row is None or row.user_id != principal.customer_id or tools.get_owned_order(db, row.order_id) is None:
+    if row is None or row.mode != STORAGE_MODE or row.user_id != principal.customer_id or tools.get_owned_order(db, row.order_id) is None:
         raise AccessError('未找到可访问的动作。', 404)
     return row
 
@@ -56,15 +56,13 @@ def get_action(principal, action_id):
         return action_view(_owned_action(db, action_id))
 
 
-def list_actions(principal, *, session_id=None, mode=None, source_request_id=None, pending_only=True):
+def list_actions(principal, *, session_id=None, source_request_id=None, pending_only=True):
     from src import tools
     principal = require_principal(principal)
     with principal_scope(principal), tools._session() as db:
-        query = select(PendingAction).where(PendingAction.user_id == principal.customer_id)
+        query = select(PendingAction).where(PendingAction.user_id == principal.customer_id, PendingAction.mode == STORAGE_MODE)
         if session_id is not None:
             query = query.where(PendingAction.session_id == session_id)
-        if mode is not None:
-            query = query.where(PendingAction.mode == mode)
         if source_request_id is not None:
             query = query.where(PendingAction.source_request_id == source_request_id)
         if pending_only:

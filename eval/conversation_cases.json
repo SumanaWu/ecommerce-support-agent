@@ -1,0 +1,930 @@
+[
+  {
+    "id": "user_ambiguous_repeat_and_cancel",
+    "tags": [
+      "user_full_conversation",
+      "reference_check",
+      "cancel_reapply"
+    ],
+    "turns": [
+      {
+        "message": "查询1001和1006的详情",
+        "expect": {
+          "kind": "tasks",
+          "status": "completed",
+          "tasks": [
+            {
+              "operation": "order_details",
+              "order_ids": [
+                1001,
+                1006
+              ],
+              "expert": "ORDER",
+              "intent": "read",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "get_order_details",
+              "order_id": 1001
+            },
+            {
+              "tool": "get_order_details",
+              "order_id": 1006
+            }
+          ]
+        }
+      },
+      {
+        "message": "给那笔申请退款",
+        "expect": {
+          "kind": "clarify",
+          "status": "needs_clarification",
+          "tasks": [],
+          "pending_orders": [],
+          "missing_fields": [
+            "orders"
+          ],
+          "pending_operation": "propose_refund"
+        }
+      },
+      {
+        "message": "你好",
+        "expect": {
+          "kind": "reply",
+          "status": "completed",
+          "tasks": [],
+          "pending_orders": []
+        }
+      },
+      {
+        "message": "给那笔申请退款",
+        "expect": {
+          "kind": "clarify",
+          "status": "needs_clarification",
+          "tasks": [],
+          "pending_orders": [],
+          "missing_fields": [
+            "orders"
+          ],
+          "pending_operation": "propose_refund"
+        }
+      },
+      {
+        "message": "第一笔，原因是个人不需要了",
+        "expect": {
+          "kind": "tasks",
+          "status": "pending_confirmation",
+          "tasks": [
+            {
+              "operation": "propose_refund",
+              "order_ids": [
+                1001
+              ],
+              "expert": "REFUND",
+              "intent": "propose",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [
+            1001
+          ],
+          "action_args": {
+            "1001": {
+              "reason": "个人不需要了"
+            }
+          }
+        }
+      },
+      {
+        "message": "点击取消订单1001的提案",
+        "action": "cancel",
+        "order_id": 1001,
+        "expect": {
+          "kind": "action",
+          "status": "cancelled",
+          "tasks": [],
+          "pending_orders": [],
+          "order_id": 1001
+        }
+      },
+      {
+        "message": "给第一笔退款，原因是个人不需要了",
+        "expect": {
+          "kind": "tasks",
+          "status": "pending_confirmation",
+          "tasks": [
+            {
+              "operation": "propose_refund",
+              "order_ids": [
+                1001
+              ],
+              "expert": "REFUND",
+              "intent": "propose",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [
+            1001
+          ],
+          "action_args": {
+            "1001": {
+              "reason": "个人不需要了"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "user_explicit_business_switches",
+    "tags": [
+      "user_full_conversation",
+      "multi_agent",
+      "context_switch"
+    ],
+    "turns": [
+      {
+        "message": "查询1001到1007的详情",
+        "expect": {
+          "kind": "tasks",
+          "status": "completed",
+          "tasks": [
+            {
+              "operation": "order_details",
+              "order_ids": [
+                1001,
+                1002,
+                1003,
+                1004,
+                1005,
+                1006,
+                1007
+              ],
+              "expert": "ORDER",
+              "intent": "read",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "get_order_details",
+              "order_id": 1001
+            },
+            {
+              "tool": "get_order_details",
+              "order_id": 1002
+            },
+            {
+              "tool": "get_order_details",
+              "order_id": 1003
+            },
+            {
+              "tool": "get_order_details",
+              "order_id": 1004
+            },
+            {
+              "tool": "get_order_details",
+              "order_id": 1005
+            },
+            {
+              "tool": "get_order_details",
+              "order_id": 1006
+            },
+            {
+              "tool": "get_order_details",
+              "order_id": 1007
+            }
+          ]
+        }
+      },
+      {
+        "message": "1006付款了吗",
+        "expect": {
+          "kind": "tasks",
+          "status": "completed",
+          "tasks": [
+            {
+              "operation": "payment_status",
+              "order_ids": [
+                1006
+              ],
+              "expert": "PAYMENT",
+              "intent": "read",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "get_payment_status",
+              "order_id": 1006
+            }
+          ]
+        }
+      },
+      {
+        "message": "只查1007能不能退款，不要申请",
+        "expect": {
+          "kind": "tasks",
+          "status": "completed",
+          "tasks": [
+            {
+              "operation": "refund_eligibility",
+              "order_ids": [
+                1007
+              ],
+              "expert": "REFUND",
+              "intent": "read",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "check_refund_eligibility",
+              "order_id": 1007
+            }
+          ]
+        }
+      },
+      {
+        "message": "为什么",
+        "expect": {
+          "kind": "tasks",
+          "status": "completed",
+          "tasks": [
+            {
+              "operation": "refund_eligibility",
+              "order_ids": [
+                1007
+              ],
+              "expert": "REFUND",
+              "intent": "read",
+              "answer_mode": "explain"
+            }
+          ],
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "check_refund_eligibility",
+              "order_id": 1007
+            }
+          ]
+        }
+      },
+      {
+        "message": "查询1003付款状态",
+        "expect": {
+          "kind": "tasks",
+          "status": "completed",
+          "tasks": [
+            {
+              "operation": "payment_status",
+              "order_ids": [
+                1003
+              ],
+              "expert": "PAYMENT",
+              "intent": "read",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "get_payment_status",
+              "order_id": 1003
+            }
+          ]
+        }
+      },
+      {
+        "message": "你好",
+        "expect": {
+          "kind": "reply",
+          "status": "completed",
+          "tasks": [],
+          "pending_orders": []
+        }
+      },
+      {
+        "message": "查1002物流，再申请1002退款，原因个人不需要了",
+        "expect": {
+          "kind": "tasks",
+          "status": "partial",
+          "tasks": [
+            {
+              "operation": "shipment",
+              "order_ids": [
+                1002
+              ],
+              "expert": "ORDER",
+              "intent": "read",
+              "answer_mode": "result"
+            },
+            {
+              "operation": "propose_refund",
+              "order_ids": [
+                1002
+              ],
+              "expert": "REFUND",
+              "intent": "propose",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "track_shipment",
+              "order_id": 1002
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "reverse_list_after_single_and_cancel",
+    "tags": [
+      "reverse_order",
+      "cancel_reapply"
+    ],
+    "turns": [
+      {
+        "message": "按1006、1001的顺序查询详情",
+        "expect": {
+          "kind": "tasks",
+          "status": "completed",
+          "tasks": [
+            {
+              "operation": "order_details",
+              "order_ids": [
+                1006,
+                1001
+              ],
+              "expert": "ORDER",
+              "intent": "read",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "get_order_details",
+              "order_id": 1006
+            },
+            {
+              "tool": "get_order_details",
+              "order_id": 1001
+            }
+          ]
+        }
+      },
+      {
+        "message": "申请1001退款，原因个人不需要了",
+        "expect": {
+          "kind": "tasks",
+          "status": "pending_confirmation",
+          "tasks": [
+            {
+              "operation": "propose_refund",
+              "order_ids": [
+                1001
+              ],
+              "expert": "REFUND",
+              "intent": "propose",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [
+            1001
+          ],
+          "action_args": {
+            "1001": {
+              "reason": "个人不需要了"
+            }
+          }
+        }
+      },
+      {
+        "message": "点击取消订单1001的提案",
+        "action": "cancel",
+        "order_id": 1001,
+        "expect": {
+          "kind": "action",
+          "status": "cancelled",
+          "tasks": [],
+          "pending_orders": [],
+          "order_id": 1001
+        }
+      },
+      {
+        "message": "你好",
+        "expect": {
+          "kind": "reply",
+          "status": "completed",
+          "tasks": [],
+          "pending_orders": []
+        }
+      },
+      {
+        "message": "给第一笔退款，原因是个人不需要了",
+        "expect": {
+          "kind": "tasks",
+          "status": "pending_confirmation",
+          "tasks": [
+            {
+              "operation": "propose_refund",
+              "order_ids": [
+                1006
+              ],
+              "expert": "REFUND",
+              "intent": "propose",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [
+            1006
+          ],
+          "action_args": {
+            "1006": {
+              "reason": "个人不需要了"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "original_list_after_cancel_1006",
+    "tags": [
+      "cancel_reapply",
+      "source_list"
+    ],
+    "turns": [
+      {
+        "message": "查询1001和1006的详情",
+        "expect": {
+          "kind": "tasks",
+          "status": "completed",
+          "tasks": [
+            {
+              "operation": "order_details",
+              "order_ids": [
+                1001,
+                1006
+              ],
+              "expert": "ORDER",
+              "intent": "read",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "get_order_details",
+              "order_id": 1001
+            },
+            {
+              "tool": "get_order_details",
+              "order_id": 1006
+            }
+          ]
+        }
+      },
+      {
+        "message": "申请1006退款，原因个人不需要了",
+        "expect": {
+          "kind": "tasks",
+          "status": "pending_confirmation",
+          "tasks": [
+            {
+              "operation": "propose_refund",
+              "order_ids": [
+                1006
+              ],
+              "expert": "REFUND",
+              "intent": "propose",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [
+            1006
+          ],
+          "action_args": {
+            "1006": {
+              "reason": "个人不需要了"
+            }
+          }
+        }
+      },
+      {
+        "message": "点击取消订单1006的提案",
+        "action": "cancel",
+        "order_id": 1006,
+        "expect": {
+          "kind": "action",
+          "status": "cancelled",
+          "tasks": [],
+          "pending_orders": [],
+          "order_id": 1006
+        }
+      },
+      {
+        "message": "第一笔，原因是个人不需要了",
+        "expect": {
+          "kind": "tasks",
+          "status": "pending_confirmation",
+          "tasks": [
+            {
+              "operation": "propose_refund",
+              "order_ids": [
+                1001
+              ],
+              "expert": "REFUND",
+              "intent": "propose",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [
+            1001
+          ],
+          "action_args": {
+            "1001": {
+              "reason": "个人不需要了"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "ordinal_wording_variants",
+    "tags": [
+      "wording_variant",
+      "pending"
+    ],
+    "turns": [
+      {
+        "message": "帮我看看1006以及1001的订单详情，按这个顺序",
+        "expect": {
+          "kind": "tasks",
+          "status": "completed",
+          "tasks": [
+            {
+              "operation": "order_details",
+              "order_ids": [
+                1006,
+                1001
+              ],
+              "expert": "ORDER",
+              "intent": "read",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "get_order_details",
+              "order_id": 1006
+            },
+            {
+              "tool": "get_order_details",
+              "order_id": 1001
+            }
+          ]
+        }
+      },
+      {
+        "message": "替那单办下退款",
+        "expect": {
+          "kind": "clarify",
+          "status": "needs_clarification",
+          "tasks": [],
+          "pending_orders": [],
+          "missing_fields": [
+            "orders"
+          ],
+          "pending_operation": "propose_refund"
+        }
+      },
+      {
+        "message": "谢谢",
+        "expect": {
+          "kind": "reply",
+          "status": "completed",
+          "tasks": [],
+          "pending_orders": []
+        }
+      },
+      {
+        "message": "替那单办下退款",
+        "expect": {
+          "kind": "clarify",
+          "status": "needs_clarification",
+          "tasks": [],
+          "pending_orders": [],
+          "missing_fields": [
+            "orders"
+          ],
+          "pending_operation": "propose_refund"
+        }
+      },
+      {
+        "message": "前面列出的最后一单吧，个人不需要了",
+        "expect": {
+          "kind": "tasks",
+          "status": "pending_confirmation",
+          "tasks": [
+            {
+              "operation": "propose_refund",
+              "order_ids": [
+                1001
+              ],
+              "expert": "REFUND",
+              "intent": "propose",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [
+            1001
+          ],
+          "action_args": {
+            "1001": {
+              "reason": "个人不需要了"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "payment_reference_and_new_business",
+    "tags": [
+      "payment_reference",
+      "multi_agent"
+    ],
+    "turns": [
+      {
+        "message": "按1003、1001的顺序列订单详情",
+        "expect": {
+          "kind": "tasks",
+          "status": "completed",
+          "tasks": [
+            {
+              "operation": "order_details",
+              "order_ids": [
+                1003,
+                1001
+              ],
+              "expert": "ORDER",
+              "intent": "read",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "get_order_details",
+              "order_id": 1003
+            },
+            {
+              "tool": "get_order_details",
+              "order_id": 1001
+            }
+          ]
+        }
+      },
+      {
+        "message": "用银行卡支付第一笔",
+        "expect": {
+          "kind": "tasks",
+          "status": "pending_confirmation",
+          "tasks": [
+            {
+              "operation": "propose_payment",
+              "order_ids": [
+                1003
+              ],
+              "expert": "PAYMENT",
+              "intent": "propose",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [
+            1003
+          ],
+          "action_args": {
+            "1003": {
+              "method": "card"
+            }
+          }
+        }
+      },
+      {
+        "message": "点击取消订单1003的提案",
+        "action": "cancel",
+        "order_id": 1003,
+        "expect": {
+          "kind": "action",
+          "status": "cancelled",
+          "tasks": [],
+          "pending_orders": [],
+          "order_id": 1003
+        }
+      },
+      {
+        "message": "用银行卡重新支付列表里第一笔",
+        "expect": {
+          "kind": "tasks",
+          "status": "pending_confirmation",
+          "tasks": [
+            {
+              "operation": "propose_payment",
+              "order_ids": [
+                1003
+              ],
+              "expert": "PAYMENT",
+              "intent": "propose",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [
+            1003
+          ],
+          "action_args": {
+            "1003": {
+              "method": "card"
+            }
+          }
+        }
+      },
+      {
+        "message": "1007能不能退款，只查询",
+        "expect": {
+          "kind": "tasks",
+          "status": "completed",
+          "tasks": [
+            {
+              "operation": "refund_eligibility",
+              "order_ids": [
+                1007
+              ],
+              "expert": "REFUND",
+              "intent": "read",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "check_refund_eligibility",
+              "order_id": 1007
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "history_20_explicit_switch",
+    "tags": [
+      "history_stress",
+      "multi_agent"
+    ],
+    "history_turns": 20,
+    "turns": [
+      {
+        "message": "查询1003付款状态",
+        "expect": {
+          "kind": "tasks",
+          "status": "completed",
+          "tasks": [
+            {
+              "operation": "payment_status",
+              "order_ids": [
+                1003
+              ],
+              "expert": "PAYMENT",
+              "intent": "read",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "get_payment_status",
+              "order_id": 1003
+            }
+          ]
+        }
+      },
+      {
+        "message": "先查1002配送进度，再帮我申请这单退款，理由个人不需要了",
+        "expect": {
+          "kind": "tasks",
+          "status": "partial",
+          "tasks": [
+            {
+              "operation": "shipment",
+              "order_ids": [
+                1002
+              ],
+              "expert": "ORDER",
+              "intent": "read",
+              "answer_mode": "result"
+            },
+            {
+              "operation": "propose_refund",
+              "order_ids": [
+                1002
+              ],
+              "expert": "REFUND",
+              "intent": "propose",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "track_shipment",
+              "order_id": 1002
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "history_50_explicit_switch",
+    "tags": [
+      "history_stress",
+      "multi_agent"
+    ],
+    "history_turns": 50,
+    "turns": [
+      {
+        "message": "查询1003付款状态",
+        "expect": {
+          "kind": "tasks",
+          "status": "completed",
+          "tasks": [
+            {
+              "operation": "payment_status",
+              "order_ids": [
+                1003
+              ],
+              "expert": "PAYMENT",
+              "intent": "read",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "get_payment_status",
+              "order_id": 1003
+            }
+          ]
+        }
+      },
+      {
+        "message": "先查1002配送进度，再帮我申请这单退款，理由个人不需要了",
+        "expect": {
+          "kind": "tasks",
+          "status": "partial",
+          "tasks": [
+            {
+              "operation": "shipment",
+              "order_ids": [
+                1002
+              ],
+              "expert": "ORDER",
+              "intent": "read",
+              "answer_mode": "result"
+            },
+            {
+              "operation": "propose_refund",
+              "order_ids": [
+                1002
+              ],
+              "expert": "REFUND",
+              "intent": "propose",
+              "answer_mode": "result"
+            }
+          ],
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "track_shipment",
+              "order_id": 1002
+            }
+          ]
+        }
+      }
+    ]
+  }
+]

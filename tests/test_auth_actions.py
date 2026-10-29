@@ -1,14 +1,13 @@
+"""Online regression grouped by responsibility; no rule-model fallback."""
 import os
 from pathlib import Path
 import sqlite3
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
-
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
-
 import api
 from src import actions, tools
 from src.auth import AccessError, Principal, principal_scope, resolve_principal
@@ -16,6 +15,7 @@ from src.backend.db import ActionRecord, Order, Payment, PendingAction, Refund, 
 from src.backend.seed import seed
 from src.runtime_context import active_confirmation, active_principal, active_request
 from src.service import SupportService
+
 
 A, B = Principal('customer_a'), Principal('customer_b')
 
@@ -36,7 +36,10 @@ def setup(tmp_path, monkeypatch):
 
 def propose(service, order_id=1001):
     message = f'帮我申请订单 {order_id} 的退款' if order_id != 1003 else '帮我付款订单 1003'
-    result = service.chat(A, 'one', 'demo', message)
+    from tests.online_support import install_script, proposal_steps
+    with pytest.MonkeyPatch.context() as patch:
+        install_script(patch, proposal_steps('propose_payment' if order_id == 1003 else 'propose_refund', order_id))
+        result = service.chat(A, 'one', message)
     assert result['status'] == 'pending_confirmation'
     return result['pending_actions'][0]['action_id']
 
@@ -47,7 +50,9 @@ def state(engine, order_id=1001):
         return db.scalars(select(model).where(model.order_id == order_id)).one().status
 
 
-def test_authentication_and_user_id_hint(setup):
+def test_authentication_and_user_id_hint(setup, monkeypatch):
+    from tests.online_support import call, install_script, plan, proposal_steps, task
+    install_script(monkeypatch, [plan(task('order_status', [1001])), call('get_order_status', {'order_id': 1001}), '已送达。'])
     _, _, client_a, _ = setup
     unauthenticated = TestClient(api.app)
     assert unauthenticated.get('/health').status_code == 200
@@ -73,9 +78,9 @@ def test_invalid_account_configuration_is_closed(monkeypatch, config):
 def test_principal_cannot_be_taken_from_free_form_customer_id(setup):
     service, _, _, _ = setup
     with pytest.raises(AccessError):
-        service.chat('customer_a', 'one', 'demo', 'query')
+        service.chat('customer_a', 'one', 'query')
     with pytest.raises(AccessError):
-        service.snapshot('customer_b', 'one', 'demo')
+        service.snapshot('customer_b', 'one')
     assert resolve_principal('test-token-a') == A
 
 
@@ -86,7 +91,7 @@ def test_principal_cannot_be_taken_from_free_form_customer_id(setup):
 ])
 def test_all_order_tools_hide_foreign_and_missing_orders(setup, tool, args):
     journal = tools.request_journal()
-    context, _, _ = journal.begin_request('customer_a', 'demo', 'tool-check', 'one', 'test')
+    context, _, _ = journal.begin_request('customer_a', 'online', 'tool-check', 'one', 'test')
     token = active_request.set(context)
     try:
         foreign = tool(order_id=1008, **args)
@@ -115,7 +120,7 @@ def test_proposal_confirmation_and_idempotent_execution(setup, order_id):
         assert db.get(Order, order_id).version == 2
         assert len(db.scalars(select(ActionRecord)).all()) == 2
         assert db.get(PendingAction, action_id).status == 'executed'
-    assert len(service.snapshot(A, 'one', 'demo')['turns']) == 2
+    assert len(service.snapshot(A, 'one')['turns']) == 2
     assert active_confirmation.get() is None
 
 
@@ -131,15 +136,17 @@ def test_foreign_action_lookup_confirmation_and_cancellation_are_indistinguishab
     assert state(engine) == 'none'
 
 
-def test_cancel_is_idempotent_and_cannot_be_confirmed(setup):
+def test_cancel_is_idempotent_and_cannot_be_confirmed(setup, monkeypatch):
+    from tests.online_support import call, install_script, plan, proposal_steps, task
+    install_script(monkeypatch, proposal_steps())
     service, engine, client_a, _ = setup
-    proposal = service.chat(A, 'one', 'demo', '帮我申请订单 1001 的退款', request_id='cancel-source')
+    proposal = service.chat(A, 'one', '帮我申请订单 1001 的退款', request_id='cancel-source')
     action_id = proposal['pending_actions'][0]['action_id']
     assert client_a.post(f'/actions/{action_id}/cancel').json()['status'] == 'cancelled'
     assert client_a.post(f'/actions/{action_id}/cancel').json()['replayed']
     assert client_a.post(f'/actions/{action_id}/confirm').status_code == 409
     assert state(engine) == 'none'
-    replay = service.chat(A, 'one', 'demo', '帮我申请订单 1001 的退款', request_id='cancel-source')
+    replay = service.chat(A, 'one', '帮我申请订单 1001 的退款', request_id='cancel-source')
     assert replay['status'] == 'cancelled' and not replay['pending_actions']
     assert '已取消' in replay['reply'] and '已保存' not in replay['reply']
     new_action = propose(service)
@@ -210,34 +217,6 @@ def test_raw_apply_functions_require_an_unforgeable_server_grant(setup):
     assert state(engine) == 'none' and state(engine, 1003) == 'pending'
 
 
-def test_model_cannot_invoke_confirmation_or_extra_identity_parameters(setup, monkeypatch):
-    from src.agents import base
-    from src.agents.refund_agent import REFUND_TOOLS
-    from tests.test_agent_base import FakeLLM, FakeToolCallMessage
-    service, engine, _, _ = setup
-    for name, args in [('confirm_action', {'action_id': 'fake'}),
-                       ('initiate_refund', {'order_id': 1001, 'reason': 'test', 'confirmed': True}),
-                       ('initiate_refund', {'order_id': 1001, 'reason': 'test', 'user_id': 'customer_b'})]:
-        monkeypatch.setattr(base, 'get_llm', lambda: FakeLLM([
-            FakeToolCallMessage(tool_calls=[{'name': name, 'args': args, 'id': 'call'}]),
-            FakeToolCallMessage(content='done')]))
-        service.chat(A, 'one', 'demo', 'test', runner=lambda *a, **k: base.run_tool_agent('refund', 'test', REFUND_TOOLS, 'test'))
-    assert state(engine) == 'none'
-    with get_session_factory(engine)() as db:
-        assert not db.scalars(select(PendingAction)).all()
-
-
-def test_backend_corrects_model_claim_of_success_before_confirmation(setup):
-    service, engine, _, _ = setup
-    def runner(*a, **k):
-        result = tools.initiate_refund(1001, 'test')
-        return {'reply': '退款已成功', 'agent': 'refund', 'trace': [
-            {'agent': 'refund', 'tool': 'initiate_refund', 'args': {'order_id': 1001}, 'result': result}], 'usage': {}}
-    response = service.chat(A, 'one', 'demo', 'refund order 1001', runner=runner)
-    assert response['status'] == 'pending_confirmation' and '尚未办理' in response['reply']
-    assert state(engine) == 'none'
-
-
 def test_confirmed_business_success_survives_memory_failure(setup, monkeypatch):
     service, engine, _, _ = setup
     action_id = propose(service, 1003)
@@ -250,20 +229,22 @@ def test_confirmed_business_success_survives_memory_failure(setup, monkeypatch):
     assert state(engine, 1003) == 'paid'
     second = service.confirm_action(A, action_id)
     assert second['memory_saved'] and second['replayed']
-    assert len(service.snapshot(A, 'one', 'demo')['turns']) == 2
+    assert len(service.snapshot(A, 'one')['turns']) == 2
     with get_session_factory(engine)() as db:
         assert db.get(Order, 1003).version == 2
 
 
-def test_replay_and_history_hide_order_facts_after_ownership_changes(setup):
+def test_replay_and_history_hide_order_facts_after_ownership_changes(setup, monkeypatch):
+    from tests.online_support import call, install_script, plan, proposal_steps, task
+    install_script(monkeypatch, [plan(task('order_details', [1001])), call('get_order_details', {'order_id': 1001}), '订单详情。'])
     service, engine, _, _ = setup
-    source = service.chat(A, 'one', 'demo', '查询订单 1001 的详情', request_id='old-owner')
+    source = service.chat(A, 'one', '查询订单 1001 的详情', request_id='old-owner')
     assert 'Alice' in source['reply']
     with get_session_factory(engine).begin() as db:
         db.get(Order, 1001).customer_id = 'customer_b'
-    snapshot = service.snapshot(A, 'one', 'demo')
+    snapshot = service.snapshot(A, 'one')
     assert snapshot['turns'] == [] and snapshot['last_order_id'] is None
-    replay = service.chat(A, 'one', 'demo', '查询订单 1001 的详情', request_id='old-owner')
+    replay = service.chat(A, 'one', '查询订单 1001 的详情', request_id='old-owner')
     assert replay['status'] == 'failed' and 'Alice' not in replay['reply']
     assert replay['trace'] == []
 
@@ -305,6 +286,8 @@ def test_confirmation_is_idempotent_across_processes(setup):
 
 
 def test_account_switch_in_page_hides_other_accounts_pending_actions(setup, monkeypatch):
+    from tests.online_support import install_script, proposal_steps
+    install_script(monkeypatch, proposal_steps())
     import streamlit as st
     from streamlit.testing.v1 import AppTest
     service, engine, _, _ = setup
@@ -327,6 +310,8 @@ def test_account_switch_in_page_hides_other_accounts_pending_actions(setup, monk
 
 @pytest.mark.parametrize('order_id,label', [(1001, '确认申请'), (1003, '确认付款')])
 def test_page_repairs_confirmation_memory_without_repeating_business(setup, monkeypatch, order_id, label):
+    from tests.online_support import install_script, proposal_steps
+    install_script(monkeypatch, proposal_steps('propose_refund' if order_id == 1001 else 'propose_payment', order_id))
     import streamlit as st
     from streamlit.testing.v1 import AppTest
     from src.storage import SupportStore
@@ -350,7 +335,7 @@ def test_page_repairs_confirmation_memory_without_repeating_business(setup, monk
     assert page.session_state['pending_decisions']
     next(button for button in page.button if button.label == '重试动作结果').click().run()
     assert not page.exception and not page.session_state['pending_decisions']
-    assert len(service.snapshot(A, 'case_1', 'demo')['turns']) == 2
+    assert len(service.snapshot(A, 'case_1')['turns']) == 2
     with get_session_factory(engine)() as db:
         assert db.get(Order, order_id).version == 2
     st.cache_resource.clear()
@@ -386,7 +371,7 @@ def test_interrupted_decision_before_write_can_be_resumed_without_a_model(setup,
     action_id = propose(service)
     operation = 'confirm' if confirm else 'cancel'
     message = ('确认动作 ' if confirm else '取消动作 ') + action_id
-    tools.request_journal().begin_request('customer_a', 'demo', operation + '_' + action_id, 'one', message)
+    tools.request_journal().begin_request('customer_a', 'online', operation + '_' + action_id, 'one', message)
     monkeypatch.setattr('src.service.run_orchestrator', lambda *a, **k: pytest.fail('decision called model graph'))
     response = service.confirm_action(A, action_id) if confirm else service.cancel_action(A, action_id)
     assert response['status'] == ('completed' if confirm else 'cancelled')
@@ -404,3 +389,5 @@ def test_permission_failure_during_confirmation_is_not_a_model_error(setup, monk
     assert response.status_code == 404
     assert response.json() == {'detail': '未找到可访问的动作。'}
     assert state(engine) == 'none'
+
+

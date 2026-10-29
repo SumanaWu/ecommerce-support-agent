@@ -8,7 +8,7 @@ REFUND_RULE_VERSION = 'local-refund-v1'
 
 def evaluate_refund_policy(order, refund):
     status = refund.status if refund else 'none'
-    result = {'order_id': order.order_id, 'rule_version': REFUND_RULE_VERSION,
+    result = {'order_id': order.order_id, 'order_status': order.status, 'refund_status': status, 'rule_version': REFUND_RULE_VERSION,
               'checks': {'delivered': order.status == 'delivered', 'no_existing_refund': status == 'none'}}
     if order.status != 'delivered':
         return {**result, 'eligible': False, 'reason_code': 'not_delivered',

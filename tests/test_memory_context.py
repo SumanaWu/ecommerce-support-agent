@@ -1,15 +1,11 @@
+"""Online regression grouped by responsibility; no rule-model fallback."""
 import json
-import os
 from pathlib import Path
 import sqlite3
-import subprocess
-import sys
-
 from fastapi.testclient import TestClient
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 import pytest
 from sqlalchemy import select
-
 import api
 from src import tools
 from src.agents import base
@@ -17,11 +13,11 @@ from src.auth import AccessError, Principal
 from src.backend.db import ActionRecord, PendingAction, Refund, get_engine, get_session_factory
 from src.backend.seed import seed
 from src.context import ContextBudgetExceeded, build_context, estimate_context_tokens, fit_model_context
-from src.demo_model import DemoChatModel
-from src.memory import empty_issue, extract_order_ids
+from src.memory import empty_issue
 from src.runtime_context import active_order_reference
 from src.service import SupportService
 from src.storage import ProfileConflict, SessionConflict, SupportStore
+
 
 A, B = Principal('customer_a'), Principal('customer_b')
 
@@ -43,92 +39,9 @@ def rows(engine, model):
         return db.scalars(select(model)).all()
 
 
-@pytest.mark.parametrize('text,expected', [
-    ('查一下1001和1002，再退掉那笔', [1001, 1002]),
-    ('订单1001退款1002元', [1001]), ('退款1001元', []),
-    ('订单 1003，金额 34.50', [1003]), ('order 1001 amount 1002', [1001]),
-    ('$1001', []), ('1001 dollars', []), ('订单1001.50', []),
-    ('不是1002，是1001', [1001]), ('不是订单1002，改为订单1001', [1001]),
-    ('order #1001', [1001]), ('订单号：9999', [9999]), ('订单42', [42]),
-])
-def test_order_ids_do_not_come_from_amounts_or_negated_references(text, expected):
-    assert extract_order_ids(text) == expected
-
-
-def test_multiple_orders_require_selection_before_any_proposal(setup, monkeypatch):
-    service, engine, _ = setup
-    monkeypatch.setattr(base, 'get_llm', lambda: pytest.fail('ambiguous request reached model'))
-    first = service.chat(A, 'one', 'demo', '查一下1001和1002，再退掉那笔', request_id='multi')
-    assert first['status'] == 'needs_clarification' and not first['pending_actions']
-    issue = service.snapshot(A, 'one', 'demo')['issue']
-    assert issue['candidate_order_ids'] == [1001, 1002] and issue['active_order_id'] is None
-    second = service.chat(A, 'one', 'demo', '帮我申请退款')
-    assert second['status'] == 'needs_clarification'
-    assert not rows(engine, ActionRecord) and not rows(engine, PendingAction)
-    assert service.chat(A, 'one', 'demo', '查一下1001和1002，再退掉那笔', request_id='multi')['replayed']
-    assert len(service.snapshot(A, 'one', 'demo')['turns']) == 2
-
-
-def test_selecting_an_order_resolves_pronouns_and_corrections_survive_restart(setup):
-    service, _, _ = setup
-    service.chat(A, 'one', 'demo', '查询1001和1002')
-    current = service.snapshot(A, 'one', 'demo')
-    selected = service.set_active_order(A, 'one', 'demo', 1001, current['version'])
-    assert selected['issue']['selection_source'] == 'user_selection'
-    restored = SupportService(service.store.path)
-    result = restored.chat(A, 'one', 'demo', '再退掉那笔')
-    assert result['status'] == 'pending_confirmation' and result['pending_actions'][0]['order_id'] == 1001
-    assert restored.chat(A, 'one', 'demo', '不是1001，是1002')['status'] == 'completed'
-    refused = restored.chat(A, 'one', 'demo', '帮我申请退款')
-    assert refused['status'] == 'rejected' and refused['trace'][0]['args']['order_id'] == 1002
-    assert restored.snapshot(A, 'new', 'demo')['issue'] == empty_issue()
-    assert restored.snapshot(A, 'one', 'online')['issue'] == empty_issue()
-    assert restored.snapshot(B, 'one', 'demo')['issue'] == empty_issue()
-
-
-def test_invalid_reference_does_not_reuse_a_previous_order(setup):
-    service, engine, _ = setup
-    service.chat(A, 'one', 'demo', '查询订单1001')
-    assert service.chat(A, 'one', 'demo', '帮我申请订单9999的退款')['status'] == 'rejected'
-    assert service.chat(A, 'one', 'demo', '帮我申请退款')['status'] == 'needs_clarification'
-    assert not rows(engine, PendingAction)
-    assert service.snapshot(A, 'one', 'demo')['last_order_id'] is None
-    for malformed in ['帮我申请订单ABC1001的退款', '帮我申请订单1001.50的退款']:
-        service.chat(A, 'one', 'demo', '查询订单1006')
-        assert service.chat(A, 'one', 'demo', malformed)['status'] == 'rejected'
-        assert service.chat(A, 'one', 'demo', '帮我申请退款')['status'] == 'needs_clarification'
-        assert not rows(engine, PendingAction)
-    for number in [9999, 1008]:
-        with pytest.raises(AccessError) as exc:
-            service.set_active_order(A, 'one', 'demo', number, service.snapshot(A, 'one', 'demo')['version'])
-        assert str(exc.value) == '未找到可访问的订单。'
-
-
-def test_amount_is_not_used_as_a_new_order_in_demo(setup):
-    service, _, _ = setup
-    result = service.chat(A, 'one', 'demo', '帮我申请订单1001的退款，金额1002元')
-    assert result['pending_actions'][0]['order_id'] == 1001
-    assert result['pending_actions'][0]['amount'] == 79.99
-    assert service.chat(A, 'new', 'demo', '帮我退款1001元')['status'] == 'needs_clarification'
-
-
-def test_model_cannot_propose_a_different_order_than_the_server_resolved(setup, monkeypatch):
-    from .test_agent_base import FakeLLM, FakeToolCallMessage
-    service, engine, _ = setup
-    model = FakeLLM([
-        FakeToolCallMessage(tool_calls=[{'name': 'initiate_refund', 'args': {'order_id': 1006, 'reason': 'guess'}, 'id': 'guess'}]),
-        FakeToolCallMessage(content='done'),
-    ])
-    monkeypatch.setattr(base, 'get_llm', lambda: model)
-    result = service.chat(A, 'one', 'demo', '帮我申请订单1001的退款')
-    assert result['status'] == 'failed' and 'error' in result['trace'][0]['result']
-    assert not rows(engine, PendingAction)
-    assert active_order_reference.get() is None
-
-
 def test_low_level_proposal_also_rejects_ambiguous_context(setup):
     service, _, _ = setup
-    context, _, _ = tools.request_journal().begin_request('customer_a', 'demo', 'direct', 'one', 'test')
+    context, _, _ = tools.request_journal().begin_request('customer_a', 'online', 'direct', 'one', 'test')
     from src.runtime_context import active_request
     request_token = active_request.set(context)
     reference_token = active_order_reference.set({'status': 'ambiguous', 'order_id': None})
@@ -140,14 +53,16 @@ def test_low_level_proposal_also_rejects_ambiguous_context(setup):
         active_request.reset(request_token)
 
 
-def test_issue_edit_uses_session_version_and_clear_does_not_leak_into_new_sessions(setup):
+def test_issue_edit_uses_session_version_and_clear_does_not_leak_into_new_sessions(setup, monkeypatch):
+    from tests.online_support import call, install_script, plan, proposal_steps, task
+    install_script(monkeypatch, [plan(kind='clarify', message='请提供付款订单编号。')])
     service, _, _ = setup
-    first = service.set_active_order(A, 'one', 'demo', 1001, 0)
+    first = service.set_active_order(A, 'one', 1001, 0)
     with pytest.raises(SessionConflict):
-        service.set_active_order(A, 'one', 'demo', 1002, 0)
-    cleared = service.set_active_order(A, 'one', 'demo', None, first['version'])
+        service.set_active_order(A, 'one', 1002, 0)
+    cleared = service.set_active_order(A, 'one', None, first['version'])
     assert not cleared['issue']['candidate_order_ids'] and cleared['issue']['active_order_id'] is None
-    assert service.chat(A, 'one', 'demo', '帮我付款')['status'] == 'needs_clarification'
+    assert service.chat(A, 'one', '帮我付款')['status'] == 'needs_clarification'
 
 
 def test_profile_versions_sources_deletion_and_account_isolation(setup):
@@ -168,33 +83,12 @@ def test_profile_versions_sources_deletion_and_account_isolation(setup):
     assert SupportService(service.store.path).profile_details(A) == deleted
 
 
-def test_chat_does_not_write_profile_and_deleted_values_are_not_model_facts(setup, monkeypatch):
-    service, _, _ = setup
-    captured = []
-    class CapturingModel(DemoChatModel):
-        def bind_tools(self, agent_tools):
-            self.tools = {tool.name for tool in agent_tools}
-            return self
-        def invoke(self, messages):
-            captured.append(messages[0].content)
-            return super().invoke(messages)
-    service.update_profile(A, {'tone': 'unit-unique-preference'}, 0)
-    service.delete_profile_field(A, 'tone', 1)
-    monkeypatch.setattr(base, 'get_llm', CapturingModel)
-    service.chat(A, 'one', 'demo', '查询订单1001。我喜欢长回复')
-    assert service.profile(A) == {}
-    assert all('unit-unique-preference' not in content for content in captured)
-
-
-def test_related_older_turns_are_selected_in_pairs_within_budget():
-    old = {'user': '订单1001退款时不要换成别的订单', 'reply': '记录本轮约束',
-           'trace': [{'args': {'order_id': 1001}}]}
-    turns = [old] + [{'user': '闲聊' * 150, 'reply': '回复' * 150, 'trace': []} for _ in range(12)]
-    issue = {**empty_issue(), 'candidate_order_ids': [1001], 'active_order_id': 1001}
-    selected, messages, info = build_context(turns, '查询订单1001退款', issue, {}, budget=1500)
-    assert selected == [old] and len(messages) == 2
-    assert isinstance(messages[0], HumanMessage) and isinstance(messages[1], AIMessage)
-    assert info['selected_turns'] == 1 and info['is_estimate']
+def test_recent_dialogue_is_bounded_and_never_split():
+    turns = [{'request_id': str(n), 'user': '问题' + str(n), 'reply': '回答' + str(n), 'trace': []} for n in range(12)]
+    selected, messages, info = build_context(turns, '继续', empty_issue(), {}, budget=1500)
+    assert selected == turns[-6:] and len(messages) == 12
+    assert all(isinstance(messages[n], HumanMessage) and isinstance(messages[n + 1], AIMessage) for n in range(0, 12, 2))
+    assert info['selected_turns'] == 6 and info['is_estimate']
 
 
 def test_large_tool_output_is_shortened_without_losing_pairing_or_facts():
@@ -218,7 +112,56 @@ def test_budget_never_slices_a_user_message_or_a_tool_pair():
     assert info['removed_turns'] == 1
 
 
+def test_planning_reference_budget_removes_whole_turns_and_keeps_current_context():
+    from src.context import fit_structured_context
+    context = {'user_input': '1006', 'pending_clarification': {'messages': ['查询付款状态'], 'question': '订单编号？'},
+               'issue': empty_issue(), 'profile': {'tone': '简短'}, 'recent_turns': [
+                   {'tasks': [{'operation': 'order_details', 'order_ids': list(range(1000000000000, 1000000000020))} for _ in range(6)]},
+                   {'tasks': [{'operation': 'payment_status', 'order_ids': [1006]}]}]}
+    messages = [SystemMessage('内部规划器，只返回JSON。'), HumanMessage(json.dumps(context, ensure_ascii=False))]
+    original = messages[-1].content
+    fitted, info = fit_structured_context(messages, budget=600)
+    current = json.loads(fitted[-1].content)
+    assert current == {**context, 'recent_turns': context['recent_turns'][1:], 'recent_facts': []}
+    assert info['removed_turns'] == 1 and info['history_turns'] == 1
+    assert info['history_format'] == 'conversation_facts' and estimate_context_tokens(fitted) <= 600
+    assert messages[-1].content == original
+
+
+@pytest.mark.parametrize('field', ['user_input', 'pending_clarification'])
+def test_planning_budget_does_not_slice_mandatory_input_or_pending(field):
+    from src.context import fit_structured_context
+    context = {'user_input': '1006', 'pending_clarification': None, 'recent_turns': []}
+    context[field] = '必须完整保留' * 5000
+    with pytest.raises(ContextBudgetExceeded):
+        fit_structured_context([SystemMessage('只返回JSON。'), HumanMessage(json.dumps(context, ensure_ascii=False))], budget=600)
+
+
+def test_planning_context_preserves_dialogue_but_only_trusts_tool_facts():
+    from src.context import planning_context
+    turns = [{'request_id': 'read', 'user': '查付款', 'reply': '模型声称999元',
+              'trace': [{'tool': 'get_payment_status', 'result': {'order_id': 1006, 'status': 'paid', 'amount_minor': 5999}}],
+              'tasks': [{'operation': 'payment_status', 'order_ids': [1006]}]},
+             {'user': '失败请求', 'reply': '技术失败', 'trace': []}]
+    result = planning_context(turns)
+    assert result['recent_turns'][0]['reply'] == '模型声称999元'
+    assert result['recent_facts'][0]['result']['amount_minor'] == 5999
+    assert result['recent_facts'][0]['source_request_id'] == 'read' and result['recent_facts'][0]['historical']
+
+
+def test_planning_context_keeps_legacy_tasks_and_recent_order():
+    from src.context import planning_context
+    turns = [{'user': '先查付款', 'reply': '已付款', 'tasks': [{'operation': 'payment_status', 'order_ids': [1006]}]},
+             {'user': '查详情', 'reply': '详情', 'tasks': [{'operation': 'order_details', 'order_id': 1001}]},
+             {'user': '再查付款', 'reply': '查询失败', 'tasks': [{'operation': 'payment_status', 'order_ids': [1006]}]}]
+    packet = planning_context(turns)
+    assert [turn['order_ids'] for turn in packet['recent_turns']] == [[1006], [1001], [1006]]
+    assert packet['recent_facts'] == []
+
+
 def test_budget_exhaustion_keeps_a_created_proposal_and_stops_model_calls(setup, monkeypatch):
+    from tests.online_support import call, install_script, plan, proposal_steps, task
+    install_script(monkeypatch, proposal_steps())
     service, engine, _ = setup
     original = base.fit_model_context
     def fail_after_proposal(messages, agent_tools):
@@ -226,11 +169,11 @@ def test_budget_exhaustion_keeps_a_created_proposal_and_stops_model_calls(setup,
             raise ContextBudgetExceeded('test budget')
         return original(messages, agent_tools)
     monkeypatch.setattr(base, 'fit_model_context', fail_after_proposal)
-    result = service.chat(A, 'one', 'demo', '帮我申请订单1001的退款', request_id='budget')
+    result = service.chat(A, 'one', '帮我申请订单1001的退款', request_id='budget')
     assert result['status'] == 'pending_confirmation' and result['error_type'] == 'context_budget'
     assert len(rows(engine, ActionRecord)) == len(rows(engine, PendingAction)) == 1
     assert next(row for row in rows(engine, Refund) if row.order_id == 1001).status == 'none'
-    assert service.chat(A, 'one', 'demo', '帮我申请订单1001的退款', request_id='budget')['replayed']
+    assert service.chat(A, 'one', '帮我申请订单1001的退款', request_id='budget')['replayed']
 
 
 def test_api_memory_and_profile_require_authentication_versions_and_owned_orders(setup):
@@ -238,7 +181,7 @@ def test_api_memory_and_profile_require_authentication_versions_and_owned_orders
     client = TestClient(api.app, headers={'Authorization': 'Bearer test-token-a'})
     other = TestClient(api.app, headers={'Authorization': 'Bearer test-token-b'})
     assert TestClient(api.app).get('/profile').status_code == 401
-    body = {'session_id': 'one', 'mode': 'demo', 'order_id': 1001, 'expected_version': 0}
+    body = {'session_id': 'one', 'order_id': 1001, 'expected_version': 0}
     assert client.patch('/memory/session/order', json=body).status_code == 200
     assert client.patch('/memory/session/order', json=body).status_code == 409
     assert other.patch('/memory/session/order', json=body).status_code == 404
@@ -251,20 +194,22 @@ def test_api_memory_and_profile_require_authentication_versions_and_owned_orders
     assert client.request('DELETE', '/profile/tone', json={'expected_version': 1}).status_code == 409
     snapshot = client.get('/memory/session', params={'session_id': 'one'}).json()
     assert snapshot['issue']['active_order_id'] == 1001
-    assert service.snapshot(B, 'one', 'demo')['issue'] == empty_issue()
+    assert service.snapshot(B, 'one')['issue'] == empty_issue()
 
 
-def test_chat_cleanup_preserves_audits_profile_actions_and_deduplication(setup):
+def test_chat_cleanup_preserves_audits_profile_actions_and_deduplication(setup, monkeypatch):
+    from tests.online_support import call, install_script, plan, proposal_steps, task
+    install_script(monkeypatch, proposal_steps())
     service, engine, _ = setup
     service.update_profile(A, {'tone': '简洁'}, 0)
-    result = service.chat(A, 'one', 'demo', '帮我申请订单1001的退款', request_id='keep')
-    snapshot = service.snapshot(A, 'one', 'demo')
-    cleared = service.clear_history(A, 'one', 'demo', snapshot['version'])
+    result = service.chat(A, 'one', '帮我申请订单1001的退款', request_id='keep')
+    snapshot = service.snapshot(A, 'one')
+    cleared = service.clear_history(A, 'one', snapshot['version'])
     assert cleared['turns'] == [] and cleared['issue'] == snapshot['issue']
-    assert len(service.list_pending_actions(A, 'one', 'demo')) == 1 and service.profile(A)['tone'] == '简洁'
+    assert len(service.list_pending_actions(A, 'one')) == 1 and service.profile(A)['tone'] == '简洁'
     assert len(rows(engine, ActionRecord)) == 1
-    assert service.chat(A, 'one', 'demo', '帮我申请订单1001的退款', request_id='keep')['replayed']
-    assert service.snapshot(A, 'one', 'demo')['turns'] == []
+    assert service.chat(A, 'one', '帮我申请订单1001的退款', request_id='keep')['replayed']
+    assert service.snapshot(A, 'one')['turns'] == []
     assert service.confirm_action(A, result['pending_actions'][0]['action_id'])['status'] == 'completed'
 
 
@@ -277,10 +222,10 @@ def test_v2_memory_migration_preserves_data_and_marks_legacy_candidates(tmp_path
                            CREATE TABLE profiles(user_id TEXT PRIMARY KEY,payload TEXT,updated_at TEXT);
                            CREATE TABLE schema_migrations(version INTEGER PRIMARY KEY);
                            INSERT INTO schema_migrations VALUES(1),(2);''')
-        db.execute('INSERT INTO sessions VALUES(?,?,?,?,?,?)', ('customer_a','demo','one',json.dumps(payload),'original',9))
+        db.execute('INSERT INTO sessions VALUES(?,?,?,?,?,?)', ('customer_a','online','one',json.dumps(payload),'original',9))
         db.execute('INSERT INTO profiles VALUES(?,?,?)', ('customer_a','{"tone":"brief"}','original'))
     store = SupportStore(path)
-    restored = store.load_session('customer_a', 'demo', 'one')
+    restored = store.load_session('customer_a', 'online', 'one')
     assert restored['version'] == 9 and restored['total_tokens'] == 17
     assert restored['issue']['active_order_id'] is None and restored['issue']['selection_source'] == 'legacy_last_order'
     assert store.profile_details('customer_a')['fields']['tone']['source'] == 'legacy_user_saved'
@@ -292,42 +237,12 @@ def test_v2_memory_migration_preserves_data_and_marks_legacy_candidates(tmp_path
     assert len(list(tmp_path.glob('old.sqlite.before-v3-*.bak'))) == 1
 
 
-@pytest.mark.parametrize('change', ['issue', 'profile'])
-def test_restart_respects_issue_correction_and_profile_withdrawal(setup, monkeypatch, change):
-    service, engine, directory = setup
-    service.update_profile(A, {'tone': 'withdraw-me-after-crash'}, 0)
-    env = dict(os.environ, SUPPORT_DATA_DIR=str(directory), SUPPORT_AGENT_DB_URL=str(engine.url))
-    code = '''
-import os
-from src import orchestrator
-from src.auth import Principal
-from src.service import SupportService
-def stop(state): os._exit(23)
-orchestrator.tool_step=stop
-SupportService().chat(Principal('customer_a'),'one','demo','帮我申请订单1001的退款',request_id='stopped')
-'''
-    assert subprocess.run([sys.executable, '-c', code], env=env, timeout=20).returncode == 23
-    run = service.list_runs(A, 'one', 'demo')[0]
-    if change == 'issue':
-        service.set_active_order(A, 'one', 'demo', 1002, service.snapshot(A, 'one', 'demo')['version'])
-        result = service.resume_run(A, run['run_id'])
-        assert result['status'] == 'needs_clarification' and result['error_type'] == 'order_reference_changed'
-        assert result['memory_saved'] and service.list_runs(A, 'one', 'demo') == []
-        assert not rows(engine, PendingAction)
-    else:
-        service.delete_profile_field(A, 'tone', 1)
-        class CurrentProfileModel(DemoChatModel):
-            def bind_tools(self, agent_tools):
-                self.tools = {tool.name for tool in agent_tools}
-                return self
-            def invoke(self, messages):
-                assert 'withdraw-me-after-crash' not in messages[0].content
-                return super().invoke(messages)
-        monkeypatch.setattr(base, 'get_llm', CurrentProfileModel)
-        assert service.resume_run(A, run['run_id'])['status'] == 'pending_confirmation'
-
-
 def test_page_correction_preference_deletion_and_inline_confirmation(setup, monkeypatch):
+    from tests.online_support import install_script, plan, proposal_steps, reference_verdict
+    steps = proposal_steps()
+    steps[0]['tasks'][0]['context_use'] = 'order'
+    steps.insert(1, reference_verdict(1001))
+    install_script(monkeypatch, [plan(kind='clarify', message='要给1001还是1002退款？', mentioned=[1001, 1002]), *steps])
     import streamlit as st
     from streamlit.testing.v1 import AppTest
     service, _, directory = setup
@@ -356,3 +271,5 @@ def test_page_correction_preference_deletion_and_inline_confirmation(setup, monk
         assert not page.exception
     finally:
         st.cache_resource.clear()
+
+

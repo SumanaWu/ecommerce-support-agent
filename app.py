@@ -1,4 +1,5 @@
 from uuid import uuid4
+from pathlib import Path
 import streamlit as st
 from src.service import SupportService
 from src.auth import AccessError, resolve_principal
@@ -7,7 +8,6 @@ from src.context import context_budget
 st.set_page_config(page_title='电商订单与售后助手', layout='wide')
 st.title('电商订单与售后助手')
 st.caption('LangGraph 专家路由 · 订单与售后工具 · 持久化 Memory')
-st.warning('全部订单和资金状态均为本地样例。办理支付、退款会修改样例数据库，不连接真实电商或资金渠道。')
 
 @st.cache_resource
 def service():
@@ -16,13 +16,12 @@ def service():
 if 'next_session' in st.session_state:
     st.session_state.session_id = st.session_state.pop('next_session')
 with st.sidebar:
-    mode = st.selectbox('运行模式', ['demo', 'online'])
     account_token = st.text_input('测试账户令牌', type='password', key='account_token')
     try:
         principal = resolve_principal(account_token)
     except AccessError as exc:
         st.info(str(exc))
-        st.caption('在 .env 配置 SUPPORT_ACCOUNT_TOKENS 后重启服务。这里只验证本地账户，不是生产登录系统。')
+        st.caption('在 .env 配置 SUPPORT_ACCOUNT_TOKENS 后重启服务。')
         st.stop()
     user_id = principal.customer_id
     st.caption('当前客户：' + user_id)
@@ -36,12 +35,12 @@ with st.sidebar:
 
 try:
     svc = service()
-    payload = svc.snapshot(principal, session_id, mode)
+    payload = svc.snapshot(principal, session_id)
 except ValueError as exc:
     st.error(str(exc))
     st.stop()
 
-chat, memories, guide = st.tabs(['客服对话', '记忆与客户偏好', '样例场景'])
+chat, memories, guide = st.tabs(['客服对话', '记忆与客户偏好', '使用示例'])
 with memories:
     details = svc.profile_details(principal)
     profile = details['values']
@@ -73,52 +72,50 @@ with memories:
     issue = payload['issue']
     st.write('候选订单', issue['candidate_order_ids'])
     st.write('当前明确选择的订单', issue['active_order_id'] or '尚未明确选择')
-    issue_key = f"{user_id}_{mode}_{session_id}_{payload['version']}"
+    issue_key = f"{user_id}_{session_id}_{payload['version']}"
     with st.form('order_' + issue_key):
         current_order = st.text_input('更正当前订单编号', value=str(issue['active_order_id'] or ''), key='current_order_' + issue_key)
         if st.form_submit_button('设置当前订单'):
             try:
                 if not current_order.isascii() or not current_order.isdigit():
                     raise ValueError('请填写有效的数字订单编号。')
-                svc.set_active_order(principal, session_id, mode, int(current_order), payload['version'])
+                svc.set_active_order(principal, session_id, int(current_order), payload['version'])
                 st.rerun()
             except ValueError as exc:
                 st.error(str(exc))
     st.caption('设置当前订单只更正指代，不代表确认付款或退款；已有待确认动作请单独核对或取消。')
     if st.button('清除当前订单与候选', key='clear_order_' + issue_key):
         try:
-            svc.set_active_order(principal, session_id, mode, None, payload['version'])
+            svc.set_active_order(principal, session_id, None, payload['version'])
             st.rerun()
         except ValueError as exc:
             st.error(str(exc))
     if st.button('清除当前会话聊天', key='clear_history_' + issue_key):
         try:
-            svc.clear_history(principal, session_id, mode, payload['version'])
+            svc.clear_history(principal, session_id, payload['version'])
             st.rerun()
         except ValueError as exc:
             st.error(str(exc))
     st.caption('清除聊天保留当前事项、累计用量、请求去重和业务记录；已有待确认动作需要单独取消。')
     st.write('保留的完整轮次数', len(payload['turns']))
     st.metric('当前会话累计模型 Token', payload['total_tokens'])
-    st.caption('离线模式没有模型调用；Token 为零不是在线成本测量结果。')
-    st.caption(f'模型输入上下文预算：{context_budget()} Token，使用 UTF-8 字节估算，不是模型服务的精确计费值。')
+    st.caption(f'模型输入上下文预算：{context_budget()} Token（估算）。')
     if payload['turns'] and payload['turns'][-1].get('context_info'):
         st.json(payload['turns'][-1]['context_info'])
     if payload['turns'] and payload['turns'][-1].get('execution_budget'):
         with st.expander('最近一轮的执行预算'):
             st.json(payload['turns'][-1]['execution_budget'])
-            st.caption('demo 的模型调用数是规则模拟次数，real_model_calls 为零。预算包含重试；重放结果不会新增调用。')
+            st.caption('预算包含重试；重放结果不会新增调用。')
 with guide:
-    st.markdown('''1. 查询订单 1001 的详情。
-2. 查询订单 1002 的物流。
-3. 接着输入“帮我申请退款”，观察系统沿用 1002 并拒绝未送达退款。
-4. 输入“帮我申请订单 1001 的退款”，检查待确认操作，再点击确认申请。
-5. 输入“查询订单 1003 的支付状态”，再输入“帮我付款”，确认后才更新支付状态。
-6. 输入“退货政策是什么”，或“我要投诉这个问题”，观察政策工具与本地工单。''')
-    st.write('多任务示例：“查订单1001的物流，再看能否退款”；或“帮我申请订单1001的退款，并帮我付款订单1003”。后一种会产生两个需要分别确认的动作。')
-    st.info('样例数据会被写操作改变。需要重新演示时，请停止服务后按 README 在独立目录初始化，不要在运行中重置。')
+    guide_text = (Path(__file__).resolve().parent / 'docs' / 'manual_validation.md').read_text(encoding='utf-8')
+    introduction, *sections = guide_text.split('\n## ')
+    st.markdown(introduction)
+    for section in sections:
+        heading, body = section.split('\n', 1)
+        with st.expander(heading, expanded=heading.startswith('1.')):
+            st.markdown(body)
 with chat:
-    for run in svc.list_runs(principal, session_id, mode):
+    for run in svc.list_runs(principal, session_id):
         with st.container(border=True):
             st.write('运行待恢复' if run['resumable'] else '运行结果待补写到会话')
             st.caption('请求编号：' + run['request_id'])
@@ -128,7 +125,7 @@ with chat:
                     result = svc.resume_run(principal, run['run_id'])
                     if result.get('memory_saved'):
                         for key, pending in list(st.session_state.get('pending_requests', {}).items()):
-                            if key == (user_id, mode, session_id) and pending['request_id'] == run['request_id']:
+                            if key == (user_id, session_id) and pending['request_id'] == run['request_id']:
                                 del st.session_state.pending_requests[key]
                     st.rerun()
                 except AccessError as exc:
@@ -139,7 +136,7 @@ with chat:
         st.session_state.pending_decisions = {}
 
     def decide(action_id, confirm):
-        key = (user_id, mode, session_id, action_id)
+        key = (user_id, session_id, action_id)
         st.session_state.pending_decisions[key] = confirm
         try:
             result = svc.confirm_action(principal, action_id) if confirm else svc.cancel_action(principal, action_id)
@@ -153,15 +150,15 @@ with chat:
             st.error('动作结果尚未确认，可使用下方按钮重试；已完成的动作不会重复办理。')
 
     for key, confirm in list(st.session_state.pending_decisions.items()):
-        if key[:3] == (user_id, mode, session_id):
-            if st.button('重试动作结果', key='retry_' + key[3]):
-                decide(key[3], confirm)
+        if key[:2] == (user_id, session_id):
+            if st.button('重试动作结果', key='retry_' + key[2]):
+                decide(key[2], confirm)
 
     def render_pending_action(action):
         with st.container(border=True):
             label = '退款申请' if action['tool'] == 'initiate_refund' else '付款'
-            st.write(f"待确认：订单 {action['order_id']} · 本地{label}")
-            st.write(f"本地样例金额：{action['amount_display']} {action['currency']}")
+            st.write(f"待确认：订单 {action['order_id']} · {label}")
+            st.write(f"金额：{action['amount_display']} {action['currency']}")
             if 'method' in action['args']:
                 st.write('支付方式：' + action['args']['method'])
             if 'reason' in action['args']:
@@ -172,19 +169,21 @@ with chat:
             if st.button('取消操作', key='cancel_' + action['action_id']):
                 decide(action['action_id'], False)
 
-    pending_actions = {action['action_id']: action for action in svc.list_pending_actions(principal, session_id, mode)}
+    pending_actions = {action['action_id']: action for action in svc.list_pending_actions(principal, session_id)}
     for t in payload['turns']:
         with st.chat_message('user'):
             st.write(t['user'])
         with st.chat_message('assistant'):
-            st.write(t['reply'])
+            st.markdown(t['reply'])
             for entry in t.get('trace', []):
                 result = entry.get('result')
                 if isinstance(result, dict):
                     action = pending_actions.pop(result.get('action_id'), None)
                     if action:
                         render_pending_action(action)
-            st.caption('处理专家：' + t['agent'])
+            labels = {'completed': '完成', 'pending_confirmation': '等待确认', 'needs_clarification': '需要补充信息',
+                      'rejected': '未办理', 'partial': '部分完成', 'failed': '处理失败', 'blocked': '等待前置事项', 'cancelled': '已取消'}
+            st.caption('处理状态：' + labels.get(t['status'], '尚未完成'))
             if len(t.get('tasks', [])) > 1:
                 labels = {'completed': '完成', 'pending_confirmation': '等待独立确认', 'rejected': '业务拒绝',
                           'partial': '部分完成', 'failed': '失败', 'needs_clarification': '需要澄清',
@@ -197,6 +196,8 @@ with chat:
                        'round_limit': '专家达到工具轮数上限，请核对部分结果。',
                        'repeated_tool_call': '专家重复请求相同工具，已停止继续调用。',
                        'batch_limit': '单轮工具数量超过限制，未执行该批请求。',
+                       'missing_tool_call': '订单已识别，本轮尚未取得工具查询结果，请重新提交查询。',
+                       'tool_validation_error': '模型未能修正工具请求，本项尚未完成，请核对后重新发起。',
                        'missing_action': '本项只完成查询，尚未创建你请求的待确认操作。'}
             if t.get('stop_reason') in reasons:
                 st.warning(reasons[t['stop_reason']])
@@ -207,17 +208,31 @@ with chat:
                             st.text(f"{source['title']} · {source['source']} · {source['section']}\n版本 {source['version']} · 生效 {source['effective_from']}")
                             st.text(source['excerpt'])
             with st.expander('工具执行轨迹'):
+                st.caption('处理专家：' + (t.get('agent') or '无'))
                 st.json(t['trace'])
+                if t.get('understanding'):
+                    st.write('模型理解与任务计划')
+                    st.json(t['understanding'])
+                if t.get('model_diagnostics'):
+                    st.write('模型校验与恢复诊断')
+                    st.json(t['model_diagnostics'])
+                if t.get('model_reply'):
+                    st.text('模型原始回复（业务正文以工具事实为准）：' + t['model_reply'])
 
     # Keep actions accessible if their chat turn was not saved or has aged out.
     for action in pending_actions.values():
         render_pending_action(action)
     if 'pending_requests' not in st.session_state:
         st.session_state.pending_requests = {}
-    request_key = (user_id, mode, session_id)
+    request_key = (user_id, session_id)
     pending = st.session_state.pending_requests.get(request_key)
+    if pending and any(t.get('request_id') == pending['request_id'] for t in payload['turns']):
+        del st.session_state.pending_requests[request_key]
+        pending = None
     retry = False
     if pending:
+        with st.chat_message('user'):
+            st.write(pending['message'])
         st.info(pending.get('notice') or '上次提交尚未确认完成。点击重试会复用请求编号，查询已有结果并补写记忆；中断运行请使用上方“恢复执行”。')
         st.caption('请求编号：' + pending['request_id'])
         retry = st.button('重试同一请求')
@@ -226,13 +241,16 @@ with chat:
         if prompt:
             pending = {'message': prompt, 'request_id': uuid4().hex}
             st.session_state.pending_requests[request_key] = pending
+            with st.chat_message('user'):
+                st.write(prompt)
         with st.spinner('正在处理'):
             try:
-                result = svc.chat(principal, session_id, mode, pending['message'], request_id=pending['request_id'])
+                result = svc.chat(principal, session_id, pending['message'], request_id=pending['request_id'])
                 if result['status'] != 'in_progress' and result['memory_saved']:
                     del st.session_state.pending_requests[request_key]
                 else:
                     pending['notice'] = result.get('memory_message') or result.get('reply')
                 st.rerun()
             except Exception:
-                st.error('本次提交尚未确认完成，请保留当前页面并重试同一请求。详细信息按请求编号检查日志。')
+                pending['notice'] = '本次提交尚未确认完成，请重试同一请求。详细信息按请求编号检查日志。'
+                st.rerun()

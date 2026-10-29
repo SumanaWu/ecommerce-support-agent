@@ -1,8 +1,8 @@
-"""单次请求的身份、模式、客户偏好、确认凭据与图运行上下文。"""
+"""单次请求的身份、客户偏好、确认凭据与图运行上下文。"""
 from contextvars import ContextVar
 import logging
 
-active_mode = ContextVar('active_mode', default='demo')
+STORAGE_MODE = 'online'  # Preserve existing database keys and deterministic action IDs.
 active_profile = ContextVar('active_profile', default={})
 active_request = ContextVar('active_request', default=None)
 active_principal = ContextVar('active_principal', default=None)

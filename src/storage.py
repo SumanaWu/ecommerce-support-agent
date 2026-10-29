@@ -83,7 +83,7 @@ class SupportStore:
     def _load_session(self, db, user_id, mode, session_id):
         row = db.execute('SELECT payload,version FROM sessions WHERE user_id=? AND mode=? AND session_id=?', (user_id, mode, session_id)).fetchone()
         payload = json.loads(row[0]) if row else {'turns': [], 'last_order_id': None, 'total_tokens': 0}
-        return {**payload, 'issue': session_issue(payload), 'version': row[1] if row else 0}
+        return {**payload, 'issue': session_issue(payload), 'pending_clarification': payload.get('pending_clarification'), 'version': row[1] if row else 0}
 
     def save_session(self, user_id, mode, session_id, value):
         return self.save_session_if_version(user_id, mode, session_id, value, value.get('version', 0))
@@ -105,7 +105,6 @@ class SupportStore:
                    (user_id, mode, session_id, payload, datetime.now(timezone.utc).isoformat()))
 
     def append_turn_once(self, user_id, mode, session_id, request_id, message, result, *, expected_version, preserve_context=False):
-        from src.memory import ConversationMemory
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             key = (user_id, mode, session_id, request_id)
@@ -114,8 +113,6 @@ class SupportStore:
             payload = self._load_session(db, *key[:3])
             if payload['version'] != expected_version:
                 raise SessionConflict(expected_version, payload['version'])
-            memory = ConversationMemory(last_order_id=payload['last_order_id'])
-            memory.update_last_order_id(result.get('trace', []))
             turn = {'request_id': request_id, 'user': message, 'reply': result['reply'],
                     'agent': result['agent'], 'trace': result.get('trace', []),
                     'cached': result.get('cached', False), 'status': result['status'],
@@ -123,14 +120,19 @@ class SupportStore:
             turn.update(tasks=result.get('tasks', []), stop_reason=result.get('stop_reason'),
                         execution_budget=result.get('execution_budget', {}), clarification_question=result.get('clarification_question'),
                         planning_usage=result.get('planning_usage', {}))
+            turn.update(understanding=result.get('understanding'), pipeline_version=result.get('pipeline_version'), batch_results=result.get('batch_results', []))
+            turn.update(error_type=result.get('error_type'), model_diagnostics=result.get('model_diagnostics', []))
+            for field in ('context_order_ids', 'model_reply', 'response_version', 'order_reference', 'pending_clarification'):
+                if field in result:
+                    turn[field] = result[field]
             payload['turns'] = (payload['turns'] + [turn])[-50:]
             if not preserve_context:
+                if 'pending_clarification' in result:
+                    payload['pending_clarification'] = result['pending_clarification']
                 reference = result.get('order_reference')
                 if reference:
                     payload['issue'] = reference['issue']
                     payload['last_order_id'] = reference.get('order_id') or reference['issue']['active_order_id']
-                elif not request_id.startswith(('confirm_', 'cancel_')):
-                    payload['last_order_id'] = memory.last_order_id
             payload['total_tokens'] += (result.get('usage') or {}).get('total_tokens') or 0
             self._write_session(db, user_id, mode, session_id, payload)
             db.execute('INSERT INTO session_requests VALUES(?,?,?,?)', key)
@@ -148,7 +150,7 @@ class SupportStore:
                          updated_at=datetime.now(timezone.utc).isoformat())
         else:
             issue.update(selection_source='user_selection', updated_at=datetime.now(timezone.utc).isoformat())
-        payload.update(issue=issue, last_order_id=order_id)
+        payload.update(issue=issue, last_order_id=order_id, pending_clarification=None)
         self.save_session_if_version(user_id, mode, session_id, payload, expected_version)
         return self.load_session(user_id, mode, session_id)
 
@@ -157,6 +159,8 @@ class SupportStore:
         if payload['version'] != expected_version:
             raise SessionConflict(expected_version, payload['version'])
         payload['turns'] = []
+        payload['pending_clarification'] = None
+        payload['issue']['order_groups'] = []
         self.save_session_if_version(user_id, mode, session_id, payload, expected_version)
         return self.load_session(user_id, mode, session_id)
 

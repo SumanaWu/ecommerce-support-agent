@@ -10,7 +10,7 @@ from sqlalchemy import select, update
 from src.backend.db import Order, Payment, Refund, Ticket, get_engine, get_session_factory, init_db
 from src.backend.seed import seed as _seed_data
 from src.requests import RequestJournal
-from src.runtime_context import active_request
+from src.runtime_context import active_request, active_task
 from src.auth import require_principal
 from src.money import money_view
 from src.rules import evaluate_refund_policy
@@ -58,6 +58,9 @@ ORDER_UNAVAILABLE = {'error': '未找到可访问的订单。'}
 
 def get_owned_order(db, order_id):
     principal = require_principal()
+    task = active_task.get()
+    if task and task.get('pipeline_version') == 'online-v3' and order_id not in task['order_ids']:
+        raise ValueError('订单超出当前任务范围。')
     return db.scalars(select(Order).where(Order.order_id == order_id, Order.customer_id == principal.customer_id)).first()
 
 
@@ -126,7 +129,7 @@ def refund_eligibility(s, order):
 
 
 def initiate_refund(order_id: int, reason: str) -> dict:
-    """只生成本地退款提案；用户必须通过独立确认入口才能执行。"""
+    """只生成退款提案；用户必须通过独立确认入口才能执行。"""
     from src.actions import propose_action
     return propose_action('initiate_refund', {'order_id': order_id, 'reason': reason[:300]})
 
@@ -171,7 +174,7 @@ def get_payment_status(order_id: int) -> dict:
 
 
 def process_payment(order_id: int, method: str) -> dict:
-    """只生成本地付款提案，不会直接改变支付状态。"""
+    """只生成付款提案，不会直接改变支付状态。"""
     from src.actions import propose_action
     return propose_action('process_payment', {'order_id': order_id, 'method': method})
 
@@ -209,9 +212,31 @@ def escalate_to_human(reason: str, context: str) -> dict:
         ticket_id = uuid.uuid4().hex[:8]
         s.add(Ticket(ticket_id=ticket_id, reason=reason[:300], context=context[:1000], status="pending"))
         return {"escalated": True, "ticket_id": ticket_id,
-                "message": f"已生成本地待处理工单 #{ticket_id}。尚未连接人工通知渠道，不代表真人已接单。"}
+                "message": f"已生成待处理工单 #{ticket_id}。"}
     result = request_journal().execute_action_once(
         active_request.get(), 'escalate_to_human', {'reason': reason, 'context': context}, apply)
     logger.warning("ESCALATION ticket=%s", result['ticket_id'])
     return result
 
+
+
+def _read_batch(order_ids, read):
+    if not isinstance(order_ids, list) or not order_ids or len(order_ids) > 20 or any(type(n) is not int or n <= 0 for n in order_ids):
+        raise ValueError('批量查询只接受1至20个正整数订单编号。')
+    return {'items': [{'order_id': number, 'result': read(number)} for number in dict.fromkeys(order_ids)]}
+
+
+def get_order_status_batch(order_ids: list[int]) -> dict:
+    return _read_batch(order_ids, get_order_status)
+
+
+def get_order_details_batch(order_ids: list[int]) -> dict:
+    return _read_batch(order_ids, get_order_details)
+
+
+def track_shipments_batch(order_ids: list[int]) -> dict:
+    return _read_batch(order_ids, track_shipment)
+
+
+def get_payment_status_batch(order_ids: list[int]) -> dict:
+    return _read_batch(order_ids, get_payment_status)

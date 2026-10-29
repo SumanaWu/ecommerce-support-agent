@@ -1,0 +1,2132 @@
+[
+  {
+    "id": "online_001",
+    "tags": [
+      "core",
+      "range"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "展示1001到1006的付款状态",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1001,
+                1002,
+                1003,
+                1004,
+                1005,
+                1006
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "get_payment_status",
+              "order_id": 1005,
+              "status": "refunded"
+            },
+            {
+              "tool": "get_payment_status",
+              "order_id": 1006,
+              "status": "paid"
+            }
+          ],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_002",
+    "tags": [
+      "core",
+      "colloquial"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1006付了吗",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1006
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "get_payment_status",
+              "order_id": 1006,
+              "status": "paid",
+              "amount_minor": 5999,
+              "currency": "CNY"
+            }
+          ],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_003",
+    "tags": [
+      "core",
+      "colloquial"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1006付款了吗",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1006
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_004",
+    "tags": [
+      "core",
+      "refunded"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1005付款了吗",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1005
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "get_payment_status",
+              "order_id": 1005,
+              "status": "refunded",
+              "amount_minor": 2499,
+              "currency": "CNY"
+            }
+          ],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_005",
+    "tags": [
+      "core",
+      "negation"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "不要退款，只看看订单1001能不能退",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "REFUND",
+              "operation": "refund_eligibility",
+              "intent": "read",
+              "order_ids": [
+                1001
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "check_refund_eligibility",
+              "order_id": 1001,
+              "eligible": true
+            }
+          ],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_006",
+    "tags": [
+      "core",
+      "condition"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "符合条件就帮我申请1001退款",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "REFUND",
+              "operation": "refund_eligibility",
+              "intent": "read",
+              "order_ids": [
+                1001
+              ]
+            },
+            {
+              "expert": "REFUND",
+              "operation": "propose_refund",
+              "intent": "propose",
+              "order_ids": [
+                1001
+              ]
+            }
+          ],
+          "status": "pending_confirmation",
+          "pending_orders": [
+            1001
+          ],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_007",
+    "tags": [
+      "core",
+      "multi_turn"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1001和1006，退掉那笔",
+        "expect": {
+          "kind": "clarify",
+          "tasks": [],
+          "status": "needs_clarification",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      },
+      {
+        "message": "第二笔",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "REFUND",
+              "operation": "propose_refund",
+              "intent": "propose",
+              "order_ids": [
+                1006
+              ]
+            }
+          ],
+          "status": "pending_confirmation",
+          "pending_orders": [
+            1006
+          ],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_008",
+    "tags": [
+      "core",
+      "range_write"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "把1001到1006都退款",
+        "expect": {
+          "kind": "clarify",
+          "tasks": [],
+          "status": "needs_clarification",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_009",
+    "tags": [
+      "core",
+      "future"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "等到账了再替我付款",
+        "expect": {
+          "kind": "clarify",
+          "tasks": [],
+          "status": "needs_clarification",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_010",
+    "tags": [
+      "core",
+      "list"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "请按1006、1003、1005的顺序列付款情况",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1006,
+                1003,
+                1005
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_011",
+    "tags": [
+      "colloquial"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1003的钱扣了没有？",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1003
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "get_payment_status",
+              "order_id": 1003,
+              "status": "pending"
+            }
+          ],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_012",
+    "tags": [
+      "colloquial"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "帮忙瞅瞅1001付过钱没",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1001
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_013",
+    "tags": [
+      "colloquial"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1002这单支付到哪一步了",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1002
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_014",
+    "tags": [
+      "correction"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "我记得1005已经退钱了，核实一下付款状态",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1005
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_015",
+    "tags": [
+      "parameters"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "订单1006用什么方式付款的？",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1006
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "get_payment_status",
+              "order_id": 1006,
+              "method": "card"
+            }
+          ],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_016",
+    "tags": [
+      "single"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1001订单现在是什么状态",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "ORDER",
+              "operation": "order_status",
+              "intent": "read",
+              "order_ids": [
+                1001
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "get_order_status",
+              "order_id": 1001,
+              "status": "delivered"
+            }
+          ],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_017",
+    "tags": [
+      "colloquial"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1002走到哪了",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "ORDER",
+              "operation": "shipment",
+              "intent": "read",
+              "order_ids": [
+                1002
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "track_shipment",
+              "order_id": 1002,
+              "status": "shipped"
+            }
+          ],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_018",
+    "tags": [
+      "details"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "把1003的商品和下单信息给我看看",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "ORDER",
+              "operation": "order_details",
+              "intent": "read",
+              "order_ids": [
+                1003
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_019",
+    "tags": [
+      "colloquial"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1001签收了没",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "ORDER",
+              "operation": "shipment",
+              "intent": "read",
+              "order_ids": [
+                1001
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_020",
+    "tags": [
+      "colloquial"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1003发货了吗",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "ORDER",
+              "operation": "shipment",
+              "intent": "read",
+              "order_ids": [
+                1003
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [
+            {
+              "tool": "track_shipment",
+              "order_id": 1003,
+              "status": "placed"
+            }
+          ],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_021",
+    "tags": [
+      "range"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1001至1003的物流都列一下",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "ORDER",
+              "operation": "shipment",
+              "intent": "read",
+              "order_ids": [
+                1001,
+                1002,
+                1003
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_022",
+    "tags": [
+      "range",
+      "descending"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "按1006到1003倒着列付款状态",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1006,
+                1005,
+                1004,
+                1003
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_023",
+    "tags": [
+      "list"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1001、1002及1003的订单详情",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "ORDER",
+              "operation": "order_details",
+              "intent": "read",
+              "order_ids": [
+                1001,
+                1002,
+                1003
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_024",
+    "tags": [
+      "deduplicate"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "查1006、1001、1006的支付情况，重复的列一次",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1006,
+                1001
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_025",
+    "tags": [
+      "range"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1001到1006这几单状态如何",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "ORDER",
+              "operation": "order_status",
+              "intent": "read",
+              "order_ids": [
+                1001,
+                1002,
+                1003,
+                1004,
+                1005,
+                1006
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_026",
+    "tags": [
+      "multi_intent"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "查1001的物流，再看1003付款了没有",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "ORDER",
+              "operation": "shipment",
+              "intent": "read",
+              "order_ids": [
+                1001
+              ]
+            },
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1003
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_027",
+    "tags": [
+      "multi_intent"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "订单1001物流及退款资格一起查一下",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "ORDER",
+              "operation": "shipment",
+              "intent": "read",
+              "order_ids": [
+                1001
+              ]
+            },
+            {
+              "expert": "REFUND",
+              "operation": "refund_eligibility",
+              "intent": "read",
+              "order_ids": [
+                1001
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_028",
+    "tags": [
+      "multi_intent",
+      "batch"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "对比1001与1006，分别查物流和支付状态",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "ORDER",
+              "operation": "shipment",
+              "intent": "read",
+              "order_ids": [
+                1001,
+                1006
+              ]
+            },
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1001,
+                1006
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_029",
+    "tags": [
+      "negation"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "别帮我付款，只查1003还欠不欠钱",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1003
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_030",
+    "tags": [
+      "negation"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1001我暂不退款，查下能不能申请就行",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "REFUND",
+              "operation": "refund_eligibility",
+              "intent": "read",
+              "order_ids": [
+                1001
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_031",
+    "tags": [
+      "negation",
+      "distractors"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "不要退1001也不要付1003，只查1002快递",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "ORDER",
+              "operation": "shipment",
+              "intent": "read",
+              "order_ids": [
+                1002
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_032",
+    "tags": [
+      "negation"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1006不是让你代付，我只想知道付没付",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1006
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_033",
+    "tags": [
+      "amount_vs_order"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "查订单1003的付款状态，金额34.50只是备注",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1003
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_034",
+    "tags": [
+      "amount_vs_order",
+      "negation"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "订单1001金额1002元是否符合退款条件？只查询",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "REFUND",
+              "operation": "refund_eligibility",
+              "intent": "read",
+              "order_ids": [
+                1001
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_035",
+    "tags": [
+      "correction"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "刚才说错了，不查1001，改查1006的付款状态",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1006
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_036",
+    "tags": [
+      "negation"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "只看1005现在的支付状态，先别做任何操作",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1005
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_037",
+    "tags": [
+      "write",
+      "payment_method"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "帮我付订单1003，用银行卡",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "propose_payment",
+              "intent": "propose",
+              "order_ids": [
+                1003
+              ]
+            }
+          ],
+          "status": "pending_confirmation",
+          "pending_orders": [
+            1003
+          ],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_038",
+    "tags": [
+      "write",
+      "reason"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "订单1001不想要了，替我申请退款，原因是尺寸不合适",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "REFUND",
+              "operation": "propose_refund",
+              "intent": "propose",
+              "order_ids": [
+                1001
+              ]
+            }
+          ],
+          "status": "pending_confirmation",
+          "pending_orders": [
+            1001
+          ],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_039",
+    "tags": [
+      "write"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "我要申请1006退款",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "REFUND",
+              "operation": "propose_refund",
+              "intent": "propose",
+              "order_ids": [
+                1006
+              ]
+            }
+          ],
+          "status": "pending_confirmation",
+          "pending_orders": [
+            1006
+          ],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_040",
+    "tags": [
+      "business_refusal"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1002我想退款",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "REFUND",
+              "operation": "propose_refund",
+              "intent": "propose",
+              "order_ids": [
+                1002
+              ]
+            }
+          ],
+          "status": "rejected",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_041",
+    "tags": [
+      "business_refusal"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "再为1004申请退款",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "REFUND",
+              "operation": "propose_refund",
+              "intent": "propose",
+              "order_ids": [
+                1004
+              ]
+            }
+          ],
+          "status": "rejected",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_042",
+    "tags": [
+      "business_refusal"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "帮我付款订单1006",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "propose_payment",
+              "intent": "propose",
+              "order_ids": [
+                1006
+              ]
+            }
+          ],
+          "status": "partial",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_043",
+    "tags": [
+      "business_refusal"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "帮我支付1005",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "propose_payment",
+              "intent": "propose",
+              "order_ids": [
+                1005
+              ]
+            }
+          ],
+          "status": "partial",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_044",
+    "tags": [
+      "confirmation_boundary"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1003你直接付，不用我点确认",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "propose_payment",
+              "intent": "propose",
+              "order_ids": [
+                1003
+              ]
+            }
+          ],
+          "status": "pending_confirmation",
+          "pending_orders": [
+            1003
+          ],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_045",
+    "tags": [
+      "condition",
+      "false"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "先查1002能不能退，符合才申请",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "REFUND",
+              "operation": "refund_eligibility",
+              "intent": "read",
+              "order_ids": [
+                1002
+              ]
+            },
+            {
+              "expert": "REFUND",
+              "operation": "propose_refund",
+              "intent": "propose",
+              "order_ids": [
+                1002
+              ]
+            }
+          ],
+          "status": "partial",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_046",
+    "tags": [
+      "condition",
+      "true"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1003还没付的话就帮我付款",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1003
+              ]
+            },
+            {
+              "expert": "PAYMENT",
+              "operation": "propose_payment",
+              "intent": "propose",
+              "order_ids": [
+                1003
+              ]
+            }
+          ],
+          "status": "pending_confirmation",
+          "pending_orders": [
+            1003
+          ],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_047",
+    "tags": [
+      "condition",
+      "false"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1006如果待付款就代付，已经付了就不要再付",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1006
+              ]
+            },
+            {
+              "expert": "PAYMENT",
+              "operation": "propose_payment",
+              "intent": "propose",
+              "order_ids": [
+                1006
+              ]
+            }
+          ],
+          "status": "partial",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_048",
+    "tags": [
+      "independent_confirmation"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "给1001申请退款，再付1003",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "REFUND",
+              "operation": "propose_refund",
+              "intent": "propose",
+              "order_ids": [
+                1001
+              ]
+            },
+            {
+              "expert": "PAYMENT",
+              "operation": "propose_payment",
+              "intent": "propose",
+              "order_ids": [
+                1003
+              ]
+            }
+          ],
+          "status": "pending_confirmation",
+          "pending_orders": [
+            1001,
+            1003
+          ],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_049",
+    "tags": [
+      "missing_order"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "帮我付款",
+        "expect": {
+          "kind": "clarify",
+          "tasks": [],
+          "status": "needs_clarification",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_050",
+    "tags": [
+      "missing_order"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "申请退款",
+        "expect": {
+          "kind": "clarify",
+          "tasks": [],
+          "status": "needs_clarification",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_051",
+    "tags": [
+      "ambiguous"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1001和1003，处理一下那个",
+        "expect": {
+          "kind": "clarify",
+          "tasks": [],
+          "status": "needs_clarification",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_052",
+    "tags": [
+      "range_write"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "把1001到1003都付了",
+        "expect": {
+          "kind": "clarify",
+          "tasks": [],
+          "status": "needs_clarification",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_053",
+    "tags": [
+      "future"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "退款到账后再给1003付款",
+        "expect": {
+          "kind": "clarify",
+          "tasks": [],
+          "status": "needs_clarification",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_054",
+    "tags": [
+      "future",
+      "unsupported"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "每天帮我检查1003，能付了就付",
+        "expect": {
+          "kind": "clarify",
+          "tasks": [],
+          "status": "needs_clarification",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_055",
+    "tags": [
+      "over_limit"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "查1001到1030的付款状态",
+        "expect": {
+          "kind": "clarify",
+          "tasks": [],
+          "status": "needs_clarification",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_056",
+    "tags": [
+      "conversation"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "你好",
+        "expect": {
+          "kind": "reply",
+          "tasks": [],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_057",
+    "tags": [
+      "conversation"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "谢谢，先这样",
+        "expect": {
+          "kind": "reply",
+          "tasks": [],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_058",
+    "tags": [
+      "policy"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "退货政策是什么",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "FAQ",
+              "operation": "policy",
+              "intent": "read",
+              "order_ids": []
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_059",
+    "tags": [
+      "policy"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "配送一般多久",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "FAQ",
+              "operation": "policy",
+              "intent": "read",
+              "order_ids": []
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_060",
+    "tags": [
+      "escalation"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "我要找人工客服",
+        "expect": {
+          "kind": "escalate",
+          "tasks": [],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_061",
+    "tags": [
+      "permissions"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "1008付过钱了吗",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1008
+              ]
+            }
+          ],
+          "status": "failed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_062",
+    "tags": [
+      "permissions",
+      "nonexistent"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "查9999的订单状态",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "ORDER",
+              "operation": "order_status",
+              "intent": "read",
+              "order_ids": [
+                9999
+              ]
+            }
+          ],
+          "status": "failed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_063",
+    "tags": [
+      "permissions",
+      "partial"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "把1001和1008的支付情况列出来",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1001,
+                1008
+              ]
+            }
+          ],
+          "status": "partial",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_064",
+    "tags": [
+      "permissions",
+      "customer_b"
+    ],
+    "customer_id": "customer_b",
+    "turns": [
+      {
+        "message": "1008付款状态是什么",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1008
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_065",
+    "tags": [
+      "multi_turn"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "我要申请退款",
+        "expect": {
+          "kind": "clarify",
+          "tasks": [],
+          "status": "needs_clarification",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      },
+      {
+        "message": "1001",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "REFUND",
+              "operation": "propose_refund",
+              "intent": "propose",
+              "order_ids": [
+                1001
+              ]
+            }
+          ],
+          "status": "pending_confirmation",
+          "pending_orders": [
+            1001
+          ],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_066",
+    "tags": [
+      "multi_turn"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "查询1003付款状态",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1003
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      },
+      {
+        "message": "那帮我付了",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "propose_payment",
+              "intent": "propose",
+              "order_ids": [
+                1003
+              ]
+            }
+          ],
+          "status": "pending_confirmation",
+          "pending_orders": [
+            1003
+          ],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_067",
+    "tags": [
+      "multi_turn",
+      "correction"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "查询1001的物流",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "ORDER",
+              "operation": "shipment",
+              "intent": "read",
+              "order_ids": [
+                1001
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      },
+      {
+        "message": "换成1002，查它的付款状态",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1002
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "online_068",
+    "tags": [
+      "multi_turn",
+      "ambiguous"
+    ],
+    "customer_id": "customer_a",
+    "turns": [
+      {
+        "message": "查询1001和1006付款状态",
+        "expect": {
+          "kind": "tasks",
+          "tasks": [
+            {
+              "expert": "PAYMENT",
+              "operation": "payment_status",
+              "intent": "read",
+              "order_ids": [
+                1001,
+                1006
+              ]
+            }
+          ],
+          "status": "completed",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      },
+      {
+        "message": "把那笔退了",
+        "expect": {
+          "kind": "clarify",
+          "tasks": [],
+          "status": "needs_clarification",
+          "pending_orders": [],
+          "facts": [],
+          "tickets": 0
+        }
+      }
+    ]
+  }
+]

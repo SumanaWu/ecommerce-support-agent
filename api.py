@@ -1,7 +1,5 @@
 """Local authenticated entrypoint; model tools cannot call confirmation endpoints."""
-from typing import Literal
-
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict, Field
@@ -13,7 +11,12 @@ from src.requests import RequestConflict
 from src.storage import ProfileConflict, SessionConflict
 from src import tools
 
-app = FastAPI(title='电商订单与售后助手 API', version='1.6.0')
+def reject_removed_mode(request: Request):
+    if 'mode' in request.query_params:
+        raise HTTPException(status_code=422, detail='mode 参数已移除；请删除该参数。服务仅使用在线模型。')
+
+
+app = FastAPI(title='电商订单与售后助手 API', version='2.0.0', dependencies=[Depends(reject_removed_mode)])
 service = SupportService()
 bearer = HTTPBearer(auto_error=False)
 
@@ -33,7 +36,6 @@ class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
     session_id: str | None = Field(default=None, pattern=r'^[A-Za-z0-9_-]{1,40}$')
     user_id: str | None = Field(default=None, pattern=r'^[A-Za-z0-9_-]{1,40}$')
-    mode: Literal['demo', 'online'] = 'demo'
     request_id: str | None = Field(default=None, pattern=r'^[A-Za-z0-9_-]{1,64}$')
 
 
@@ -44,7 +46,6 @@ class ActionDecision(BaseModel):
 class SessionEdit(BaseModel):
     model_config = ConfigDict(extra='forbid')
     session_id: str = Field(pattern=r'^[A-Za-z0-9_-]{1,40}$')
-    mode: Literal['demo', 'online'] = 'demo'
     expected_version: int = Field(ge=0, strict=True)
 
 
@@ -92,14 +93,14 @@ def policies(question: str = Query(min_length=1, max_length=2000), principal=Dep
 def chat(req: ChatRequest, principal=Depends(current_principal)):
     if req.user_id is not None and req.user_id != principal.customer_id:
         raise HTTPException(status_code=403, detail='客户编号与已认证身份不一致。')
-    return response_for(lambda: service.chat(principal, req.session_id, req.mode, req.message,
+    return response_for(lambda: service.chat(principal, req.session_id, req.message,
                                              runner=run_orchestrator, request_id=req.request_id))
 
 
 @app.get('/actions')
 def pending_actions(session_id: str = Query(default='case_1', pattern=r'^[A-Za-z0-9_-]{1,40}$'),
-                    mode: Literal['demo', 'online'] = 'demo', principal=Depends(current_principal)):
-    return response_for(lambda: {'actions': service.list_pending_actions(principal, session_id, mode)})
+                    principal=Depends(current_principal)):
+    return response_for(lambda: {'actions': service.list_pending_actions(principal, session_id)})
 
 
 @app.get('/actions/{action_id}')
@@ -119,8 +120,8 @@ def cancel(action_id: str, body: ActionDecision | None = None, principal=Depends
 
 @app.get('/runs')
 def runs(session_id: str = Query(default='case_1', pattern=r'^[A-Za-z0-9_-]{1,40}$'),
-         mode: Literal['demo', 'online'] = 'demo', principal=Depends(current_principal)):
-    return response_for(lambda: {'runs': service.list_runs(principal, session_id, mode)})
+         principal=Depends(current_principal)):
+    return response_for(lambda: {'runs': service.list_runs(principal, session_id)})
 
 
 @app.get('/runs/{run_id}')
@@ -135,18 +136,18 @@ def resume(run_id: str, body: ActionDecision | None = None, principal=Depends(cu
 
 @app.get('/memory/session')
 def memory_session(session_id: str = Query(default='case_1', pattern=r'^[A-Za-z0-9_-]{1,40}$'),
-                   mode: Literal['demo', 'online'] = 'demo', principal=Depends(current_principal)):
-    return response_for(lambda: service.snapshot(principal, session_id, mode))
+                   principal=Depends(current_principal)):
+    return response_for(lambda: service.snapshot(principal, session_id))
 
 
 @app.patch('/memory/session/order')
 def select_order(body: OrderSelection, principal=Depends(current_principal)):
-    return response_for(lambda: service.set_active_order(principal, body.session_id, body.mode, body.order_id, body.expected_version))
+    return response_for(lambda: service.set_active_order(principal, body.session_id, body.order_id, body.expected_version))
 
 
 @app.delete('/memory/session/history')
 def clear_history(body: SessionEdit, principal=Depends(current_principal)):
-    return response_for(lambda: service.clear_history(principal, body.session_id, body.mode, body.expected_version))
+    return response_for(lambda: service.clear_history(principal, body.session_id, body.expected_version))
 
 
 @app.get('/profile')
