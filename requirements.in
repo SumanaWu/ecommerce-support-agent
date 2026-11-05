@@ -1,9 +1,6 @@
 langgraph>=1,<2
-langgraph-checkpoint-sqlite>=3.1.2,<4
 langchain-google-genai>=4,<5
 langchain-groq>=1,<2
-# DeepSeek 与智谱共用 Chat Completions SDK；JSON 校验复用下方 Pydantic。
-langchain-openai>=1.7,<2
 sqlalchemy>=2,<3
 python-dotenv>=1,<2
 pydantic>=2,<3

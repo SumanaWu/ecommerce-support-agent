@@ -1,34 +1,35 @@
-"""Structured session facts; language and references are understood by the model."""
+from dataclasses import dataclass, field
+
+from langchain_core.messages import AIMessage, HumanMessage
 
 
-def empty_issue():
-    return {'candidate_order_ids': [], 'active_order_id': None, 'selection_source': None,
-            'updated_at': None, 'revision': 0, 'order_groups': []}
+@dataclass
+class ConversationMemory:
+    """Cross-turn conversation state: plain text history (safe to hand to any
+    specialist agent, regardless of which agent handled earlier turns) plus a
+    remembered 'last order discussed' so the customer doesn't need to repeat it."""
 
+    turns: list = field(default_factory=list)
+    last_order_id: int | None = None
 
-def remember_order_groups(groups, tasks, request_id):
-    """Keep ordered batch sources independent of the current single-order focus."""
-    groups = list(groups)
-    for task in tasks:
-        ids = list(dict.fromkeys(task.get('order_ids', [])))
-        if len(ids) < 2 or task.get('intent', 'read') != 'read':
-            continue
-        if not any(group['source_request_id'] == request_id and group.get('source_task_id', 'task_1') == task.get('task_id', 'task_1') for group in groups):
-            sequence = max((int(group['group_id'][5:]) for group in groups if group['group_id'].startswith('list_') and group['group_id'][5:].isdigit()), default=0) + 1
-            group_id = 'list_' + str(sequence)
-            groups.append({'group_id': group_id, 'order_ids': ids, 'operation': task.get('operation'),
-                           'source_request_id': request_id, 'source_task_id': task.get('task_id', 'task_1')})
-    return groups[-6:]
+    def add_turn(self, user_message: str, reply: str) -> None:
+        self.turns.append(HumanMessage(content=user_message))
+        self.turns.append(AIMessage(content=reply))
 
+    def update_last_order_id(self, trace: list) -> None:
+        for entry in trace:
+            args = entry.get("args") or {}
+            result = entry.get("result") or {}
+            order_id = args.get("order_id")
+            if order_id is None and isinstance(result, dict):
+                order_id = result.get("order_id")
+            if isinstance(result, dict) and result.get("error"):
+                continue
+            if isinstance(order_id, int) and order_id > 0:
+                self.last_order_id = order_id
 
-def session_issue(payload):
-    if 'issue' in payload:
-        issue = {**empty_issue(), **payload['issue']}
-    else:
-        issue = empty_issue()
-    if 'issue' not in payload and payload.get('last_order_id'):
-        issue.update(candidate_order_ids=[payload['last_order_id']], selection_source='legacy_last_order')
-    if 'order_groups' not in payload.get('issue', {}):
-        for turn in payload.get('turns', []):
-            issue['order_groups'] = remember_order_groups(issue['order_groups'], turn.get('tasks', []), turn.get('request_id'))
-    return issue
+    def context_note(self) -> str:
+        if self.last_order_id is not None:
+            return f"(Context: the customer was last discussing order {self.last_order_id}.)\n"
+        return ""
+

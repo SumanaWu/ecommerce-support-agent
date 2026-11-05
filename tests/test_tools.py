@@ -1,8 +1,4 @@
 import pytest
-from uuid import uuid4
-from src.auth import Principal
-from src.runtime_context import active_request
-from src.service import SupportService
 
 from src import tools
 from src.backend.db import get_engine, get_session_factory
@@ -10,16 +6,12 @@ from src.backend.seed import seed
 
 
 @pytest.fixture(autouse=True)
-def seeded_db(tmp_path):
+def seeded_db():
     engine = get_engine("sqlite:///:memory:")
     tools.configure_db(engine)
     session = get_session_factory(engine)()
     seed(session)
-    context,_,_=tools.request_journal().begin_request('customer_a','online',uuid4().hex,'tools','test')
-    token=active_request.set(context)
-    yield SupportService(tmp_path/'memory.sqlite')
-    active_request.reset(token)
-    engine.dispose()
+    yield
 
 
 def test_get_order_status_found():
@@ -59,12 +51,10 @@ def test_refund_eligibility_already_requested():
     assert "already" in result["reason"]
 
 
-def test_initiate_refund_succeeds_when_eligible(seeded_db):
+def test_initiate_refund_succeeds_when_eligible():
     result = tools.initiate_refund(1001, "Item not as described")
-    assert result['requires_confirmation']
-    assert tools.check_refund_eligibility(1001)['eligible'] is True
-    result=seeded_db.confirm_action(Principal('customer_a'),result['action_id'])
-    assert result['status']=='completed'
+    assert result["success"] is True
+    assert result["status"] == "requested"
     # DB actually changed
     assert tools.check_refund_eligibility(1001)["eligible"] is False
 
@@ -80,11 +70,9 @@ def test_get_payment_status():
     assert result["status"] == "pending"
 
 
-def test_process_payment_succeeds_when_pending(seeded_db):
+def test_process_payment_succeeds_when_pending():
     result = tools.process_payment(1003, "paypal")
-    assert result['requires_confirmation']
-    assert tools.get_payment_status(1003)['status']=='pending'
-    assert seeded_db.confirm_action(Principal('customer_a'),result['action_id'])['status']=='completed'
+    assert result["success"] is True
     assert tools.get_payment_status(1003)["status"] == "paid"
 
 
@@ -95,14 +83,12 @@ def test_process_payment_refuses_when_already_paid():
 
 def test_answer_faq_shipping():
     answer = tools.answer_faq("How long does shipping take?")
-    assert answer['found'] and "3—5个工作日" in answer['answer']
-    assert answer['sources'][0]['policy_id'] == 'shipping'
+    assert "3-5 business days" in answer
 
 
 def test_answer_faq_fallback():
     answer = tools.answer_faq("What is the meaning of life?")
-    assert not answer['found'] and not answer['sources']
-    assert '没有足够依据' in answer['answer']
+    assert "support@example.com" in answer
 
 
 def test_escalate_to_human():
