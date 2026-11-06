@@ -40,6 +40,7 @@ class SupportState(TypedDict):
     agent: str
     usage: dict
     cached: bool
+    refund_intent: str
 
 
 def parse_route(text: str) -> str:
@@ -59,6 +60,7 @@ def _make_agent_node(agent_name: str, run_fn):
     def node(state: SupportState) -> dict:
         result = run_fn(state["user_message"], state.get("history"))
         return {
+            "refund_intent": result.get("refund_intent"),
             "reply": result["reply"],
             "trace": result["trace"],
             "agent": agent_name,

@@ -6,7 +6,7 @@ from uuid import NAMESPACE_URL, uuid5
 from sqlalchemy import select, text
 
 from src import tools
-from src.backend.db import Order, Payment, PendingAction, Refund
+from src.backend.db import Payment, PendingAction
 
 
 def _amount(value):
@@ -21,7 +21,7 @@ def _lock_transaction(session):
 def _serialize(row):
     return {'action_id': row.action_id, 'request_id': row.request_id,
             'order_id': row.order_id, 'type': row.kind,
-            'amount': format(_amount(row.amount), '.2f'), 'version': row.version,
+            'amount': format(_amount(row.amount), '.2f'),
             'status': row.status, 'parameters': json.loads(row.parameters),
             'result': json.loads(row.result) if row.result else None}
 
@@ -46,20 +46,20 @@ def prepare_action(user_id, session_id, request_id, position, proposal):
     action_id = uuid5(NAMESPACE_URL, json.dumps([user_id, request_id, position])).hex
     with tools._session() as session, session.begin():
         _lock_transaction(session)
+        order = tools.owned_order(session, order_id, user_id)
+        if not order:
+            raise ValueError('订单不存在或无权访问')
         existing = session.get(PendingAction, action_id)
         if existing:
             if (existing.user_id, existing.session_id, existing.kind, existing.order_id,
                 existing.parameters) != (user_id, session_id, kind, order_id, parameters):
                 raise ValueError('请求编号已用于其他操作方案')
             return _serialize(existing)
-        order = session.get(Order, order_id)
-        if not order:
-            raise ValueError('订单不存在')
         if kind == 'refund':
-            refund = session.scalar(select(Refund).where(Refund.order_id == order_id))
-            if order.status != 'delivered' or (refund and refund.status != 'none'):
-                raise ValueError('订单不符合退款条件')
-            amount = order.amount
+            eligibility = tools.refund_eligibility(session, order_id, user_id)
+            if not eligibility.get('eligible'):
+                raise ValueError(eligibility.get('reason', eligibility.get('error')))
+            amount = float(eligibility['refundable_amount'])
         else:
             payment = session.scalar(select(Payment).where(Payment.order_id == order_id))
             if not payment or payment.status != 'pending':
@@ -68,13 +68,13 @@ def prepare_action(user_id, session_id, request_id, position, proposal):
         row = PendingAction(action_id=action_id, request_id=request_id, user_id=user_id,
                             session_id=session_id, position=position, kind=kind,
                             order_id=order_id, amount=amount, parameters=parameters,
-                            version=1, status='pending')
+                            status='pending')
         session.add(row)
         session.flush()
         return _serialize(row)
 
 
-def decide_action(user_id, session_id, action_id, version, decision):
+def decide_action(user_id, session_id, action_id, decision):
     """Atomically confirm or cancel one saved action; repeated decisions replay its result."""
     if decision not in {'confirm', 'cancel'}:
         raise ValueError('无效确认决定')
@@ -83,33 +83,34 @@ def decide_action(user_id, session_id, action_id, version, decision):
         row = session.scalar(select(PendingAction).where(PendingAction.action_id == action_id).with_for_update())
         if not row or (row.user_id, row.session_id) != (user_id, session_id):
             raise ValueError('待确认操作不存在')
-        if row.version != version:
-            raise ValueError('操作版本已变化')
+        if not tools.owned_order(session, row.order_id, user_id):
+            raise ValueError('订单不存在或无权访问')
         if row.status != 'pending':
             return _serialize(row)
         if decision == 'cancel':
             row.status = 'cancelled'
             row.result = json.dumps({'cancelled': True})
             return _serialize(row)
-        order = session.get(Order, row.order_id)
-        payment = session.scalar(select(Payment).where(Payment.order_id == row.order_id)) if row.kind == 'payment' else None
-        refund = session.scalar(select(Refund).where(Refund.order_id == row.order_id)) if row.kind == 'refund' else None
-        eligible = bool(order and (order.status == 'delivered' and (not refund or refund.status == 'none')
-                                  if row.kind == 'refund' else payment and payment.status == 'pending'))
+        payment = session.scalar(select(Payment).where(Payment.order_id == row.order_id))
+        eligibility = tools.refund_eligibility(session, row.order_id, user_id) if row.kind == 'refund' else {}
+        eligible = eligibility.get('eligible') if row.kind == 'refund' else payment and payment.status == 'pending'
         if not eligible:
             row.status = 'rejected'
-            row.result = json.dumps({'success': False, 'reason': '业务状态已变化，不再符合办理条件'}, ensure_ascii=False)
-            return _serialize(row)
-        current_amount = order.amount if row.kind == 'refund' else payment.amount
-        if _amount(current_amount) != _amount(row.amount):
-            row.amount = current_amount
-            row.version += 1
+            row.result = json.dumps({**eligibility, 'success': False, 'reason': eligibility.get('reason', '业务状态已变化')}, ensure_ascii=False)
             return _serialize(row)
         params = json.loads(row.parameters)
         if row.kind == 'refund':
-            result = tools._initiate_refund(session, row.order_id, params['reason'])
+            token = tools.active_customer.set(user_id)
+            try:
+                result = tools._initiate_refund(session, row.order_id, params['reason'])
+            finally:
+                tools.active_customer.reset(token)
         else:
-            result = tools._process_payment(session, row.order_id, params['method'])
+            token = tools.active_customer.set(user_id)
+            try:
+                result = tools._process_payment(session, row.order_id, params['method'])
+            finally:
+                tools.active_customer.reset(token)
         row.status = 'completed' if result.get('success') else 'rejected'
         row.result = json.dumps(result, ensure_ascii=False)
         return _serialize(row)

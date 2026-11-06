@@ -4,6 +4,8 @@ Docstrings are written for the LLM to read when deciding which tool to call.
 """
 import logging
 import uuid
+from decimal import Decimal
+from src.runtime_context import active_customer
 from functools import lru_cache
 from sqlalchemy import update
 from sqlalchemy.exc import IntegrityError
@@ -45,18 +47,18 @@ def _session():
 def get_order_status(order_id: int) -> dict:
     """Look up the current status (placed/shipped/delivered/cancelled) of an order."""
     with _session() as s:
-        order = s.get(Order, order_id)
+        order = owned_order(s, order_id)
         if not order:
-            return {"error": f"No order found with id {order_id}"}
+            return inaccessible(order_id)
         return {"order_id": order.order_id, "status": order.status}
 
 
 def get_order_details(order_id: int) -> dict:
     """Get full details of an order: customer, item, status, date, amount."""
     with _session() as s:
-        order = s.get(Order, order_id)
+        order = owned_order(s, order_id)
         if not order:
-            return {"error": f"No order found with id {order_id}"}
+            return inaccessible(order_id)
         return {
             "order_id": order.order_id,
             "customer_name": order.customer_name,
@@ -70,9 +72,9 @@ def get_order_details(order_id: int) -> dict:
 def track_shipment(order_id: int) -> dict:
     """Get shipment tracking info for an order based on its current status."""
     with _session() as s:
-        order = s.get(Order, order_id)
+        order = owned_order(s, order_id)
         if not order:
-            return {"error": f"No order found with id {order_id}"}
+            return inaccessible(order_id)
         messages = {
             "placed": "Order placed, not yet shipped.",
             "shipped": "In transit.",
@@ -86,29 +88,46 @@ def track_shipment(order_id: int) -> dict:
         }
 
 
-def check_refund_eligibility(order_id: int) -> dict:
-    """Check whether an order is eligible for a refund. Rule: order must be
-    'delivered' and must not already have a requested/approved/completed refund."""
-    with _session() as s:
-        order = s.get(Order, order_id)
-        if not order:
-            return {"error": f"No order found with id {order_id}"}
-        refund = s.query(Refund).filter_by(order_id=order_id).first()
-        refund_status = refund.status if refund else "none"
+def inaccessible(order_id):
+    return {"order_id": order_id, "error": "订单不存在或无权访问", "reason_code": "ORDER_NOT_ACCESSIBLE"}
 
-        if order.status != "delivered":
-            return {
-                "order_id": order_id,
-                "eligible": False,
-                "reason": f"Order status is '{order.status}'; only delivered orders are refund-eligible.",
-            }
-        if refund_status != "none":
-            return {
-                "order_id": order_id,
-                "eligible": False,
-                "reason": f"A refund is already '{refund_status}' for this order.",
-            }
-        return {"order_id": order_id, "eligible": True, "reason": "Order is delivered and has no existing refund."}
+
+def owned_order(session, order_id, customer_id=None):
+    order = session.get(Order, order_id)
+    identity = customer_id if customer_id is not None else active_customer.get()
+    return order if order and identity and order.customer_id == identity else None
+
+
+def refund_eligibility(session, order_id, customer_id=None):
+    order = owned_order(session, order_id, customer_id)
+    if not order:
+        return {**inaccessible(order_id), 'eligible': False}
+    payment = session.query(Payment).filter_by(order_id=order_id).first()
+    refund = session.query(Refund).filter_by(order_id=order_id).first()
+    if not payment:
+        return {'order_id': order_id, 'eligible': False, 'error': '未找到支付记录'}
+    status = refund.status if refund else 'none'
+    amount = Decimal(str(payment.amount)).quantize(Decimal('.01'))
+    code, reason = 'ELIGIBLE', '符合退款条件'
+    if payment.status == 'refunded' or status == 'completed':
+        code, reason = 'ALREADY_REFUNDED', '已完成退款，无需重复申请'
+    elif status in {'requested', 'approved'}:
+        code, reason = 'REFUND_IN_PROGRESS', '已有退款申请，正在处理中'
+    elif payment.status != 'paid':
+        code, reason = 'UNPAID', '订单尚未付款'
+    elif amount <= 0:
+        code, reason = 'NO_REFUNDABLE_BALANCE', '没有可退余额'
+    elif order.status not in {'placed', 'delivered'}:
+        code, reason = 'STATUS_NOT_ELIGIBLE', '仅已付款的已下单或已签收订单可申请退款'
+    return {'order_id': order_id, 'eligible': code == 'ELIGIBLE', 'reason_code': code,
+            'reason': reason, 'order_status': order.status, 'payment_status': payment.status,
+            'refund_status': status, 'refundable_amount': format(amount if code == 'ELIGIBLE' else Decimal(0), '.2f')}
+
+
+def check_refund_eligibility(order_id: int) -> dict:
+    """Check payment, refund, balance and order status for the current customer."""
+    with _session() as s:
+        return refund_eligibility(s, order_id)
 
 
 def initiate_refund(order_id: int, reason: str) -> dict:
@@ -125,11 +144,12 @@ def initiate_refund(order_id: int, reason: str) -> dict:
 
 def _initiate_refund(s, order_id: int, reason: str) -> dict:
     """Apply a refund within the caller's transaction, without committing it."""
-    order = s.get(Order, order_id)
+    order = owned_order(s, order_id)
     if not order:
-        return {"error": f"No order found with id {order_id}"}
-    if order.status != "delivered":
-        return {"success": False, "order_id": order_id, "reason": "Only delivered orders are refund-eligible."}
+        return inaccessible(order_id)
+    eligibility = refund_eligibility(s, order_id)
+    if not eligibility.get('eligible'):
+        return {**eligibility, 'success': False}
     refund = s.query(Refund).filter_by(order_id=order_id).first()
     if refund:
         changed = s.execute(update(Refund).where(Refund.order_id == order_id, Refund.status == "none").values(status="requested", reason=reason[:300]))
@@ -145,6 +165,8 @@ def _initiate_refund(s, order_id: int, reason: str) -> dict:
 def get_payment_status(order_id: int) -> dict:
     """Look up the payment status (pending/paid/refunded) for an order."""
     with _session() as s:
+        if not owned_order(s, order_id):
+            return inaccessible(order_id)
         payment = s.query(Payment).filter_by(order_id=order_id).first()
         if not payment:
             return {"error": f"No payment found for order {order_id}"}
@@ -166,6 +188,8 @@ def process_payment(order_id: int, method: str) -> dict:
 
 def _process_payment(s, order_id: int, method: str) -> dict:
     """Apply a payment within the caller's transaction, without committing it."""
+    if not owned_order(s, order_id):
+        return inaccessible(order_id)
     if method not in {"card", "paypal"}:
         return {"success": False, "order_id": order_id, "reason": "Unsupported payment method."}
     payment = s.query(Payment).filter_by(order_id=order_id).first()
@@ -179,7 +203,7 @@ def _process_payment(s, order_id: int, method: str) -> dict:
 
 _FAQ = {
     "shipping": "问：配送需要多久？答：普通配送示例时效为3–5个工作日，并非实际预计送达时间。\n问：如何查看运输状态？答：请提供订单编号查询本地样例状态。\n问：能加急或修改配送吗？答：本系统尚未接入这些功能。",
-    "return": "问：退款有什么条件？答：样例订单必须已送达且没有已有退款申请。\n问：未送达可以退款吗？答：当前样例规则不允许。\n问：有退货期限或包装要求吗？答：本系统未校验期限、包装或商品类别。",
+    "return": "问：退款有什么条件？答：样例订单必须已付款、有可退余额、没有已有退款，且为已下单或已签收状态。\n问：未送达可以退款吗？答：已付款且尚未发货可申请；已发货暂不允许。\n问：有退货期限或包装要求吗？答：本系统未校验期限、包装或商品类别。",
     "cancel": "问：可以取消订单吗？答：本系统没有取消订单工具。\n问：已发货如何取消？答：当前不能办理取消或安排退货物流。\n问：查询取消政策是否代表已取消？答：不代表，订单状态不会因此改变。",
     "refund": "问：申请退款后就到账了吗？答：requested 只表示本地申请已记录。\n问：可以重复申请吗？答：已有申请时不能重复申请。\n问：什么时候到账？答：本系统未连接真实退款渠道，无法承诺到账时间。",
     "contact": "问：如何联系人工？答：系统可以生成本地待处理工单。\n问：工单会通知真人吗？答：尚未连接通知或接单渠道。\n问：客服邮箱是什么？答：support@example.com 仅为示例占位，不代表可联系的邮箱。",

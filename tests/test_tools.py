@@ -42,13 +42,13 @@ def test_refund_eligibility_delivered_no_existing_refund():
 def test_refund_eligibility_not_delivered():
     result = tools.check_refund_eligibility(1002)  # shipped
     assert result["eligible"] is False
-    assert "delivered" in result["reason"]
+    assert result["reason_code"] == "STATUS_NOT_ELIGIBLE"
 
 
 def test_refund_eligibility_already_requested():
     result = tools.check_refund_eligibility(1004)  # delivered but refund already requested
     assert result["eligible"] is False
-    assert "already" in result["reason"]
+    assert result["reason_code"] == "REFUND_IN_PROGRESS"
 
 
 def test_initiate_refund_succeeds_when_eligible():
@@ -62,7 +62,7 @@ def test_initiate_refund_succeeds_when_eligible():
 def test_initiate_refund_refuses_when_not_delivered():
     result = tools.initiate_refund(1002, "Changed my mind")
     assert result["success"] is False
-    assert "delivered" in result["reason"]
+    assert result["reason_code"] == "STATUS_NOT_ELIGIBLE"
 
 
 def test_get_payment_status():

@@ -6,7 +6,7 @@ from src.agents.base import run_tool_agent
 
 @tool
 def check_refund_eligibility(order_id: int) -> dict:
-    """Check whether an order is eligible for a refund (rule: must be delivered, no existing refund)."""
+    """Check whether an order is eligible for a refund (paid, positive balance, placed/delivered, no existing refund)."""
     return backend_tools.check_refund_eligibility(order_id)
 
 
@@ -16,9 +16,8 @@ def prepare_refund(order_id: int, reason: str) -> dict:
     eligibility = backend_tools.check_refund_eligibility(order_id)
     if not eligibility.get('eligible'):
         return eligibility
-    order = backend_tools.get_order_details(order_id)
     return {'pending_action': {'type': 'refund', 'order_id': order_id,
-                               'reason': reason[:300], 'amount': order['amount']},
+                               'reason': reason[:300], 'amount': eligibility['refundable_amount']},
             'message': '等待用户确认，尚未申请退款。'}
 
 
@@ -32,7 +31,7 @@ REFUND_TOOLS = [check_refund_eligibility, prepare_refund, get_order_status]
 
 SYSTEM_PROMPT = (
     "You are the Refund Agent for an e-commerce support system. "
-    "Before preparing any refund, you must call check_refund_eligibility first. "
+    "Refunds require paid status, positive balance, placed/delivered status and no existing refund. "
     "Only call prepare_refund if the order is eligible; the action requires user confirmation. "
     "If it isn't eligible, explain why to the customer instead of attempting the refund. "
     "Always call a tool to get real data before answering; never guess. "
@@ -41,5 +40,6 @@ SYSTEM_PROMPT = (
 
 
 def run_refund_agent(user_message: str, history: list | None = None) -> dict:
-    return run_tool_agent("refund", SYSTEM_PROMPT, REFUND_TOOLS, user_message, history)
-
+    from src.refund_flow import parse_intent
+    intent, usage = parse_intent(user_message)
+    return {'reply': '', 'trace': [], 'agent': 'refund', 'usage': usage, 'refund_intent': intent}

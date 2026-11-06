@@ -50,6 +50,7 @@ def seed(session) -> None:
         session.merge(
             Order(
                 order_id=order_id,
+                customer_id="customer_a" if order_id <= 1007 else "customer_b",
                 customer_name=customer_name,
                 item=item,
                 status=status,

@@ -16,6 +16,8 @@ def prepare_payment(order_id: int, method: str) -> dict:
     if method not in {'card', 'paypal'}:
         return {'error': 'Unsupported payment method.'}
     payment = backend_tools.get_payment_status(order_id)
+    if payment.get('error'):
+        return payment
     if payment.get('status') != 'pending':
         return {'error': 'Only pending payments can be processed.'}
     return {'pending_action': {'type': 'payment', 'order_id': order_id,

@@ -21,8 +21,8 @@ def wait_for_decision(state: ConfirmationState) -> dict:
     decision = interrupt(action)
     if not isinstance(decision, dict) or decision.get('decision') not in {'confirm', 'cancel'}:
         raise ValueError('无效确认决定')
-    if (decision.get('action_id'), decision.get('version')) != (action['action_id'], action['version']):
-        raise ValueError('确认操作或版本不匹配')
+    if decision.get('action_id') != action['action_id']:
+        raise ValueError('确认操作不匹配')
     return {'decision': decision}
 
 
@@ -30,10 +30,10 @@ def execute_decision(state: ConfirmationState) -> dict:
     action = state['actions'][state['index']]
     decision = state['decision']
     result = decide_action(state['user_id'], state['session_id'], action['action_id'],
-                           action['version'], decision['decision'])
+                           decision['decision'])
     actions = list(state['actions'])
     actions[state['index']] = result
-    index = state['index'] if result['status'] == 'pending' else state['index'] + 1
+    index = state['index'] + 1
     return {'actions': actions, 'index': index}
 
 

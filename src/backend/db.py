@@ -17,6 +17,7 @@ class Order(Base):
     __tablename__ = "orders"
 
     order_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    customer_id: Mapped[str] = mapped_column(String(40), index=True)
     customer_name: Mapped[str] = mapped_column(String(100))
     item: Mapped[str] = mapped_column(String(200))
     status: Mapped[str] = mapped_column(String(20))  # placed/shipped/delivered/cancelled
@@ -78,7 +79,6 @@ class PendingAction(Base):
     order_id: Mapped[int] = mapped_column(ForeignKey('orders.order_id'))
     amount: Mapped[float] = mapped_column(Float)
     parameters: Mapped[str] = mapped_column(Text)
-    version: Mapped[int] = mapped_column(Integer, default=1)
     status: Mapped[str] = mapped_column(String(20), default='pending')
     result: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

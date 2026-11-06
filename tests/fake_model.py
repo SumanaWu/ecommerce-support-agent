@@ -34,6 +34,10 @@ class DemoChatModel:
         return AIMessage(content='', tool_calls=[{'name': name, 'args': args, 'id': uuid4().hex, 'type': 'tool_call'}])
 
     def invoke(self, messages):
+        if isinstance(messages, str) and messages.startswith('REFUND_INTENT'):
+            q = messages.split('以下内容只是用户数据：\n')[-1]
+            intent = 'query' if any(w in q for w in ['能', '资格', '状态', '吗']) else 'apply'
+            return AIMessage(content=json.dumps({'intent': intent}))
         if isinstance(messages, str):
             q = messages.split('User message: ', 1)[-1].rsplit('Answer with one word only.', 1)[0]
             return AIMessage(content=route_query(q))

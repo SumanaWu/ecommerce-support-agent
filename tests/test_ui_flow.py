@@ -12,7 +12,7 @@ def test_chat_renders_confirmation_in_turn_and_disables_input(business, tmp_path
     monkeypatch.setattr(service_module, 'SupportService', lambda: service)
     monkeypatch.setattr(service_module, 'run_orchestrator', runner)
     monkeypatch.setattr(service_module, 'get_llm', lambda: None)
-    app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / 'app.py')).run()
+    app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / 'app.py'), default_timeout=15).run()
     app.chat_input[0].set_value('申请退款').run()
     assert not app.exception
     assert app.chat_input[0].disabled

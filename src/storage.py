@@ -30,6 +30,14 @@ class SupportStore:
                 user_id TEXT PRIMARY KEY, payload TEXT NOT NULL, updated_at TEXT NOT NULL)
             ''')
 
+    def current_session(self, user_id, session_id=None):
+        with self.connect() as db:
+            db.execute('CREATE TABLE IF NOT EXISTS current_sessions (user_id TEXT PRIMARY KEY, session_id TEXT NOT NULL)')
+            row = db.execute('SELECT session_id FROM current_sessions WHERE user_id=?', (user_id,)).fetchone()
+            value = session_id or (row[0] if row else 'case_1')
+            db.execute('INSERT INTO current_sessions VALUES (?,?) ON CONFLICT(user_id) DO UPDATE SET session_id=excluded.session_id', (user_id, value))
+        return value
+
     def connect(self):
         return sqlite3.connect(self.path, timeout=20)
 
