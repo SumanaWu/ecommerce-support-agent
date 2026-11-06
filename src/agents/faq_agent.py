@@ -1,3 +1,5 @@
+from typing import Literal
+
 from langchain_core.tools import tool
 
 from src import tools as backend_tools
@@ -5,9 +7,9 @@ from src.agents.base import run_tool_agent
 
 
 @tool
-def answer_faq(question: str) -> str:
-    """Answer a general policy question (shipping, returns, cancellations, refunds, contact info)."""
-    return backend_tools.answer_faq(question)
+def answer_faq(topic: Literal['shipping', 'return', 'cancel', 'refund', 'contact']) -> str:
+    """Get the sample policy for shipping, returns, cancellations, refunds, or contact."""
+    return backend_tools.answer_faq(topic)
 
 
 FAQ_TOOLS = [answer_faq]

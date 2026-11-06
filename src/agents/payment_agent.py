@@ -11,12 +11,19 @@ def get_payment_status(order_id: int) -> dict:
 
 
 @tool
-def process_payment(order_id: int, method: str) -> dict:
-    """Process a pending payment for an order using the given method (e.g. 'card', 'paypal')."""
-    return backend_tools.process_payment(order_id, method)
+def prepare_payment(order_id: int, method: str) -> dict:
+    """Prepare a pending payment for user confirmation; this does not process it."""
+    if method not in {'card', 'paypal'}:
+        return {'error': 'Unsupported payment method.'}
+    payment = backend_tools.get_payment_status(order_id)
+    if payment.get('status') != 'pending':
+        return {'error': 'Only pending payments can be processed.'}
+    return {'pending_action': {'type': 'payment', 'order_id': order_id,
+                               'method': method, 'amount': payment['amount']},
+            'message': '等待用户确认，尚未办理支付。'}
 
 
-PAYMENT_TOOLS = [get_payment_status, process_payment]
+PAYMENT_TOOLS = [get_payment_status, prepare_payment]
 
 SYSTEM_PROMPT = (
     "You are the Payment Agent for an e-commerce support system. "

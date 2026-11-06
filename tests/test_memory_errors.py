@@ -40,7 +40,6 @@ def test_call_with_retry_escalates_after_exhausting_attempts():
     result, escalation = call_with_retry(
         flaky,
         max_attempts=2,
-        backoff_seconds=0,
         escalate_reason="forced failure",
         escalate_context="test message",
     )

@@ -8,7 +8,7 @@ _EMPTY_USAGE = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
 
 
 def as_text(content) -> str:
-    """Gemini sometimes returns content as a list of typed blocks instead of a plain string."""
+    """Convert plain text or text blocks to a string."""
     if isinstance(content, str):
         return content
     if isinstance(content, list):
@@ -36,7 +36,6 @@ def run_tool_agent(
     agent_tools: list,
     user_message: str,
     history: list | None = None,
-    max_rounds: int = 4,
 ) -> dict:
     """Generic tool-calling loop shared by every specialist agent."""
     tools_by_name = {t.name: t for t in agent_tools}
@@ -58,18 +57,7 @@ def run_tool_agent(
     usage = sum_usage(usage, extract_usage(ai_msg))
     messages.append(ai_msg)
 
-    rounds = 0
-    seen_calls: set[tuple] = set()
-    while ai_msg.tool_calls and rounds < max_rounds:
-        call_signature = tuple(sorted((c["name"], str(c["args"])) for c in ai_msg.tool_calls))
-        if call_signature in seen_calls:
-            # Model is repeating the same tool call instead of answering - stop
-            # spending rounds/quota on it; the fallback below covers the reply.
-            break
-        seen_calls.add(call_signature)
-
-        if len(ai_msg.tool_calls) > 6:
-            raise ValueError("单轮工具请求超过六个，停止执行")
+    while ai_msg.tool_calls:
         for call in ai_msg.tool_calls:
             tool_fn = tools_by_name.get(call["name"])
             try:
@@ -85,14 +73,13 @@ def run_tool_agent(
         ai_msg = llm.invoke(messages)
         usage = sum_usage(usage, extract_usage(ai_msg))
         messages.append(ai_msg)
-        rounds += 1
 
     reply = as_text(ai_msg.content).strip()
+    if any(isinstance(entry['result'], dict) and entry['result'].get('pending_action')
+           for entry in trace):
+        reply = '已准备操作方案，尚未执行，请确认后办理。'
     if not reply and trace:
-        # Some models occasionally exhaust tool-call rounds without ever
-        # emitting closing text (seen with Groq/Llama under long conversation
-        # history) - fall back to the last tool result rather than show
-        # the customer a blank reply.
+        # Fall back to the last tool result when no closing text is available.
         last_result = trace[-1]["result"]
         reply = last_result if isinstance(last_result, str) else str(last_result)
 

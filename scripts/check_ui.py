@@ -21,8 +21,12 @@ with TemporaryDirectory() as d:
     print('3 跨专家指代与退款拒绝通过')
     app.chat_input[0].set_value('帮我申请订单 1001 的退款').run()
     assert not app.exception,app.exception
-    assert any('requested' in str(m.value) for m in app.markdown)
-    print('4 退款写入通过')
+    assert any('尚未执行' in str(m.value) for m in app.markdown)
+    assert app.chat_input[0].disabled
+    next(b for b in app.button if b.label=='确认办理').click().run()
+    assert not app.exception,app.exception
+    assert not app.chat_input[0].disabled
+    print('4 退款确认通过')
     app.chat_input[0].set_value('我要投诉这个问题').run()
     assert not app.exception,app.exception
     assert any('本地待处理工单' in str(m.value) for m in app.markdown)

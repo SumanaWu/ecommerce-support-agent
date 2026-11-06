@@ -1,8 +1,8 @@
 import os
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
-from sqlalchemy import create_engine, Date, Float, ForeignKey, Integer, String
+from sqlalchemy import create_engine, Date, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -65,3 +65,34 @@ class Ticket(Base):
     reason: Mapped[str] = mapped_column(String(300))
     context: Mapped[str] = mapped_column(String(1000))
     status: Mapped[str] = mapped_column(String(20), default="pending")
+
+
+class PendingAction(Base):
+    __tablename__ = 'pending_actions'
+    action_id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    request_id: Mapped[str] = mapped_column(String(64), index=True)
+    user_id: Mapped[str] = mapped_column(String(40))
+    session_id: Mapped[str] = mapped_column(String(40))
+    position: Mapped[int] = mapped_column(Integer)
+    kind: Mapped[str] = mapped_column(String(20))
+    order_id: Mapped[int] = mapped_column(ForeignKey('orders.order_id'))
+    amount: Mapped[float] = mapped_column(Float)
+    parameters: Mapped[str] = mapped_column(Text)
+    version: Mapped[int] = mapped_column(Integer, default=1)
+    status: Mapped[str] = mapped_column(String(20), default='pending')
+    result: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc),
+                                                onupdate=lambda: datetime.now(timezone.utc))
+
+
+class RequestRecord(Base):
+    __tablename__ = 'requests'
+    user_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    request_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    session_id: Mapped[str] = mapped_column(String(40), index=True)
+    input_data: Mapped[str] = mapped_column(Text)
+    response: Mapped[str | None] = mapped_column(Text, nullable=True)
+    kind: Mapped[str] = mapped_column(String(12), default='chat')
+    tokens: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

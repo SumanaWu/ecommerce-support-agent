@@ -79,3 +79,8 @@ def test_chat_rejects_empty_message():
     response = client.post("/chat", json={"message": ""})
     assert response.status_code == 422
 
+
+def test_chat_rejects_removed_mode_field():
+    response = client.post('/chat', json={'message': 'hello', 'mode': 'demo'})
+    assert response.status_code == 422
+

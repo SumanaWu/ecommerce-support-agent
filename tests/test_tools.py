@@ -81,14 +81,30 @@ def test_process_payment_refuses_when_already_paid():
     assert result["success"] is False
 
 
+def test_business_actions_can_be_rolled_back_with_caller_transaction():
+    with tools._session() as session:
+        assert tools._initiate_refund(session, 1001, 'test')['success'] is True
+        assert tools._process_payment(session, 1003, 'card')['success'] is True
+        session.rollback()
+    assert tools.check_refund_eligibility(1001)['eligible'] is True
+    assert tools.get_payment_status(1003)['status'] == 'pending'
+
+
 def test_answer_faq_shipping():
-    answer = tools.answer_faq("How long does shipping take?")
-    assert "3-5 business days" in answer
+    answer = tools.answer_faq("shipping")
+    assert "3–5个工作日" in answer
 
 
 def test_answer_faq_fallback():
-    answer = tools.answer_faq("What is the meaning of life?")
-    assert "support@example.com" in answer
+    answer = tools.answer_faq("unknown")
+    assert "没有找到" in answer
+
+
+@pytest.mark.parametrize("topic", ["shipping", "return", "cancel", "refund", "contact"])
+def test_answer_faq_contains_three_sample_questions(topic):
+    answer = tools.answer_faq(topic)
+    assert answer.count("问：") == 3
+    assert answer.count("答：") == 3
 
 
 def test_escalate_to_human():

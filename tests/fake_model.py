@@ -47,24 +47,31 @@ class DemoChatModel:
         q = query.lower()
         if 'answer_faq' in self.tools:
             if not results:
-                return self._call('answer_faq', {'question': query})
+                topic = next((name for name, words in [
+                    ('shipping', ('配送', '物流', '快递', 'shipping')),
+                    ('return', ('退货', 'return')),
+                    ('cancel', ('取消', 'cancel')),
+                    ('refund', ('退款', 'refund')),
+                    ('contact', ('联系', 'contact')),
+                ] if any(word in q for word in words)), 'contact')
+                return self._call('answer_faq', {'topic': topic})
         elif order_id is None:
             return AIMessage(content='请先提供订单编号，例如“查询订单 1001”。')
-        elif 'initiate_refund' in self.tools:
+        elif 'prepare_refund' in self.tools:
             if 'check_refund_eligibility' not in used:
                 return self._call('check_refund_eligibility', {'order_id': order_id})
             data = json.loads(results[-1].content)
             wants_write = any(x in q for x in ['申请', '办理', '帮我退', '退款吧', 'refund it', 'want a refund', 'request refund'])
-            if data.get('eligible') and wants_write and 'initiate_refund' not in used:
-                return self._call('initiate_refund', {'order_id': order_id, 'reason': '客户申请：'+query[-150:]})
-        elif 'process_payment' in self.tools:
+            if data.get('eligible') and wants_write and 'prepare_refund' not in used:
+                return self._call('prepare_refund', {'order_id': order_id, 'reason': '客户申请：'+query[-150:]})
+        elif 'prepare_payment' in self.tools:
             if 'get_payment_status' not in used:
                 return self._call('get_payment_status', {'order_id': order_id})
             data = json.loads(results[-1].content)
             wants_write = any(x in q for x in ['办理支付', '帮我付款', '支付吧', 'process payment', 'pay it'])
-            if data.get('status') == 'pending' and wants_write and 'process_payment' not in used:
+            if data.get('status') == 'pending' and wants_write and 'prepare_payment' not in used:
                 method = 'paypal' if 'paypal' in q else 'card'
-                return self._call('process_payment', {'order_id': order_id, 'method': method})
+                return self._call('prepare_payment', {'order_id': order_id, 'method': method})
         elif not results:
             name = 'track_shipment' if any(x in q for x in ['物流', '快递', 'tracking']) else 'get_order_details'
             return self._call(name, {'order_id': order_id})

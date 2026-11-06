@@ -114,28 +114,32 @@ def check_refund_eligibility(order_id: int) -> dict:
 def initiate_refund(order_id: int, reason: str) -> dict:
     """申请本地样例退款；工具内重查规则，用条件更新避免同订单重复申请。"""
     with _session() as s:
-        order = s.get(Order, order_id)
-        if not order:
-            return {"error": f"No order found with id {order_id}"}
-        if order.status != "delivered":
-            return {"success": False, "order_id": order_id, "reason": "Only delivered orders are refund-eligible."}
-        refund = s.query(Refund).filter_by(order_id=order_id).first()
-        if refund:
-            changed = s.execute(update(Refund).where(Refund.order_id == order_id, Refund.status == "none").values(status="requested", reason=reason[:300]))
-            if changed.rowcount != 1:
-                return {"success": False, "order_id": order_id, "reason": "A refund is already requested/approved/completed."}
-            refund_id = refund.refund_id
-        else:
-            refund = Refund(order_id=order_id, status="requested", reason=reason[:300])
-            s.add(refund)
-            try:
-                s.flush()
-            except IntegrityError:
-                s.rollback()
-                return {"success": False, "order_id": order_id, "reason": "A refund is already requested."}
-            refund_id = refund.refund_id
+        try:
+            result = _initiate_refund(s, order_id, reason)
+        except IntegrityError:
+            s.rollback()
+            return {"success": False, "order_id": order_id, "reason": "A refund is already requested."}
         s.commit()
-        return {"success": True, "order_id": order_id, "refund_id": refund_id, "status": "requested"}
+        return result
+
+
+def _initiate_refund(s, order_id: int, reason: str) -> dict:
+    """Apply a refund within the caller's transaction, without committing it."""
+    order = s.get(Order, order_id)
+    if not order:
+        return {"error": f"No order found with id {order_id}"}
+    if order.status != "delivered":
+        return {"success": False, "order_id": order_id, "reason": "Only delivered orders are refund-eligible."}
+    refund = s.query(Refund).filter_by(order_id=order_id).first()
+    if refund:
+        changed = s.execute(update(Refund).where(Refund.order_id == order_id, Refund.status == "none").values(status="requested", reason=reason[:300]))
+        if changed.rowcount != 1:
+            return {"success": False, "order_id": order_id, "reason": "A refund is already requested/approved/completed."}
+    else:
+        refund = Refund(order_id=order_id, status="requested", reason=reason[:300])
+        s.add(refund)
+        s.flush()
+    return {"success": True, "order_id": order_id, "refund_id": refund.refund_id, "status": "requested"}
 
 
 def get_payment_status(order_id: int) -> dict:
@@ -154,51 +158,54 @@ def get_payment_status(order_id: int) -> dict:
 
 def process_payment(order_id: int, method: str) -> dict:
     """仅把本地 pending 支付状态改为 paid；不连接支付网关。"""
+    with _session() as s:
+        result = _process_payment(s, order_id, method)
+        s.commit()
+        return result
+
+
+def _process_payment(s, order_id: int, method: str) -> dict:
+    """Apply a payment within the caller's transaction, without committing it."""
     if method not in {"card", "paypal"}:
         return {"success": False, "order_id": order_id, "reason": "Unsupported payment method."}
-    with _session() as s:
-        payment = s.query(Payment).filter_by(order_id=order_id).first()
-        if not payment:
-            return {"error": f"No payment found for order {order_id}"}
-        changed = s.execute(update(Payment).where(Payment.order_id == order_id, Payment.status == "pending").values(status="paid", method=method))
-        if changed.rowcount != 1:
-            return {"success": False, "order_id": order_id, "reason": "Only pending payments can be processed; it may already be paid or refunded."}
-        s.commit()
-        return {"success": True, "order_id": order_id, "status": "paid", "method": method}
+    payment = s.query(Payment).filter_by(order_id=order_id).first()
+    if not payment:
+        return {"error": f"No payment found for order {order_id}"}
+    changed = s.execute(update(Payment).where(Payment.order_id == order_id, Payment.status == "pending").values(status="paid", method=method))
+    if changed.rowcount != 1:
+        return {"success": False, "order_id": order_id, "reason": "Only pending payments can be processed; it may already be paid or refunded."}
+    return {"success": True, "order_id": order_id, "status": "paid", "method": method}
 
 
 _FAQ = {
-    "shipping": "Standard shipping takes 3-5 business days. Expedited shipping (1-2 days) is available at checkout.",
-    "return": "本地样例退款规则：订单已送达且不存在已有退款申请。本示例不校验退货期限、商品类别或包装状态，不能当作真实商家的退货政策。",
-    "cancel": "Orders can be cancelled free of charge before they ship. Once shipped, they must be returned instead.",
-    "refund": "Refunds are issued to the original payment method within 5-7 business days of approval.",
-    "contact": "You can reach human support at support@example.com, Mon-Fri 9am-6pm.",
+    "shipping": "问：配送需要多久？答：普通配送示例时效为3–5个工作日，并非实际预计送达时间。\n问：如何查看运输状态？答：请提供订单编号查询本地样例状态。\n问：能加急或修改配送吗？答：本系统尚未接入这些功能。",
+    "return": "问：退款有什么条件？答：样例订单必须已送达且没有已有退款申请。\n问：未送达可以退款吗？答：当前样例规则不允许。\n问：有退货期限或包装要求吗？答：本系统未校验期限、包装或商品类别。",
+    "cancel": "问：可以取消订单吗？答：本系统没有取消订单工具。\n问：已发货如何取消？答：当前不能办理取消或安排退货物流。\n问：查询取消政策是否代表已取消？答：不代表，订单状态不会因此改变。",
+    "refund": "问：申请退款后就到账了吗？答：requested 只表示本地申请已记录。\n问：可以重复申请吗？答：已有申请时不能重复申请。\n问：什么时候到账？答：本系统未连接真实退款渠道，无法承诺到账时间。",
+    "contact": "问：如何联系人工？答：系统可以生成本地待处理工单。\n问：工单会通知真人吗？答：尚未连接通知或接单渠道。\n问：客服邮箱是什么？答：support@example.com 仅为示例占位，不代表可联系的邮箱。",
 }
 
 
 @lru_cache(maxsize=128)
 def answer_faq(question: str) -> str:
     """Answer a general policy question (shipping, returns, cancellations, refunds, contact info)."""
-    q = question.lower()
-    for alias, keyword in [("配送", "shipping"), ("物流", "shipping"), ("快递", "shipping"), ("退货", "return"), ("退款规则", "return"), ("取消", "cancel"), ("退款到账", "refund"), ("联系", "contact")]:
-        if alias in q:
-            q = keyword
-            break
-    for keyword, answer in _FAQ.items():
-        if keyword in q:
-            return answer
-    return (
-        "I don't have a specific policy answer for that. "
-        "You can reach human support at support@example.com for more detail."
-    )
+    return _FAQ.get(question, "没有找到对应的样例政策。")
 
 
 def escalate_to_human(reason: str, context: str) -> dict:
     """Escalate the conversation to a human agent when the request can't be resolved automatically."""
-    ticket_id = uuid.uuid4().hex[:8]
+    from src.runtime_context import active_request
+    key = active_request.get()
+    ticket_id = uuid.uuid5(uuid.NAMESPACE_URL, 'ticket:' + key).hex if key else uuid.uuid4().hex
     with _session() as s:
-        s.add(Ticket(ticket_id=ticket_id, reason=reason[:300], context=context[:1000], status="pending"))
-        s.commit()
+        if s.get(Ticket, ticket_id) is None:
+            s.add(Ticket(ticket_id=ticket_id, reason=reason[:300], context=context[:1000], status="pending"))
+            try:
+                s.commit()
+            except IntegrityError:
+                s.rollback()
+                if s.get(Ticket, ticket_id) is None:
+                    raise
     logger.warning("ESCALATION ticket=%s", ticket_id)
     return {
         "escalated": True,

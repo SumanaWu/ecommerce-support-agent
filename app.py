@@ -14,7 +14,6 @@ def service():
 if 'next_session' in st.session_state:
     st.session_state.session_id = st.session_state.pop('next_session')
 with st.sidebar:
-    mode = st.selectbox('运行模式', ['demo', 'online'])
     user_id = st.text_input('客户编号', 'customer_a')
     if 'session_id' not in st.session_state:
         st.session_state.session_id = 'case_1'
@@ -26,8 +25,8 @@ with st.sidebar:
 
 try:
     svc = service()
-    payload = svc.snapshot(user_id, session_id, mode)
-except ValueError as exc:
+    payload = svc.snapshot(user_id, session_id)
+except (ValueError, RuntimeError) as exc:
     st.error(str(exc))
     st.stop()
 
@@ -39,19 +38,18 @@ with memories:
         contact = st.text_input('联系偏好', profile.get('contact_preference', '优先站内文字联系'), max_chars=100)
         if st.form_submit_button('保存客户偏好'):
             svc.store.save_profile(user_id, tone, contact)
-            st.success('偏好已保存，可跨会话读取。在线模型会读取这些偏好，离线规则不模拟文风变化。')
+            st.success('偏好已保存，可跨会话读取。')
     st.write('跨会话档案')
     st.json(svc.store.profile(user_id))
     st.write('当前会话最后讨论订单', payload['last_order_id'])
     st.write('保留的完整轮次数', len(payload['turns']))
     st.metric('当前会话累计模型 Token', payload['total_tokens'])
-    st.caption('离线模式没有模型调用；Token 为零不是在线成本测量结果。')
 with guide:
     st.markdown('''1. 查询订单 1001 的详情。
 2. 查询订单 1002 的物流。
 3. 接着输入“帮我申请退款”，观察系统沿用 1002 并拒绝未送达退款。
-4. 输入“帮我申请订单 1001 的退款”，观察本地退款状态变成 requested。
-5. 输入“查询订单 1003 的支付状态”，再输入“帮我付款”。
+4. 输入“帮我申请订单 1001 的退款”，检查方案后选择确认或取消。
+5. 输入“查询订单 1003 的支付状态”，再输入“帮我付款”，系统会准备方案。
 6. 输入“退货政策是什么”，或“我要投诉这个问题”，观察政策工具与本地工单。''')
     st.info('样例数据会被写操作改变。需要重新演示时，请停止服务后按 README 在独立目录初始化，不要在运行中重置。')
 with chat:
@@ -62,12 +60,38 @@ with chat:
             st.write(t['reply'])
             st.caption('处理专家：' + t['agent'])
             with st.expander('工具执行轨迹'):
-                st.json(t['trace'])
-    prompt = st.chat_input('例如：查询订单 1001 的详情', max_chars=2000)
+                st.json(t.get('trace', []))
+            if t.get('status') == 'processing' and st.button('继续处理', key='retry_' + t['request_id']):
+                try:
+                    svc.chat(user_id, session_id, t['user'], request_id=t['request_id'])
+                    st.rerun()
+                except Exception as exc:
+                    st.error('处理失败：' + str(exc))
+            current = t.get('current_action')
+            for action in t.get('actions', []):
+                st.write(f"订单 {action['order_id']} · 金额 {action['amount']} · "
+                         f"{'退款申请' if action['type'] == 'refund' else '支付'} · 版本 {action['version']}")
+                st.caption('状态：' + action['status'])
+                if current and action['action_id'] == current['action_id']:
+                    for decision, label in [('confirm', '确认办理'), ('cancel', '取消本项')]:
+                        key = f"{user_id}_{session_id}_{action['action_id']}_{action['version']}_{decision}"
+                        if st.button(label, key=key):
+                            operation = st.session_state.setdefault('op_' + key, uuid4().hex)
+                            try:
+                                svc.resume(user_id, session_id, t['request_id'], operation,
+                                           action['action_id'], action['version'], decision)
+                                st.rerun()
+                            except Exception as exc:
+                                st.error('处理失败：' + str(exc))
+    waiting = any(t.get('status') in {'processing', 'awaiting_confirmation'} for t in payload['turns'])
+    prompt = st.chat_input('请先完成确认或取消' if waiting else '例如：查询订单 1001 的详情',
+                           max_chars=2000, disabled=waiting)
     if prompt:
+        with st.chat_message('user'):
+            st.write(prompt)
         with st.spinner('正在处理'):
             try:
-                svc.chat(user_id, session_id, mode, prompt)
+                svc.chat(user_id, session_id, prompt, request_id=uuid4().hex)
                 st.rerun()
             except Exception as exc:
                 st.error('执行失败：' + str(exc))
