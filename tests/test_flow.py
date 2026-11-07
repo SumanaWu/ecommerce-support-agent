@@ -91,11 +91,11 @@ def test_resume_retries_unconsumed_decision_immediately(business, tmp_path, monk
     initial = service.chat('customer_a', 'one', '申请退款', runner=runner, request_id='chat')
     original = service.graph.invoke
     calls = []
-    def flaky(value, config):
+    def flaky(value, config, **kwargs):
         calls.append(value)
         if len(calls) == 1:
             raise RuntimeError('before resume')
-        return original(value, config)
+        return original(value, config, **kwargs)
     monkeypatch.setattr(service.graph, 'invoke', flaky)
     action = initial['current_action']
     result = service.resume('customer_a', 'one', 'chat', 'decision', action['action_id'], 'confirm')

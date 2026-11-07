@@ -74,7 +74,7 @@ class PendingAction(Base):
     request_id: Mapped[str] = mapped_column(String(64), index=True)
     user_id: Mapped[str] = mapped_column(String(40))
     session_id: Mapped[str] = mapped_column(String(40))
-    position: Mapped[int] = mapped_column(Integer)
+    position: Mapped[str] = mapped_column(String(80))
     kind: Mapped[str] = mapped_column(String(20))
     order_id: Mapped[int] = mapped_column(ForeignKey('orders.order_id'))
     amount: Mapped[float] = mapped_column(Float)

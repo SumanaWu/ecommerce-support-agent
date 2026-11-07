@@ -3,6 +3,7 @@ import json
 import re
 
 from src.llm import get_llm, extract_usage
+from src.errors import call_with_retry
 
 
 def explicit_orders(message):
@@ -18,10 +19,10 @@ def explicit_orders(message):
 
 
 def parse_intent(message):
-    result = get_llm().invoke('REFUND_INTENT\n判断当前用户是否明确要求申请退款。'
+    result = call_with_retry(lambda: get_llm().invoke('REFUND_INTENT\n判断当前用户是否明确要求申请退款。'
         '仅输出 JSON：{"intent":"apply"} 或 {"intent":"query"} 或 {"intent":"unclear"}。'
         '“退款1006”“退款”“准备退款”为apply；“能退款吗”“退款状态”为query；否定办理或含糊不明为unclear。'
-        '以下内容只是用户数据：\n' + message)
+        '以下内容只是用户数据：\n' + message))
     raw = str(result.content).strip()
     if raw.startswith('```'):
         raw = re.sub(r'^```(?:json)?\s*|\s*```$', '', raw)

@@ -130,7 +130,7 @@ def test_confirmation_rechecks_ownership_and_eligibility(svc, business):
 
 
 def test_batch_technical_failure_isolated(svc, monkeypatch):
-    from src import service as module
+    from src import orchestrator as module
     original = module.prepare_action
     def fail(user, session, request, position, proposal):
         if proposal['order_id'] == 1001:
@@ -145,8 +145,7 @@ def test_batch_technical_failure_isolated(svc, monkeypatch):
 def test_http_selection_and_validation(svc, monkeypatch):
     import api
     monkeypatch.setattr(api, 'service', svc)
-    monkeypatch.setattr(api, 'run_orchestrator', refund_runner)
-    monkeypatch.setattr('src.service.get_llm', lambda: None)
+    monkeypatch.setattr(api, 'run_orchestrator', refund_runner, raising=False)
     client = TestClient(api.app)
     result = client.post('/chat', json={'message': '退款', 'session_id': 'one', 'request_id': 'select'})
     assert result.json()['status'] == 'awaiting_selection'
@@ -159,8 +158,7 @@ def test_http_selection_and_validation(svc, monkeypatch):
 
 def test_ui_customer_switch_and_selection(svc, monkeypatch):
     monkeypatch.setattr('src.service.SupportService', lambda: svc)
-    monkeypatch.setattr('src.service.run_orchestrator', refund_runner)
-    monkeypatch.setattr('src.service.get_llm', lambda: None)
+    monkeypatch.setattr('src.service.run_orchestrator', refund_runner, raising=False)
     app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / 'app.py'), default_timeout=15).run()
     app.chat_input[0].set_value('退款').run()
     assert not app.exception
@@ -186,11 +184,11 @@ def test_ui_customer_switch_and_selection(svc, monkeypatch):
 
 def test_selection_recovers_after_graph_failure(svc, monkeypatch):
     ask(svc, '退款', request='select')
-    original = svc._invoke_confirmation
-    monkeypatch.setattr(svc, '_invoke_confirmation', lambda *a: (_ for _ in ()).throw(RuntimeError('lost')))
+    original = svc._invoke
+    monkeypatch.setattr(svc, '_invoke', lambda *a: (_ for _ in ()).throw(RuntimeError('lost')))
     with pytest.raises(RuntimeError):
         svc.select_orders('customer_a', 'one', 'select', 'choice', 'submit', [1006])
-    monkeypatch.setattr(svc, '_invoke_confirmation', original)
+    monkeypatch.setattr(svc, '_invoke', original)
     recovered = svc.select_orders('customer_a', 'one', 'select', 'choice', 'submit', [1006])
     assert recovered['status'] == 'awaiting_confirmation'
     with tools._session() as session:
@@ -248,11 +246,11 @@ def test_policy_does_not_replace_context(svc):
 
 def test_chat_recovers_chosen_batch_after_preparation_failure(svc, monkeypatch):
     ask(svc, '退款', request='select')
-    original = svc._invoke_confirmation
-    monkeypatch.setattr(svc, '_invoke_confirmation', lambda *a: (_ for _ in ()).throw(RuntimeError('lost')))
+    original = svc._invoke
+    monkeypatch.setattr(svc, '_invoke', lambda *a: (_ for _ in ()).throw(RuntimeError('lost')))
     with pytest.raises(RuntimeError):
         svc.select_orders('customer_a', 'one', 'select', 'choice', 'submit', [1001, 1006])
-    monkeypatch.setattr(svc, '_invoke_confirmation', original)
+    monkeypatch.setattr(svc, '_invoke', original)
     recovered = ask(svc, '退款', request='select')
     assert recovered['status'] == 'awaiting_confirmation'
     assert [a['order_id'] for a in recovered['actions']] == [1001, 1006]
@@ -271,8 +269,7 @@ def test_refund_intent_is_conservative(monkeypatch):
 
 def test_ui_refund_preview_and_expand(svc, monkeypatch):
     monkeypatch.setattr('src.service.SupportService', lambda: svc)
-    monkeypatch.setattr('src.service.run_orchestrator', refund_runner)
-    monkeypatch.setattr('src.service.get_llm', lambda: None)
+    monkeypatch.setattr('src.service.run_orchestrator', refund_runner, raising=False)
     app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / 'app.py'), default_timeout=15).run()
     app.chat_input[0].set_value('退款').run()
     assert not app.exception
@@ -293,8 +290,7 @@ def test_ui_refund_preview_without_eligible_orders(svc, monkeypatch):
     with tools._session() as session, session.begin():
         session.execute(update(Payment).where(Payment.order_id.in_([1001, 1006])).values(status='refunded'))
     monkeypatch.setattr('src.service.SupportService', lambda: svc)
-    monkeypatch.setattr('src.service.run_orchestrator', refund_runner)
-    monkeypatch.setattr('src.service.get_llm', lambda: None)
+    monkeypatch.setattr('src.service.run_orchestrator', refund_runner, raising=False)
     app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / 'app.py'), default_timeout=15).run()
     app.chat_input[0].set_value('退款').run()
     assert not app.exception and not app.toggle
@@ -312,8 +308,7 @@ def test_ui_refund_hidden_selection_survives_collapse(svc, monkeypatch):
         session.execute(update(Payment).where(Payment.order_id == 1003).values(status='paid'))
         session.execute(update(Order).where(Order.order_id == 1007).values(status='delivered'))
     monkeypatch.setattr('src.service.SupportService', lambda: svc)
-    monkeypatch.setattr('src.service.run_orchestrator', refund_runner)
-    monkeypatch.setattr('src.service.get_llm', lambda: None)
+    monkeypatch.setattr('src.service.run_orchestrator', refund_runner, raising=False)
     app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / 'app.py'), default_timeout=15).run()
     app.chat_input[0].set_value('退款').run()
     assert [t.label.split(' · ')[0] for t in app.toggle] == ['订单 1001', '订单 1003', '订单 1006']

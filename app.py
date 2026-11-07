@@ -1,6 +1,9 @@
 from uuid import uuid4
+import json
+from pathlib import Path
 import streamlit as st
 from src.service import SupportService
+from src.payment_methods import PAYMENT_METHODS
 
 st.set_page_config(page_title='电商订单与售后助手', layout='wide')
 st.title('电商订单与售后助手')
@@ -10,6 +13,7 @@ st.warning('全部订单和资金状态均为本地样例。办理支付、退�
 @st.cache_resource
 def service():
     return SupportService()
+
 
 with st.sidebar:
     user_id = st.text_input('客户编号', 'customer_a')
@@ -58,22 +62,25 @@ with memories:
     st.write('保留的完整轮次数', len(payload['turns']))
     st.metric('当前会话累计模型 Token', payload['total_tokens'])
 with guide:
-    st.markdown('''1. 查询订单 1001 的详情。
-2. 查询订单 1002 的物流。
-3. 接着输入“帮我申请退款”，展示本人订单，可退款优先，默认前三笔；不可退款订单没有选择开关。
-4. 输入“帮我申请订单 1001 的退款”，检查方案后选择确认或取消。
-5. 输入“查询订单 1003 的支付状态”，再输入“帮我付款”，系统会准备方案。
-6. 输入“退货政策是什么”，或“我要投诉这个问题”，观察政策工具与本地工单。''')
-    st.info('样例数据会被写操作改变。需要重新演示时，请停止服务后按 README 在独立目录初始化，不要在运行中重置。')
+    st.info('默认使用customer_a和初始样例。不同组建议新建会话，同组依次输入；新建会话不会重置订单状态。资金操作先选择、再逐项按钮确认。')
+    scenarios = json.loads((Path(__file__).parent / 'eval' / 'scenarios.json').read_text())
+    for scenario in scenarios:
+        if scenario['id'] > 16:
+            continue
+        with st.expander(f"{scenario['id']}. {scenario['title']}"):
+            for message in scenario['messages']:
+                st.code(message, language=None)
+            st.write('预期表现：' + scenario['expected'])
+    st.info('样例数据会被写操作改变。重新检查前请停止服务并手动删除全部数据库；正常重启和客户切换会保留状态。')
 with chat:
     for t in payload['turns']:
         with st.chat_message('user'):
             st.write(t['user'])
         with st.chat_message('assistant'):
             st.write(t['reply'])
-            st.caption('处理专家：' + t['agent'])
-            with st.expander('工具执行轨迹'):
-                st.json(t.get('trace', []))
+            st.caption('协作处理：' + '、'.join(t['agents']) if t.get('agent') == 'collaboration' else '主对话层' if t['agent'] == 'assistant' else '处理专家：' + t['agent'])
+            for source in t.get('sources') or []:
+                st.markdown(f"[{source['title']}]({source['url']})")
             if t.get('status') == 'processing' and st.button('继续处理', key='retry_' + t['request_id']):
                 try:
                     svc.chat(user_id, session_id, t['user'], request_id=t['request_id'])
@@ -81,10 +88,9 @@ with chat:
                 except Exception as exc:
                     st.error('处理失败：' + str(exc))
             prefix = f"{user_id}_{session_id}_{t['request_id']}"
-            if t.get('order_results'):
-                st.dataframe(t['order_results'], hide_index=True)
             if t.get('status') == 'awaiting_selection':
                 selection = t['selection']
+                prefix += '_' + selection.get('input_id', 'orders')
                 all_orders = st.checkbox('查看我的全部订单', key=prefix + '_all')
                 candidates = sorted(selection['candidates'], key=lambda order: (not order.get('eligible', False), order['order_id']))
                 visible_orders = candidates if all_orders else candidates[:3]
@@ -116,27 +122,101 @@ with chat:
                         operation_key = prefix + decision + str(selected)
                         operation = st.session_state.setdefault(operation_key, uuid4().hex)
                         try:
-                            svc.select_orders(user_id, session_id, t['request_id'], operation, decision, selected)
+                            svc.select_orders(user_id, session_id, t['request_id'], operation, decision, selected, selection.get('input_id'))
                             st.rerun()
                         except Exception as exc:
                             st.error(str(exc))
+            slots = {}
+            for task in t.get('tasks', []):
+                if task.get('operation') not in {'payment.prepare', 'refund.prepare'}:
+                    continue
+                tid = task['task_id']
+                ids = list(dict.fromkeys(
+                    ([*task.get('targets', [])] if task.get('status') == 'pending' else [])
+                    + [a['order_id'] for a in t.get('actions', []) if a['task_id'] == tid]
+                    + [o['order_id'] for entry in t.get('pending_inputs', []) if entry.get('task_id') == tid for o in entry.get('orders', [])]
+                    + [f['order_id'] for f in task.get('facts', []) if f.get('order_id') and f.get('error') == '用户取消，未办理']
+                ))
+                for oid in ids:
+                    slots[(tid, oid)] = st.container()
+                    if task.get('status') == 'pending':
+                        with slots[(tid, oid)], st.container(border=True):
+                            kind = '支付' if task['operation'] == 'payment.prepare' else '退款申请'
+                            st.markdown(f'**订单 {oid} · {kind}**')
+                            st.caption('状态：等待前一项处理，尚未核实')
+                if not ids and task.get('status') == 'pending':
+                    with st.container(border=True):
+                        kind = '支付' if task['operation'] == 'payment.prepare' else '退款申请'
+                        st.markdown(f'**{kind}**')
+                        st.caption('状态：等待前置任务确定订单和处理条件')
+            for entry in t.get('pending_inputs', []):
+                if entry['type'] != 'method':
+                    continue
+                with slots[(entry['task_id'], entry['orders'][0]['order_id'])], st.container(border=True, key=prefix + '_payment_' + str(entry['orders'][0]['order_id'])):
+                    order = entry['orders'][0]
+                    st.markdown(f"**订单 {order['order_id']} · 支付**")
+                    st.write(f"待支付金额：{order['amount']}")
+                    key = prefix + '_' + entry['input_id']
+                    method = st.selectbox('支付方式', list(PAYMENT_METHODS), index=None,
+                        format_func=PAYMENT_METHODS.get, placeholder='请选择支付方式', key=key)
+                    st.caption('选择方式仅准备方案；点击确认付款后才执行。')
+                    if method is not None:
+                        operation = st.session_state.setdefault(key + '_submit_' + method, uuid4().hex)
+                        try:
+                            svc.select_payment_method(user_id, session_id, t['request_id'], operation, 'submit', method, entry['input_id'])
+                            st.rerun()
+                        except Exception as exc:
+                            st.error('处理失败：' + str(exc))
+                    st.button('确认付款', key=key + '_confirm', disabled=True)
+                    if st.button('取消支付', key=key + '_cancel'):
+                        operation = st.session_state.setdefault(key + '_cancel_request', uuid4().hex)
+                        svc.select_payment_method(user_id, session_id, t['request_id'], operation, 'cancel', input_id=entry['input_id'])
+                        st.rerun()
             current = t.get('current_action')
             for action in t.get('actions', []):
-                st.write(f"订单 {action['order_id']} · 金额 {action['amount']} · "
-                         f"{'退款申请' if action['type'] == 'refund' else '支付'}")
-                st.caption('状态：' + action['status'])
-                if current and action['action_id'] == current['action_id']:
-                    for decision, label in [('confirm', '确认办理'), ('cancel', '取消本项')]:
-                        key = f"{user_id}_{session_id}_{action['action_id']}_{decision}"
-                        if st.button(label, key=key):
-                            operation = st.session_state.setdefault('op_' + key, uuid4().hex)
-                            try:
-                                svc.resume(user_id, session_id, t['request_id'], operation,
-                                           action['action_id'], decision)
-                                st.rerun()
-                            except Exception as exc:
-                                st.error('处理失败：' + str(exc))
-    waiting = any(t.get('status') in {'processing', 'awaiting_confirmation', 'awaiting_selection'} for t in payload['turns'])
+                with slots[(action['task_id'], action['order_id'])], st.container(border=True, key=prefix + '_' + action['type'] + '_' + str(action['order_id'])):
+                    st.markdown(f"**订单 {action['order_id']} · 金额 {action['amount']} · "
+                             f"{'退款申请' if action['type'] == 'refund' else '支付'}**")
+                    st.caption('状态：' + {'pending': '待确认，尚未执行', 'completed': '已完成', 'cancelled': '已取消', 'rejected': '未办理'}[action['status']])
+                    if action['type'] == 'payment':
+                        method = action['parameters']['method']
+                        st.write('支付方式：' + PAYMENT_METHODS.get(method, method))
+                    if action['status'] == 'pending' and not current:
+                        st.caption('请先完成其他必要选择，再按顺序确认。')
+                    elif action['status'] == 'pending' and current['action_id'] != action['action_id']:
+                        st.caption('等待前一项操作确认或取消。')
+                    if current and action['action_id'] == current['action_id']:
+                        for decision, label in [('confirm', '确认付款' if action['type'] == 'payment' else '确认办理'), ('cancel', '取消本项')]:
+                            key = f"{user_id}_{session_id}_{action['action_id']}_{decision}"
+                            if st.button(label, key=key):
+                                operation = st.session_state.setdefault('op_' + key, uuid4().hex)
+                                try:
+                                    svc.resume(user_id, session_id, t['request_id'], operation,
+                                               action['action_id'], decision)
+                                    st.rerun()
+                                except Exception as exc:
+                                    st.error('处理失败：' + str(exc))
+            for task in t.get('tasks', []):
+                if task.get('operation') != 'payment.prepare':
+                    continue
+                for fact in task.get('facts', []):
+                    oid = fact.get('order_id')
+                    if fact.get('error') != '用户取消，未办理' or any(
+                        a['task_id'] == task['task_id'] and a['order_id'] == oid for a in t.get('actions', [])
+                    ):
+                        continue
+                    with slots[(task['task_id'], oid)], st.container(border=True, key=prefix + '_payment_cancelled_' + task['task_id'] + '_' + str(oid)):
+                        st.markdown(f"**订单 {oid} · 金额 {float(fact['amount']):.2f} · 支付**")
+                        st.caption('状态：已取消，未支付')
+            if t.get('tasks'):
+                with st.expander('任务进度'):
+                    st.dataframe([{'任务': x['task_id'], '操作': x['operation'], '订单': x['targets'], '状态': x['status']} for x in t['tasks']], hide_index=True)
+            with st.expander('工具执行轨迹'):
+                st.json(t.get('trace', []))
+            if t.get('order_results'):
+                with st.expander('办理明细'):
+                    st.dataframe(t['order_results'], hide_index=True)
+    waiting = any(t.get('status') in {'processing', 'awaiting_confirmation', 'awaiting_selection', 'awaiting_payment_method'} for t in payload['turns'])
     prompt = st.chat_input('请先完成确认或取消' if waiting else '例如：查询订单 1001 的详情',
                            max_chars=2000, disabled=waiting)
     if prompt:

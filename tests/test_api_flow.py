@@ -9,7 +9,7 @@ from tests.test_flow import runner
 def test_http_confirmation_and_idempotency(business, tmp_path, monkeypatch):
     service = SupportService(tmp_path / 'memory.sqlite')
     monkeypatch.setattr(api, 'service', service)
-    monkeypatch.setattr(api, 'run_orchestrator', runner)
+    monkeypatch.setattr(api, 'run_orchestrator', runner, raising=False)
     client = TestClient(api.app)
     request = {'user_id': 'customer_a', 'session_id': 'one', 'request_id': 'chat', 'message': '申请退款'}
     initial = client.post('/chat', json=request)

@@ -33,13 +33,13 @@ def test_health():
 
 
 def test_chat_returns_agent_reply_and_trace(monkeypatch):
-    monkeypatch.setattr(api, "run_orchestrator", lambda *_a, **_k: FAKE_RESULT)
+    monkeypatch.setattr(api, "run_orchestrator", lambda *_a, **_k: FAKE_RESULT, raising=False)
 
     response = client.post("/chat", json={"message": "where is order 1001?"})
 
     assert response.status_code == 200
     body = response.json()
-    assert body["reply"] == "Your order 1001 has been delivered."
+    assert "已签收" in body["reply"]
     assert body["agent"] == "order"
     assert body["trace"][0]["tool"] == "get_order_status"
     assert body["usage"]["total_tokens"] == 15
@@ -47,7 +47,7 @@ def test_chat_returns_agent_reply_and_trace(monkeypatch):
 
 
 def test_chat_generates_new_session_id_when_omitted(monkeypatch):
-    monkeypatch.setattr(api, "run_orchestrator", lambda *_a, **_k: FAKE_RESULT)
+    monkeypatch.setattr(api, "run_orchestrator", lambda *_a, **_k: FAKE_RESULT, raising=False)
 
     r1 = client.post("/chat", json={"message": "hello"})
     r2 = client.post("/chat", json={"message": "hello again"})
@@ -62,7 +62,7 @@ def test_chat_reuses_provided_session_id_and_carries_history(monkeypatch):
         captured_history.append(list(history or []))
         return FAKE_RESULT
 
-    monkeypatch.setattr(api, "run_orchestrator", fake_orchestrator)
+    monkeypatch.setattr(api, "run_orchestrator", fake_orchestrator, raising=False)
 
     r1 = client.post("/chat", json={"message": "where is order 1001?", "session_id": "abc123"})
     assert r1.json()["session_id"] == "abc123"

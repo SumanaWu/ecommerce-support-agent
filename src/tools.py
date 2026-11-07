@@ -6,6 +6,7 @@ import logging
 import uuid
 from decimal import Decimal
 from src.runtime_context import active_customer
+from src.payment_methods import PAYMENT_METHODS
 from functools import lru_cache
 from sqlalchemy import update
 from sqlalchemy.exc import IntegrityError
@@ -190,7 +191,7 @@ def _process_payment(s, order_id: int, method: str) -> dict:
     """Apply a payment within the caller's transaction, without committing it."""
     if not owned_order(s, order_id):
         return inaccessible(order_id)
-    if method not in {"card", "paypal"}:
+    if method not in PAYMENT_METHODS:
         return {"success": False, "order_id": order_id, "reason": "Unsupported payment method."}
     payment = s.query(Payment).filter_by(order_id=order_id).first()
     if not payment:

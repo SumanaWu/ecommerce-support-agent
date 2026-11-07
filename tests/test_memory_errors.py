@@ -23,28 +23,17 @@ def test_memory_last_order_id_from_result_when_no_args():
 
 
 def test_call_with_retry_succeeds_first_try():
-    result, escalation = call_with_retry(
-        lambda: {"ok": True}, escalate_reason="n/a", escalate_context="n/a"
-    )
+    result = call_with_retry(lambda: {"ok": True})
     assert result == {"ok": True}
-    assert escalation is None
 
 
-def test_call_with_retry_escalates_after_exhausting_attempts():
+def test_call_with_retry_reports_failure_without_escalation():
     attempts = {"count": 0}
 
     def flaky():
         attempts["count"] += 1
         raise RuntimeError("simulated rate limit")
 
-    result, escalation = call_with_retry(
-        flaky,
-        max_attempts=2,
-        escalate_reason="forced failure",
-        escalate_context="test message",
-    )
-    assert result is None
-    assert escalation["escalated"] is True
-    assert "ticket_id" in escalation
-    assert attempts["count"] == 2
-
+    with pytest.raises(RuntimeError):
+        call_with_retry(flaky, max_attempts=2)
+    assert attempts['count'] == 2

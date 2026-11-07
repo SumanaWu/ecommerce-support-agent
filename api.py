@@ -5,7 +5,6 @@ from fastapi import FastAPI, HTTPException, Response
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, StrictInt
 from src.service import ConflictError, SupportService
-from src.orchestrator import run_orchestrator
 
 @asynccontextmanager
 async def lifespan(app):
@@ -32,7 +31,7 @@ def health():
 @app.post('/chat')
 def chat(req: ChatRequest, response: Response):
     try:
-        result = service.chat(req.user_id, req.session_id, req.message, runner=run_orchestrator, request_id=req.request_id)
+        result = service.chat(req.user_id, req.session_id, req.message, request_id=req.request_id)
     except ConflictError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except ValueError as exc:
@@ -80,12 +79,36 @@ class SelectOrdersRequest(BaseModel):
     request_id: str
     decision: Literal['submit', 'cancel']
     order_ids: list[StrictInt] = Field(default_factory=list)
+    input_id: str | None = None
 
 
 @app.post('/requests/{chat_request_id}/select-orders')
 def select_orders(chat_request_id: str, req: SelectOrdersRequest):
     try:
-        return service.select_orders(req.user_id, req.session_id, chat_request_id, req.request_id, req.decision, req.order_ids)
+        return service.select_orders(req.user_id, req.session_id, chat_request_id, req.request_id, req.decision, req.order_ids, req.input_id)
+    except ConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+class SelectPaymentMethodRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    user_id: str
+    session_id: str
+    request_id: str
+    decision: Literal['submit', 'cancel']
+    method: str | None = None
+    input_id: str | None = None
+
+
+@app.post('/requests/{chat_request_id}/select-payment-method')
+def select_payment_method(chat_request_id: str, req: SelectPaymentMethodRequest):
+    try:
+        return service.select_payment_method(req.user_id, req.session_id, chat_request_id,
+                                             req.request_id, req.decision, req.method, req.input_id)
     except ConflictError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except ValueError as exc:

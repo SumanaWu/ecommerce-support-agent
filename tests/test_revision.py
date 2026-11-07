@@ -14,16 +14,13 @@ from src import tools
 from src.backend.db import get_engine, get_session_factory, Ticket, Refund
 from src.backend.seed import seed
 from src.service import SupportService
-from src.orchestrator import parse_route
 
 @pytest.fixture
 def isolated(tmp_path, monkeypatch):
     from tests.fake_model import DemoChatModel
     from src import orchestrator, service
     from src.agents import base
-    monkeypatch.setattr(orchestrator, "get_llm", DemoChatModel)
     monkeypatch.setattr(base, "get_llm", DemoChatModel)
-    monkeypatch.setattr(service, "get_llm", DemoChatModel)
     monkeypatch.setattr("src.refund_flow.get_llm", DemoChatModel)
     engine = get_engine('sqlite:///' + str(tmp_path/'business.sqlite'))
     tools.configure_db(engine)
@@ -100,7 +97,7 @@ def test_prepared_actions_do_not_modify_business_data(isolated):
     from src.agents.refund_agent import prepare_refund
 
     refund = prepare_refund.invoke({'order_id': 1001, 'reason': 'test'})
-    payment = prepare_payment.invoke({'order_id': 1003, 'method': 'card'})
+    payment = prepare_payment.invoke({'order_id': 1003})
     assert refund['pending_action']['type'] == 'refund'
     assert payment['pending_action']['type'] == 'payment'
     assert tools.check_refund_eligibility(1001)['eligible'] is True
@@ -136,8 +133,6 @@ def test_invalid_input_and_ambiguous_route(isolated):
     svc,_=isolated
     for args in [('a/other','one','hi'),('customer_a','one','x'*2001)]:
         with pytest.raises(ValueError):svc.chat(*args)
-    assert parse_route('REFUND ORDER')=='ESCALATE'
-    assert parse_route('PREORDER')=='ESCALATE'
 
 
 def test_extra_or_unknown_tool_is_rejected(monkeypatch):

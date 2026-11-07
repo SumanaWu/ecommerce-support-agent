@@ -20,7 +20,32 @@ def route_query(text):
         return 'PAYMENT'
     if any(x in q for x in ['订单', 'order', '物流', '快递', 'tracking']):
         return 'ORDER'
-    return 'ESCALATE'
+    return 'DIRECT'
+
+
+def plan_query(message, history=None):
+    """Offline planner fixture; live evaluations never use this keyword model."""
+    from src.refund_flow import explicit_orders
+    ids = explicit_orders(message)
+    route = route_query(message)
+    if not ids and route != 'REFUND':
+        previous = [m for m in history or [] if isinstance(m, HumanMessage)]
+        if previous:
+            ids = explicit_orders(str(previous[-1].content))
+    operation = {'ORDER': 'order.shipment' if '物流' in message else 'order.details',
+        'PAYMENT': 'payment.prepare' if any(w in message for w in ['帮我', '付款', '支付吧']) and '状态' not in message else 'payment.status',
+        'REFUND': 'refund.check' if any(w in message for w in ['能', '资格', '状态', '吗']) else 'refund.prepare',
+        'FAQ': 'faq.policies', 'ESCALATE': 'escalate.ticket'}.get(route)
+    if '天气' in message:
+        return {'action': 'PLAN', 'answer': '', 'tasks': [{'task_id': 't1', 'operation': 'search.web', 'query': '北京今日天气', 'source_text': message, 'intent': 'query'}]}
+    if not operation:
+        return {'action': 'DIRECT', 'answer': '你好 😊 有什么可以帮你？', 'tasks': []}
+    task = {'task_id': 't1', 'operation': operation, 'targets': ids, 'source_text': message,
+        'intent': 'prepare' if operation.endswith('.prepare') else 'escalate' if route == 'ESCALATE' else 'query'}
+    if route == 'ESCALATE':
+        task['reason'] = 'complaint'
+    from src.planning import Plan
+    return Plan.model_validate({'action': 'PLAN', 'tasks': [task]}).model_dump()
 
 
 class DemoChatModel:
@@ -41,6 +66,12 @@ class DemoChatModel:
         if isinstance(messages, str):
             q = messages.split('User message: ', 1)[-1].rsplit('Answer with one word only.', 1)[0]
             return AIMessage(content=route_query(q))
+        if messages and str(messages[0].content).startswith('理解当前消息'):
+            q = str(messages[-1].content)
+            route = route_query(q)
+            return AIMessage(content=json.dumps({'action': route, 'answer': '你好 😊 有什么可以帮你？', 'escalation_reason': 'complaint' if route == 'ESCALATE' else None}))
+        if messages and 'facts' in str(messages[-1].content):
+            return AIMessage(content=str(messages[-1].content))
         last_user = max(i for i,m in enumerate(messages) if isinstance(m, HumanMessage))
         query = str(messages[last_user].content)
         # 上下文备注在前，用户显式输入在后；明确编号优先于记住的旧编号。
@@ -74,8 +105,7 @@ class DemoChatModel:
             data = json.loads(results[-1].content)
             wants_write = any(x in q for x in ['办理支付', '帮我付款', '支付吧', 'process payment', 'pay it'])
             if data.get('status') == 'pending' and wants_write and 'prepare_payment' not in used:
-                method = 'paypal' if 'paypal' in q else 'card'
-                return self._call('prepare_payment', {'order_id': order_id, 'method': method})
+                return self._call('prepare_payment', {'order_id': order_id})
         elif not results:
             name = 'track_shipment' if any(x in q for x in ['物流', '快递', 'tracking']) else 'get_order_details'
             return self._call(name, {'order_id': order_id})

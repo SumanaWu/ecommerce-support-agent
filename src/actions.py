@@ -7,6 +7,7 @@ from sqlalchemy import select, text
 
 from src import tools
 from src.backend.db import Payment, PendingAction
+from src.payment_methods import PAYMENT_METHODS
 
 
 def _amount(value):
@@ -34,7 +35,7 @@ def prepare_action(user_id, session_id, request_id, position, proposal):
         raise ValueError('无效操作方案')
     if kind == 'payment':
         method = proposal.get('method')
-        if method not in {'card', 'paypal'}:
+        if method not in PAYMENT_METHODS:
             raise ValueError('不支持的支付方式')
         params = {'method': method}
     else:

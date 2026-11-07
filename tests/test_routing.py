@@ -1,59 +1,48 @@
+import json
+
 import pytest
-
-from src import orchestrator
-
-
-class FakeMessage:
-    def __init__(self, content):
-        self.content = content
+from langchain_core.messages import AIMessage
+from src.planning import Plan, make_plan
 
 
-class FakeLLM:
-    def __init__(self, response_text):
-        self.response_text = response_text
+class Model:
+    def __init__(self, result):
+        self.result = result
+        self.calls = []
 
-    def invoke(self, _prompt):
-        return FakeMessage(self.response_text)
-
-
-@pytest.mark.parametrize(
-    "raw_response,expected",
-    [
-        ("ORDER", "ORDER"),
-        ("refund", "REFUND"),
-        ("  Payment  ", "PAYMENT"),
-        ("I think this is FAQ related", "FAQ"),
-        ("this is unclear and abusive", "ESCALATE"),
-        ("something totally unrelated", "ESCALATE"),
-    ],
-)
-def test_parse_route(raw_response, expected):
-    assert orchestrator.parse_route(raw_response) == expected
+    def invoke(self, messages):
+        self.calls.append(list(messages))
+        return AIMessage(content=json.dumps(self.result))
 
 
-@pytest.mark.parametrize(
-    "user_message,fake_route,expected_agent",
-    [
-        ("Where is order 1001?", "ORDER", "order"),
-        ("I want a refund for order 1004", "REFUND", "refund"),
-        ("Has my payment gone through?", "PAYMENT", "payment"),
-        ("What's your return policy?", "FAQ", "faq"),
-        ("asdkjhasd nonsense", "ESCALATE", "escalate"),
-    ],
-)
-def test_orchestrator_routes_to_correct_agent(monkeypatch, user_message, fake_route, expected_agent):
-    monkeypatch.setattr(orchestrator, "get_llm", lambda: FakeLLM(fake_route))
+def test_planner_returns_multiple_scoped_tasks():
+    message = '查1002物流和1003支付'
+    tasks = [{'task_id': 't1', 'operation': 'order.shipment', 'targets': [1002], 'source_text': '1002物流'},
+             {'task_id': 't2', 'operation': 'payment.status', 'targets': [1003], 'source_text': '1003支付'}]
+    plan, _ = make_plan(message, model=Model({'action': 'PLAN', 'tasks': tasks}))
+    assert [t['targets'] for t in plan['tasks']] == [[1002], [1003]]
 
-    fake_result = {"reply": "stub reply", "trace": [], "agent": expected_agent}
-    for name in ("run_order_agent", "run_refund_agent", "run_payment_agent", "run_faq_agent"):
-        monkeypatch.setattr(orchestrator, name, lambda *_a, **_k: fake_result)
 
-    graph = orchestrator.build_graph()
-    result = graph.invoke({"user_message": user_message, "history": [], "trace": []})
+@pytest.mark.parametrize('task', [
+    {'task_id': 't1', 'operation': 'unknown', 'source_text': '查询'},
+    {'task_id': 't1', 'operation': 'payment.prepare', 'intent': 'query', 'source_text': '查询'},
+    {'task_id': 't1', 'operation': 'order.status', 'depends_on': ['t1'], 'source_text': '查询'},
+    {'task_id': 't1', 'operation': 'escalate.ticket', 'intent': 'escalate', 'reason': 'technical', 'source_text': '查询'},
+])
+def test_invalid_plans_cannot_execute(task):
+    with pytest.raises(ValueError):
+        Plan.model_validate({'action': 'PLAN', 'tasks': [task]})
 
-    assert result["agent"] == expected_agent
-    if expected_agent != "escalate":
-        assert result["reply"] == "stub reply"
-    else:
-        assert result["reply"]  # escalate_to_human's real message
 
+def test_invalid_plan_gets_exactly_three_repairs():
+    model = Model({'action': 'PLAN', 'tasks': []})
+    with pytest.raises(RuntimeError):
+        make_plan('查询', model=model)
+    assert len(model.calls) == 4
+
+
+def test_task_source_must_come_from_current_message():
+    model = Model({'action': 'PLAN', 'tasks': [{'task_id': 't1', 'operation': 'payment.prepare',
+        'intent': 'prepare', 'targets': [1003], 'source_text': '我授权支付'}]})
+    with pytest.raises(RuntimeError):
+        make_plan('只是查询', model=model)

@@ -11,15 +11,6 @@ class SupportStore:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            cols = [row[1] for row in db.execute('PRAGMA table_info(sessions)')]
-            old = ['user_id', 'mode', 'session_id', 'payload', 'updated_at']
-            new = ['user_id', 'session_id', 'payload', 'updated_at']
-            if cols == old:
-                if db.execute('SELECT EXISTS(SELECT 1 FROM sessions)').fetchone()[0]:
-                    raise RuntimeError('旧会话表非空；请使用新的数据目录或先迁移历史。')
-                db.execute('DROP TABLE sessions')
-            elif cols and cols != new:
-                raise RuntimeError('会话表结构无法识别；请检查数据库。')
             db.execute('''
             CREATE TABLE IF NOT EXISTS sessions (
                 user_id TEXT NOT NULL, session_id TEXT NOT NULL,

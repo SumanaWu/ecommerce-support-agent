@@ -1,0 +1,276 @@
+[
+  {
+    "id": 1,
+    "title": "主对话直接回答",
+    "messages": [
+      "你好。",
+      "什么是降雨概率？用一句话解释。"
+    ],
+    "operations": [],
+    "expected": "主对话直接回答，无业务工具和工单。"
+  },
+  {
+    "id": 2,
+    "title": "澄清后搜索",
+    "messages": [
+      "今天天气怎么样？",
+      "北京。"
+    ],
+    "operations": [
+      "search.web"
+    ],
+    "expected": "先询问城市，再检索北京天气；有来源，无结果如实说明。"
+  },
+  {
+    "id": 3,
+    "title": "政策接续",
+    "messages": [
+      "先介绍配送和退款政策，不用查询具体订单。",
+      "其他政策也都告诉我。"
+    ],
+    "operations": [
+      "faq.policies"
+    ],
+    "expected": "先配送、退货与退款，再补充其他政策，不创建工单。"
+  },
+  {
+    "id": 4,
+    "title": "同领域多工具",
+    "messages": [
+      "请查订单1001的商品、下单日期和金额，再查订单1002的物流状态，分两条回答。"
+    ],
+    "operations": [
+      "order.details",
+      "order.shipment"
+    ],
+    "expected": "1001耳机、2026-06-01、79.99；1002运输中，不编造预计送达时间。"
+  },
+  {
+    "id": 5,
+    "title": "支付接续与取消",
+    "messages": [
+      "查询订单1003的支付状态。",
+      "帮我用PayPal付款。"
+    ],
+    "operations": [
+      "payment.status",
+      "payment.prepare"
+    ],
+    "expected": "1003待付款34.50；选择方式后显示确认卡，取消后仍待付款。"
+  },
+  {
+    "id": 6,
+    "title": "退款查询与无编号申请",
+    "messages": [
+      "查询订单1001的详情。",
+      "这笔订单能退款吗？先不要申请。",
+      "帮我申请退款。"
+    ],
+    "operations": [
+      "order.details",
+      "payment.status",
+      "refund.check",
+      "refund.prepare"
+    ],
+    "expected": "资格查询不准备；无编号申请先选单，默认1001、1006、1002，仅前两笔可选。"
+  },
+  {
+    "id": 7,
+    "title": "批量退款与部分成功",
+    "messages": [
+      "请为订单1001到1006申请退款。"
+    ],
+    "operations": [
+      "refund.prepare"
+    ],
+    "expected": "1001与1006待确认；1002已发货、1003未付款、1004处理中、1005已退款；分别确认或取消。"
+  },
+  {
+    "id": 8,
+    "title": "客户切换与恢复",
+    "messages": [
+      "帮我申请订单1006的退款。"
+    ],
+    "operations": [
+      "refund.prepare"
+    ],
+    "expected": "保留A的确认卡；切换B查询1006无权访问，返回A可继续原确认。"
+  },
+  {
+    "id": 9,
+    "title": "升级边界",
+    "messages": [
+      "服务太差了，我很不满意，但不要转人工。",
+      "如果我要投诉，应该怎么操作？先不要替我提交。",
+      "我要正式投诉，请帮我生成工单。"
+    ],
+    "operations": [
+      "faq.policies",
+      "escalate.ticket"
+    ],
+    "expected": "只有最后一步产生本地工单，不宣称真人已接单。"
+  },
+  {
+    "id": 10,
+    "title": "跨会话偏好",
+    "messages": [
+      "退款申请提交后，是不是钱就到账了？"
+    ],
+    "operations": [
+      "faq.policies"
+    ],
+    "expected": "保存简洁、不使用Emoji偏好后新建会话；说明申请不等于到账。"
+  },
+  {
+    "id": 11,
+    "title": "物流与支付协作",
+    "messages": [
+      "请同时查询订单1002的物流和订单1003的支付状态，分别列出结果，不要办理任何操作。"
+    ],
+    "operations": [
+      "order.shipment",
+      "payment.status"
+    ],
+    "expected": "两个领域实际取数，1002运输中，1003待付款，无待确认动作。"
+  },
+  {
+    "id": 12,
+    "title": "政策与退款协作",
+    "messages": [
+      "先说明退款条件和到账规则，再检查订单1001是否符合条件。只查询，不要申请。"
+    ],
+    "operations": [
+      "faq.policies",
+      "refund.check"
+    ],
+    "expected": "介绍条件和到账限制；1001符合条件，无申请。"
+  },
+  {
+    "id": 13,
+    "title": "条件退款",
+    "messages": [
+      "先查订单1001的物流。如果已经签收，就帮我准备退款；如果还在运输中，就只告诉我状态，不要申请退款，也不要转人工。"
+    ],
+    "operations": [
+      "order.shipment",
+      "refund.prepare"
+    ],
+    "expected": "1001签收且符合资格，出现1001退款确认卡；换1002时跳过退款。"
+  },
+  {
+    "id": 14,
+    "title": "混合退款与支付",
+    "messages": [
+      "帮我为订单1001申请退款，同时用PayPal支付订单1003。两笔操作分别让我确认，不要直接执行。"
+    ],
+    "operations": [
+      "refund.prepare",
+      "payment.prepare"
+    ],
+    "expected": "选择支付方式后，展示1001退款79.99和1003支付34.50，逐项确认。"
+  },
+  {
+    "id": 15,
+    "title": "支付成功后续跑",
+    "messages": [
+      "先查询订单1003是否已付款。如果未付款，帮我准备PayPal支付，等我确认支付成功后，再重新检查这笔订单是否符合退款条件；只检查，不要申请退款。"
+    ],
+    "operations": [
+      "payment.prepare",
+      "refund.check"
+    ],
+    "expected": "支付确认后自动重新检查1003退款资格，结果已付款、可退34.50，无退款申请。"
+  },
+  {
+    "id": 16,
+    "title": "搜索与物流协作",
+    "messages": [
+      "查一下北京今天的天气，再查订单1002的物流，并判断天气是否导致了这笔订单延误。无法确认的部分请明确说。"
+    ],
+    "operations": [
+      "search.web",
+      "order.shipment",
+      "answer.explain"
+    ],
+    "expected": "天气有来源，1002运输中，明确缺少延误原因证据，不能作因果判断。"
+  },
+  {
+    "id": 17,
+    "title": "支付后单笔与批量查详情",
+    "messages": [
+      "帮我支付订单1003。",
+      "查询订单1003详情。",
+      "查询1001到1007订单。"
+    ],
+    "operations": [
+      "payment.prepare",
+      "order.details",
+      "payment.status"
+    ],
+    "expected": "微信支付成功后，单笔和批量均显示1003已付款，不从placed推断待支付。"
+  },
+  {
+    "id": 18,
+    "title": "本人订单筛选后退款",
+    "messages": [
+      "先看我的全部订单，查询每笔能否退款，再给符合条件的订单准备退款方案，其他订单写清楚原因。"
+    ],
+    "operations": [
+      "order.list",
+      "refund.check",
+      "refund.prepare"
+    ],
+    "expected": "本人列表逐单查询，只准备1001和1006。"
+  },
+  {
+    "id": 19,
+    "title": "不同顺序的多领域依赖",
+    "messages": [
+      "先查1002物流，再帮1003付款，付款成功后检查1003退款资格，另外查1001付款状态。"
+    ],
+    "operations": [
+      "order.shipment",
+      "payment.prepare",
+      "refund.check",
+      "payment.status"
+    ],
+    "expected": "独立查询不遗漏，付款后检查只绑定1003。"
+  },
+  {
+    "id": 20,
+    "title": "付款后联合详情续跑",
+    "messages": [
+      "先查1003能不能支付，如果能就准备支付，付款成功后再查这笔订单的完整详情。"
+    ],
+    "operations": [
+      "payment.status",
+      "payment.prepare",
+      "order.details"
+    ],
+    "expected": "付款后自动联合查询详情，状态已付款、未发货。"
+  },
+  {
+    "id": 21,
+    "title": "条件不满足",
+    "messages": [
+      "先查订单1002的物流，只有已经签收才帮我准备退款；还在运输中就不要申请，也不要转人工。"
+    ],
+    "operations": [
+      "order.shipment",
+      "refund.prepare"
+    ],
+    "expected": "运输中，退款任务跳过，无确认动作，无工单。"
+  },
+  {
+    "id": 22,
+    "title": "跨订单资格金额比较",
+    "messages": [
+      "请比较订单1001和1006各自可退金额，再告诉我哪笔更多，只查询，不申请。"
+    ],
+    "operations": [
+      "refund.check",
+      "answer.explain"
+    ],
+    "expected": "实际查两笔资格，79.99大于59.99，无准备动作。"
+  }
+]
