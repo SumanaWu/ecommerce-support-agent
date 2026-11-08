@@ -24,6 +24,7 @@ class State(TypedDict, total=False):
     message: str
     history: list
     profile: dict
+    knowledge_root: str
     plan: dict
     results: Annotated[dict, merge_results]
     work: list
@@ -148,6 +149,14 @@ def expert(state):
             for oid in ids:
                 row = call('get_order_details', {'order_id': oid}, tools.get_order_details)
                 facts.append({**row, 'order_status': row['status']})
+        elif op == 'knowledge.search':
+            from src.knowledge import get_knowledge
+            ref = task.get('product_ref','')
+            if not ref:
+                names = list(dict.fromkeys(r['item'] for dep in task['depends_on'] for r in state['results'][dep].get('facts',[]) if r.get('item')))
+                if len(names) == 1:
+                    ref = names[0]
+            facts = [call('knowledge_search', {'query':task['query'],'kind':task.get('knowledge_kind','all'), 'product_ref':ref,'category':task.get('category','')}, get_knowledge(state.get('knowledge_root')).search)]
         elif op == 'faq.policies':
             topics = task['topics']
             if 'refund' in topics and 'return' not in topics:
@@ -156,9 +165,28 @@ def expert(state):
         elif op == 'search.web':
             facts = [call('search_web', {'query': task['query']}, dialogue.search_web)]
         elif op == 'answer.explain':
-            evidence = {tid: state['results'][tid] for tid in task['depends_on']}
+            evidence = {tid: copy.deepcopy({key:value for key,value in state['results'][tid].items() if key in {'status','facts','answer','reason'}}) for tid in task['depends_on']}
+            groups = [fact for result in evidence.values() for fact in result.get('facts',[]) if fact.get('knowledge')]
+            if any(fact.get('sources') for fact in groups):
+                from src.knowledge import get_knowledge
+                tokenizer = get_knowledge(state.get('knowledge_root')).encoder().tokenizer
+                budget, seen = 6000, set()
+                originals = [fact.get('sources',[]) for fact in groups]
+                for fact in groups:
+                    fact['sources'] = []
+                for position in range(max(map(len,originals))):
+                    for fact, candidates in zip(groups, originals):
+                        if position >= len(candidates):
+                            continue
+                        source = candidates[position]
+                        size = len(tokenizer.encode(source['content'],add_special_tokens=False))
+                        if source['id'] not in seen and size <= budget:
+                            fact['sources'].append(source)
+                            seen.add(source['id'])
+                            budget -= size
             answer, usage = dialogue.compose(task['source_text'], evidence)
-            return {'results': {tid: {'status': 'succeeded', 'facts': [], 'answer': answer, 'usage': usage,
+            kb_sources = [source for result in evidence.values() for fact in result.get('facts',[]) if fact.get('knowledge') for source in fact.get('sources',[]) if source['id'] in answer]
+            return {'results': {tid: {'status': 'succeeded', 'facts': [], 'answer': answer, 'usage': usage, 'sources': kb_sources,
                 'trace': [{'task_id': tid, 'agent': 'assistant', 'tool': 'compose', 'args': {'depends_on': task['depends_on']}, 'result': {'answer': answer}}]}}}
         else:
             handlers = {'order.details': tools.get_order_details, 'order.status': tools.get_order_status,
@@ -333,6 +361,9 @@ def response(state):
         tasks.append({**task, **result, 'agent': agent})
         trace.extend(result.get('trace', []))
         usage = sum_usage(usage, result.get('usage'))
+        sources.extend(result.get('sources',[]))
+        if task['operation'] == 'knowledge.search':
+            continue
         if result.get('answer'):
             lines.append(('### 政策说明\n\n' if task['operation'] == 'faq.policies' else '### 综合说明\n\n' if task['operation'] == 'answer.explain' else '### 联网资料\n\n') + result['answer'])
         for oid in result.get('excluded', []):

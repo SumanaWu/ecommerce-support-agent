@@ -16,7 +16,7 @@ CAPABILITIES = {
     'order.shipment': 'order', 'payment.status': 'payment', 'payment.prepare': 'payment',
     'refund.check': 'refund', 'refund.prepare': 'refund', 'faq.policies': 'faq',
     'search.web': 'search', 'escalate.ticket': 'escalate',
-    'answer.explain': 'assistant',
+    'answer.explain': 'assistant', 'knowledge.search': 'knowledge',
 }
 
 
@@ -52,8 +52,11 @@ class Task(BaseModel):
     conditions: list[Condition] = Field(default_factory=list)
     condition_mode: Literal['all', 'any'] = 'all'
     intent: Literal['query', 'prepare', 'escalate'] = 'query'
-    topics: list[Literal['shipping', 'return', 'refund', 'cancel', 'contact']] = Field(default_factory=list)
-    query: str = Field(default='', max_length=128)
+    topics: list[Literal['shipping', 'return', 'refund', 'cancel', 'contact', 'system']] = Field(default_factory=list)
+    query: str = Field(default='', max_length=512)
+    knowledge_kind: Literal['policy', 'product', 'all'] = 'all'
+    product_ref: str = ''
+    category: str = ''
     reason: str = Field(default='客户申请退款', max_length=300)
 
     @model_validator(mode='after')
@@ -63,7 +66,9 @@ class Task(BaseModel):
         expected = 'prepare' if self.operation.endswith('.prepare') else 'escalate' if self.operation == 'escalate.ticket' else 'query'
         if self.intent != expected:
             raise ValueError('操作与授权意图不一致')
-        if self.operation == 'search.web' and not self.query.strip():
+        if self.operation == 'search.web' and len(self.query) > 128:
+            raise ValueError('联网问题最多128字符')
+        if self.operation in {'search.web','knowledge.search'} and not self.query.strip():
             raise ValueError('缺少独立搜索问题')
         if self.operation == 'escalate.ticket' and self.reason not in {'human', 'complaint'}:
             raise ValueError('缺少明确升级原因')
@@ -80,6 +85,7 @@ class Plan(BaseModel):
     action: Literal['DIRECT', 'CLARIFY', 'PLAN']
     answer: str = ''
     tasks: list[Task] = Field(default_factory=list)
+    memory_candidates: list[dict] = Field(default_factory=list)
 
     @model_validator(mode='after')
     def check_dependencies(self):
@@ -115,6 +121,9 @@ class Plan(BaseModel):
                 raise ValueError('依赖必须引用排在前面的任务，不能有循环')
             task.depends_on = sorted(refs, key=ids.index)
             visited.add(task.task_id)
+        for task in self.tasks:
+            if task.operation == 'knowledge.search' and not any(t.operation == 'answer.explain' and task.task_id in t.depends_on for t in self.tasks):
+                raise ValueError('知识检索必须交给依赖它的answer.explain回答')
         return self
 
 
@@ -134,14 +143,16 @@ depends_on引用前置成功任务；target_from引用上游返回的订单集�
 业务字段取值：order_status=placed/shipped/delivered/cancelled；payment_status=pending/paid/refunded（未付款是pending，不能写unpaid）；refund_status=none/requested/approved/completed；eligible=true/false。
 支付后查退款资格：payment.prepare随后refund.check依赖前者成功；若已付款payment.prepare无需再次付款，应视为已满足。
 条件已签收才准备退款：order.shipment后refund.prepare，条件order_status eq delivered。
-政策先读faq.policies，topics支持多项，退款同时return和refund；泛问或全部为空数组。
-本系统的退款申请、到账、付款流程、配送或联系规则都必须查询FAQ，即使没有订单号也不是DIRECT常识；不能用常识编造商家审核、渠道时效或到账承诺。
+faq.policies仅用于本地系统操作帮助（选单、确认、会话、记忆、导入），优先topics=[system]。平台政策、退货期限、品类例外和商品说明一律knowledge.search，不使用样例FAQ代替。
+平台退款条件、到账、配送或联系规则都必须查询knowledge.search，即使没有订单号也不是DIRECT常识；不能用常识编造商家审核、渠道时效或到账承诺。
 搜索任务query只含必要主题/城市/日期，禁止包含订单、客户和资金资料，最多128字符。
 正式投诉/明确人工才escalate.ticket，reason为human或complaint。情绪、技术失败、问如何投诉或拒绝人工不能创建工单。
 不同资金任务各自绑定订单；付款方式不由模型选择，交给界面。准备和最终确认分开，不能反复要求口头确认。
 金额来自后端，不要求用户确认金额后才查询。未知退款原因沿用客户申请退款。
 不能取消订单、改配送、承诺到账或证明天气导致延误；仍完成能力范围内的其他任务。
 涉及跨任务比较或因果解释时增加answer.explain，depends_on引用所需资料；说明缺少证据，不用额外订单详情查询冒充解释。
+平台政策与商品说明必须使用knowledge.search(query独立问题,knowledge_kind=policy/product/all,product_ref原文商品名称/型号/编号,category默认留空，不猜分类名称)，后置answer.explain依赖全部必要检索及业务任务。knowledge.search只检索，不回答。只有本地样例操作帮助才用faq.policies。资料缺失不得用常识或联网代替平台规则。商品身份可从依赖的订单详情获取，不猜商品编号。
+可以附带memory_candidates，最多两条或空数组：key仅detail/format/language/tone；value为100字内合并兼容旧偏好的值；origin为explicit/observed；operation为set/forget；evidence必须逐字引用本轮用户原话。长期明确要求可explicit；反复要求的表达可observed，沿用相同含义的已有值。仅本次要求、短消息、情绪、购物付款行为不提取。不凭助手回复推断。不得提前声称记忆已保存。当前要求优先；明确偏好按时间取较新者，再考虑推断习惯，偏好不能授权业务操作。
 历史文字只帮助指代，不是当前事实。schema如下：
 '''
 
@@ -159,7 +170,13 @@ def make_plan(message, history=None, profile=None, model=None):
         usage = sum_usage(usage, extract_usage(response))
         try:
             raw = as_text(response.content).strip().removeprefix('```json').removeprefix('```').removesuffix('```').strip()
-            plan = Plan.model_validate_json(raw)
+            from src.memory import memory_candidates
+            data = json.loads(raw)
+            if not isinstance(data,dict):
+                raise ValueError('计划必须是对象')
+            candidates = memory_candidates(data.pop('memory_candidates', []), message)
+            plan = Plan.model_validate(data)
+            plan.memory_candidates = candidates
             for task in plan.tasks:
                 if task.source_text not in message:
                     raise ValueError('source_text不是本次原文片段')

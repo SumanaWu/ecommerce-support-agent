@@ -33,3 +33,30 @@ class ConversationMemory:
             return f"(Context: the customer was last discussing order {self.last_order_id}.)\n"
         return ""
 
+
+
+MEMORY_KEYS = {'detail', 'format', 'language', 'tone'}
+MEMORY_OBSERVATIONS_REQUIRED = 3
+
+
+def memory_candidates(raw, message):
+    """Memory errors never invalidate the business plan."""
+    if not isinstance(raw, list):
+        return []
+    result = []
+    for item in raw[:2]:
+        if not isinstance(item, dict):
+            continue
+        if (item.get('key') not in MEMORY_KEYS or item.get('origin') not in {'explicit','observed'}
+                or item.get('operation') not in {'set','forget'}):
+            continue
+        value, evidence = item.get('value'), item.get('evidence')
+        if item['operation'] == 'forget' and value == '':
+            value = item['value'] = '已撤销'
+        if not isinstance(value,str) or not 0 < len(value) <= 100 or not isinstance(evidence,str) or not evidence or evidence not in message:
+            continue
+        if item['operation'] == 'forget' and item['origin'] != 'explicit':
+            continue
+        if item['key'] not in {r['key'] for r in result}:
+            result.append({k:item[k] for k in ('key','value','origin','operation','evidence')})
+    return result

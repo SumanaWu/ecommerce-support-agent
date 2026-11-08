@@ -115,3 +115,34 @@ def select_payment_method(chat_request_id: str, req: SelectPaymentMethodRequest)
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+@app.get('/users/{user_id}/memories')
+def memories(user_id: str):
+    service.validate(user_id)
+    return {'profile': service.store.profile(user_id), 'items': service.store.memories(user_id)}
+
+
+@app.delete('/users/{user_id}/memories/{key}')
+def forget_memory(user_id: str, key: str):
+    try:
+        service.validate(user_id)
+        service.store.forget_memory(user_id, key)
+        return {'status': 'revoked'}
+    except ValueError as exc:
+        raise HTTPException(status_code=400,detail=str(exc)) from exc
+
+
+@app.get('/knowledge/documents')
+def documents(kind: str = '', category: str = '', product_id: str = '', q: str = '', offset: int = 0, limit: int = 20):
+    if kind not in {'','policy','product'} or offset < 0 or not 1 <= limit <= 100:
+        raise HTTPException(status_code=422, detail='资料类型或分页参数无效')
+    return service.knowledge.documents(kind,category,product_id,q,offset,limit)
+
+
+@app.get('/knowledge/documents/{document_id}')
+def document(document_id: str):
+    try:
+        return service.knowledge.document(document_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404,detail=str(exc)) from exc

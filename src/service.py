@@ -27,6 +27,11 @@ class SupportService:
     def __init__(self, path=None):
         path = Path(path or Path(os.environ.get('SUPPORT_DATA_DIR', str(Path(__file__).resolve().parents[1] / 'data'))) / 'memory.sqlite')
         self.store = SupportStore(path)
+        import fcntl
+        self.knowledge_lock = (path.parent / 'knowledge.lock').open('a')
+        fcntl.flock(self.knowledge_lock, fcntl.LOCK_SH | fcntl.LOCK_NB)
+        from src.knowledge import get_knowledge
+        self.knowledge = get_knowledge(str(path.parent))
         self.lock = threading.RLock()
         self.connection = sqlite3.connect(path.parent / 'checkpoints.sqlite', check_same_thread=False)
         self._close = weakref.finalize(self, self.connection.close)
@@ -35,6 +40,7 @@ class SupportService:
 
     def close(self):
         self._close()
+        self.knowledge_lock.close()
 
     def validate(self, *values):
         if any(not isinstance(v, str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,64}', v) for v in values):
@@ -115,7 +121,26 @@ class SupportService:
         if ids:
             response['recent_order_ids'] = ids
         self._save(user_id, request_id, response)
+        if response['status'] == 'completed':
+            response['memory'] = {'status': 'pending', 'candidates': result['plan'].get('memory_candidates', [])}
+            self._save(user_id, request_id, response)
+            self._apply_memory(user_id, request_id, response)
         return response
+
+    def _apply_memory(self, user_id, request_id, response):
+        import logging
+        item = response.get('memory', {})
+        if item.get('status') != 'pending':
+            return
+        try:
+            with tools._session() as db:
+                row = db.get(RequestRecord, (user_id, request_id))
+                created = row.created_at.isoformat()
+            self.store.apply_memories(user_id, request_id, item['candidates'], created)
+            item['status'] = 'applied'
+            self._save(user_id, request_id, response)
+        except Exception:
+            logging.getLogger(__name__).exception('Memory write pending: %s', request_id)
 
     def chat(self, user_id, session_id, message, request_id=None):
         request_id = request_id or uuid4().hex
@@ -130,6 +155,7 @@ class SupportService:
                 if old['input'] != source:
                     raise ConflictError('请求编号已用于其他内容')
                 if old['response'] and old['response']['status'] != 'processing':
+                    self._apply_memory(user_id, request_id, old['response'])
                     return old['response']
             else:
                 if any(t['status'] in {'processing', 'awaiting_selection', 'awaiting_payment_method', 'awaiting_confirmation'} for t in self.snapshot(user_id, session_id)['turns']):
@@ -146,7 +172,7 @@ class SupportService:
             try:
                 value = None if state.values else {'user_id': user_id, 'session_id': session_id,
                     'request_id': request_id, 'message': message, 'history': memory.turns,
-                    'profile': self.store.profile(user_id)}
+                    'profile': self.store.profile(user_id), 'knowledge_root': str(Path(self.store.path).parent)}
                 pending = None
                 interruptions = [i for task in state.tasks for i in task.interrupts]
                 if interruptions:

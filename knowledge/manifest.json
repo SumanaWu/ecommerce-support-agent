@@ -1,0 +1,5006 @@
+{
+  "products": [
+    {
+      "id": "SKU-001",
+      "name": "无线耳机",
+      "model": "SIM-01-01",
+      "aliases": [
+        "Wireless Headphones"
+      ]
+    },
+    {
+      "id": "SKU-002",
+      "name": "无线耳机 B款",
+      "model": "SIM-01-02",
+      "aliases": [
+        "Wireless Headphones B"
+      ]
+    },
+    {
+      "id": "SKU-003",
+      "name": "无线耳机 C款",
+      "model": "SIM-01-03",
+      "aliases": [
+        "Wireless Headphones C"
+      ]
+    },
+    {
+      "id": "SKU-004",
+      "name": "无线耳机 D款",
+      "model": "SIM-01-04",
+      "aliases": [
+        "Wireless Headphones D"
+      ]
+    },
+    {
+      "id": "SKU-005",
+      "name": "无线耳机 E款",
+      "model": "SIM-01-05",
+      "aliases": [
+        "Wireless Headphones E"
+      ]
+    },
+    {
+      "id": "SKU-006",
+      "name": "机械键盘",
+      "model": "SIM-02-01",
+      "aliases": [
+        "Mechanical Keyboard"
+      ]
+    },
+    {
+      "id": "SKU-007",
+      "name": "机械键盘 B款",
+      "model": "SIM-02-02",
+      "aliases": [
+        "Mechanical Keyboard B"
+      ]
+    },
+    {
+      "id": "SKU-008",
+      "name": "机械键盘 C款",
+      "model": "SIM-02-03",
+      "aliases": [
+        "Mechanical Keyboard C"
+      ]
+    },
+    {
+      "id": "SKU-009",
+      "name": "机械键盘 D款",
+      "model": "SIM-02-04",
+      "aliases": [
+        "Mechanical Keyboard D"
+      ]
+    },
+    {
+      "id": "SKU-010",
+      "name": "机械键盘 E款",
+      "model": "SIM-02-05",
+      "aliases": [
+        "Mechanical Keyboard E"
+      ]
+    },
+    {
+      "id": "SKU-011",
+      "name": "USB-C扩展坞",
+      "model": "SIM-03-01",
+      "aliases": [
+        "USB-C Hub"
+      ]
+    },
+    {
+      "id": "SKU-012",
+      "name": "USB-C扩展坞 B款",
+      "model": "SIM-03-02",
+      "aliases": [
+        "USB-C Hub B"
+      ]
+    },
+    {
+      "id": "SKU-013",
+      "name": "USB-C扩展坞 C款",
+      "model": "SIM-03-03",
+      "aliases": [
+        "USB-C Hub C"
+      ]
+    },
+    {
+      "id": "SKU-014",
+      "name": "USB-C扩展坞 D款",
+      "model": "SIM-03-04",
+      "aliases": [
+        "USB-C Hub D"
+      ]
+    },
+    {
+      "id": "SKU-015",
+      "name": "USB-C扩展坞 E款",
+      "model": "SIM-03-05",
+      "aliases": [
+        "USB-C Hub E"
+      ]
+    },
+    {
+      "id": "SKU-016",
+      "name": "升降桌",
+      "model": "SIM-04-01",
+      "aliases": [
+        "Standing Desk"
+      ]
+    },
+    {
+      "id": "SKU-017",
+      "name": "升降桌 B款",
+      "model": "SIM-04-02",
+      "aliases": [
+        "Standing Desk B"
+      ]
+    },
+    {
+      "id": "SKU-018",
+      "name": "升降桌 C款",
+      "model": "SIM-04-03",
+      "aliases": [
+        "Standing Desk C"
+      ]
+    },
+    {
+      "id": "SKU-019",
+      "name": "升降桌 D款",
+      "model": "SIM-04-04",
+      "aliases": [
+        "Standing Desk D"
+      ]
+    },
+    {
+      "id": "SKU-020",
+      "name": "升降桌 E款",
+      "model": "SIM-04-05",
+      "aliases": [
+        "Standing Desk E"
+      ]
+    },
+    {
+      "id": "SKU-021",
+      "name": "台灯",
+      "model": "SIM-05-01",
+      "aliases": [
+        "Desk Lamp"
+      ]
+    },
+    {
+      "id": "SKU-022",
+      "name": "台灯 B款",
+      "model": "SIM-05-02",
+      "aliases": [
+        "Desk Lamp B"
+      ]
+    },
+    {
+      "id": "SKU-023",
+      "name": "台灯 C款",
+      "model": "SIM-05-03",
+      "aliases": [
+        "Desk Lamp C"
+      ]
+    },
+    {
+      "id": "SKU-024",
+      "name": "台灯 D款",
+      "model": "SIM-05-04",
+      "aliases": [
+        "Desk Lamp D"
+      ]
+    },
+    {
+      "id": "SKU-025",
+      "name": "台灯 E款",
+      "model": "SIM-05-05",
+      "aliases": [
+        "Desk Lamp E"
+      ]
+    },
+    {
+      "id": "SKU-026",
+      "name": "蓝牙音箱",
+      "model": "SIM-06-01",
+      "aliases": [
+        "Bluetooth Speaker"
+      ]
+    },
+    {
+      "id": "SKU-027",
+      "name": "蓝牙音箱 B款",
+      "model": "SIM-06-02",
+      "aliases": [
+        "Bluetooth Speaker B"
+      ]
+    },
+    {
+      "id": "SKU-028",
+      "name": "蓝牙音箱 C款",
+      "model": "SIM-06-03",
+      "aliases": [
+        "Bluetooth Speaker C"
+      ]
+    },
+    {
+      "id": "SKU-029",
+      "name": "蓝牙音箱 D款",
+      "model": "SIM-06-04",
+      "aliases": [
+        "Bluetooth Speaker D"
+      ]
+    },
+    {
+      "id": "SKU-030",
+      "name": "蓝牙音箱 E款",
+      "model": "SIM-06-05",
+      "aliases": [
+        "Bluetooth Speaker E"
+      ]
+    },
+    {
+      "id": "SKU-031",
+      "name": "笔记本支架",
+      "model": "SIM-07-01",
+      "aliases": [
+        "Laptop Stand"
+      ]
+    },
+    {
+      "id": "SKU-032",
+      "name": "笔记本支架 B款",
+      "model": "SIM-07-02",
+      "aliases": [
+        "Laptop Stand B"
+      ]
+    },
+    {
+      "id": "SKU-033",
+      "name": "笔记本支架 C款",
+      "model": "SIM-07-03",
+      "aliases": [
+        "Laptop Stand C"
+      ]
+    },
+    {
+      "id": "SKU-034",
+      "name": "笔记本支架 D款",
+      "model": "SIM-07-04",
+      "aliases": [
+        "Laptop Stand D"
+      ]
+    },
+    {
+      "id": "SKU-035",
+      "name": "笔记本支架 E款",
+      "model": "SIM-07-05",
+      "aliases": [
+        "Laptop Stand E"
+      ]
+    },
+    {
+      "id": "SKU-036",
+      "name": "1080p摄像头",
+      "model": "SIM-08-01",
+      "aliases": [
+        "Webcam 1080p"
+      ]
+    },
+    {
+      "id": "SKU-037",
+      "name": "1080p摄像头 B款",
+      "model": "SIM-08-02",
+      "aliases": [
+        "Webcam 1080p B"
+      ]
+    },
+    {
+      "id": "SKU-038",
+      "name": "1080p摄像头 C款",
+      "model": "SIM-08-03",
+      "aliases": [
+        "Webcam 1080p C"
+      ]
+    },
+    {
+      "id": "SKU-039",
+      "name": "1080p摄像头 D款",
+      "model": "SIM-08-04",
+      "aliases": [
+        "Webcam 1080p D"
+      ]
+    },
+    {
+      "id": "SKU-040",
+      "name": "1080p摄像头 E款",
+      "model": "SIM-08-05",
+      "aliases": [
+        "Webcam 1080p E"
+      ]
+    },
+    {
+      "id": "SKU-041",
+      "name": "人体工学鼠标",
+      "model": "SIM-09-01",
+      "aliases": [
+        "Ergonomic Mouse"
+      ]
+    },
+    {
+      "id": "SKU-042",
+      "name": "人体工学鼠标 B款",
+      "model": "SIM-09-02",
+      "aliases": [
+        "Ergonomic Mouse B"
+      ]
+    },
+    {
+      "id": "SKU-043",
+      "name": "人体工学鼠标 C款",
+      "model": "SIM-09-03",
+      "aliases": [
+        "Ergonomic Mouse C"
+      ]
+    },
+    {
+      "id": "SKU-044",
+      "name": "人体工学鼠标 D款",
+      "model": "SIM-09-04",
+      "aliases": [
+        "Ergonomic Mouse D"
+      ]
+    },
+    {
+      "id": "SKU-045",
+      "name": "人体工学鼠标 E款",
+      "model": "SIM-09-05",
+      "aliases": [
+        "Ergonomic Mouse E"
+      ]
+    },
+    {
+      "id": "SKU-046",
+      "name": "降噪耳塞",
+      "model": "SIM-10-01",
+      "aliases": [
+        "Noise-Cancelling Earbuds"
+      ]
+    },
+    {
+      "id": "SKU-047",
+      "name": "降噪耳塞 B款",
+      "model": "SIM-10-02",
+      "aliases": [
+        "Noise-Cancelling Earbuds B"
+      ]
+    },
+    {
+      "id": "SKU-048",
+      "name": "降噪耳塞 C款",
+      "model": "SIM-10-03",
+      "aliases": [
+        "Noise-Cancelling Earbuds C"
+      ]
+    },
+    {
+      "id": "SKU-049",
+      "name": "降噪耳塞 D款",
+      "model": "SIM-10-04",
+      "aliases": [
+        "Noise-Cancelling Earbuds D"
+      ]
+    },
+    {
+      "id": "SKU-050",
+      "name": "降噪耳塞 E款",
+      "model": "SIM-10-05",
+      "aliases": [
+        "Noise-Cancelling Earbuds E"
+      ]
+    },
+    {
+      "id": "SKU-051",
+      "name": "电饭煲 01款",
+      "model": "HOME-01-01",
+      "aliases": [
+        "电饭煲1号"
+      ]
+    },
+    {
+      "id": "SKU-052",
+      "name": "电饭煲 02款",
+      "model": "HOME-01-02",
+      "aliases": [
+        "电饭煲2号"
+      ]
+    },
+    {
+      "id": "SKU-053",
+      "name": "电饭煲 03款",
+      "model": "HOME-01-03",
+      "aliases": [
+        "电饭煲3号"
+      ]
+    },
+    {
+      "id": "SKU-054",
+      "name": "电饭煲 04款",
+      "model": "HOME-01-04",
+      "aliases": [
+        "电饭煲4号"
+      ]
+    },
+    {
+      "id": "SKU-055",
+      "name": "电饭煲 05款",
+      "model": "HOME-01-05",
+      "aliases": [
+        "电饭煲5号"
+      ]
+    },
+    {
+      "id": "SKU-056",
+      "name": "电饭煲 06款",
+      "model": "HOME-01-06",
+      "aliases": [
+        "电饭煲6号"
+      ]
+    },
+    {
+      "id": "SKU-057",
+      "name": "电饭煲 07款",
+      "model": "HOME-01-07",
+      "aliases": [
+        "电饭煲7号"
+      ]
+    },
+    {
+      "id": "SKU-058",
+      "name": "电饭煲 08款",
+      "model": "HOME-01-08",
+      "aliases": [
+        "电饭煲8号"
+      ]
+    },
+    {
+      "id": "SKU-059",
+      "name": "电饭煲 09款",
+      "model": "HOME-01-09",
+      "aliases": [
+        "电饭煲9号"
+      ]
+    },
+    {
+      "id": "SKU-060",
+      "name": "电饭煲 10款",
+      "model": "HOME-01-10",
+      "aliases": [
+        "电饭煲10号"
+      ]
+    },
+    {
+      "id": "SKU-061",
+      "name": "电热水壶 01款",
+      "model": "HOME-02-01",
+      "aliases": [
+        "电热水壶1号"
+      ]
+    },
+    {
+      "id": "SKU-062",
+      "name": "电热水壶 02款",
+      "model": "HOME-02-02",
+      "aliases": [
+        "电热水壶2号"
+      ]
+    },
+    {
+      "id": "SKU-063",
+      "name": "电热水壶 03款",
+      "model": "HOME-02-03",
+      "aliases": [
+        "电热水壶3号"
+      ]
+    },
+    {
+      "id": "SKU-064",
+      "name": "电热水壶 04款",
+      "model": "HOME-02-04",
+      "aliases": [
+        "电热水壶4号"
+      ]
+    },
+    {
+      "id": "SKU-065",
+      "name": "电热水壶 05款",
+      "model": "HOME-02-05",
+      "aliases": [
+        "电热水壶5号"
+      ]
+    },
+    {
+      "id": "SKU-066",
+      "name": "电热水壶 06款",
+      "model": "HOME-02-06",
+      "aliases": [
+        "电热水壶6号"
+      ]
+    },
+    {
+      "id": "SKU-067",
+      "name": "电热水壶 07款",
+      "model": "HOME-02-07",
+      "aliases": [
+        "电热水壶7号"
+      ]
+    },
+    {
+      "id": "SKU-068",
+      "name": "电热水壶 08款",
+      "model": "HOME-02-08",
+      "aliases": [
+        "电热水壶8号"
+      ]
+    },
+    {
+      "id": "SKU-069",
+      "name": "电热水壶 09款",
+      "model": "HOME-02-09",
+      "aliases": [
+        "电热水壶9号"
+      ]
+    },
+    {
+      "id": "SKU-070",
+      "name": "电热水壶 10款",
+      "model": "HOME-02-10",
+      "aliases": [
+        "电热水壶10号"
+      ]
+    },
+    {
+      "id": "SKU-071",
+      "name": "空气炸锅 01款",
+      "model": "HOME-03-01",
+      "aliases": [
+        "空气炸锅1号"
+      ]
+    },
+    {
+      "id": "SKU-072",
+      "name": "空气炸锅 02款",
+      "model": "HOME-03-02",
+      "aliases": [
+        "空气炸锅2号"
+      ]
+    },
+    {
+      "id": "SKU-073",
+      "name": "空气炸锅 03款",
+      "model": "HOME-03-03",
+      "aliases": [
+        "空气炸锅3号"
+      ]
+    },
+    {
+      "id": "SKU-074",
+      "name": "空气炸锅 04款",
+      "model": "HOME-03-04",
+      "aliases": [
+        "空气炸锅4号"
+      ]
+    },
+    {
+      "id": "SKU-075",
+      "name": "空气炸锅 05款",
+      "model": "HOME-03-05",
+      "aliases": [
+        "空气炸锅5号"
+      ]
+    },
+    {
+      "id": "SKU-076",
+      "name": "空气炸锅 06款",
+      "model": "HOME-03-06",
+      "aliases": [
+        "空气炸锅6号"
+      ]
+    },
+    {
+      "id": "SKU-077",
+      "name": "空气炸锅 07款",
+      "model": "HOME-03-07",
+      "aliases": [
+        "空气炸锅7号"
+      ]
+    },
+    {
+      "id": "SKU-078",
+      "name": "空气炸锅 08款",
+      "model": "HOME-03-08",
+      "aliases": [
+        "空气炸锅8号"
+      ]
+    },
+    {
+      "id": "SKU-079",
+      "name": "空气炸锅 09款",
+      "model": "HOME-03-09",
+      "aliases": [
+        "空气炸锅9号"
+      ]
+    },
+    {
+      "id": "SKU-080",
+      "name": "空气炸锅 10款",
+      "model": "HOME-03-10",
+      "aliases": [
+        "空气炸锅10号"
+      ]
+    },
+    {
+      "id": "SKU-081",
+      "name": "吸尘器 01款",
+      "model": "HOME-04-01",
+      "aliases": [
+        "吸尘器1号"
+      ]
+    },
+    {
+      "id": "SKU-082",
+      "name": "吸尘器 02款",
+      "model": "HOME-04-02",
+      "aliases": [
+        "吸尘器2号"
+      ]
+    },
+    {
+      "id": "SKU-083",
+      "name": "吸尘器 03款",
+      "model": "HOME-04-03",
+      "aliases": [
+        "吸尘器3号"
+      ]
+    },
+    {
+      "id": "SKU-084",
+      "name": "吸尘器 04款",
+      "model": "HOME-04-04",
+      "aliases": [
+        "吸尘器4号"
+      ]
+    },
+    {
+      "id": "SKU-085",
+      "name": "吸尘器 05款",
+      "model": "HOME-04-05",
+      "aliases": [
+        "吸尘器5号"
+      ]
+    },
+    {
+      "id": "SKU-086",
+      "name": "吸尘器 06款",
+      "model": "HOME-04-06",
+      "aliases": [
+        "吸尘器6号"
+      ]
+    },
+    {
+      "id": "SKU-087",
+      "name": "吸尘器 07款",
+      "model": "HOME-04-07",
+      "aliases": [
+        "吸尘器7号"
+      ]
+    },
+    {
+      "id": "SKU-088",
+      "name": "吸尘器 08款",
+      "model": "HOME-04-08",
+      "aliases": [
+        "吸尘器8号"
+      ]
+    },
+    {
+      "id": "SKU-089",
+      "name": "吸尘器 09款",
+      "model": "HOME-04-09",
+      "aliases": [
+        "吸尘器9号"
+      ]
+    },
+    {
+      "id": "SKU-090",
+      "name": "吸尘器 10款",
+      "model": "HOME-04-10",
+      "aliases": [
+        "吸尘器10号"
+      ]
+    },
+    {
+      "id": "SKU-091",
+      "name": "空气净化器 01款",
+      "model": "HOME-05-01",
+      "aliases": [
+        "空气净化器1号"
+      ]
+    },
+    {
+      "id": "SKU-092",
+      "name": "空气净化器 02款",
+      "model": "HOME-05-02",
+      "aliases": [
+        "空气净化器2号"
+      ]
+    },
+    {
+      "id": "SKU-093",
+      "name": "空气净化器 03款",
+      "model": "HOME-05-03",
+      "aliases": [
+        "空气净化器3号"
+      ]
+    },
+    {
+      "id": "SKU-094",
+      "name": "空气净化器 04款",
+      "model": "HOME-05-04",
+      "aliases": [
+        "空气净化器4号"
+      ]
+    },
+    {
+      "id": "SKU-095",
+      "name": "空气净化器 05款",
+      "model": "HOME-05-05",
+      "aliases": [
+        "空气净化器5号"
+      ]
+    },
+    {
+      "id": "SKU-096",
+      "name": "空气净化器 06款",
+      "model": "HOME-05-06",
+      "aliases": [
+        "空气净化器6号"
+      ]
+    },
+    {
+      "id": "SKU-097",
+      "name": "空气净化器 07款",
+      "model": "HOME-05-07",
+      "aliases": [
+        "空气净化器7号"
+      ]
+    },
+    {
+      "id": "SKU-098",
+      "name": "空气净化器 08款",
+      "model": "HOME-05-08",
+      "aliases": [
+        "空气净化器8号"
+      ]
+    },
+    {
+      "id": "SKU-099",
+      "name": "空气净化器 09款",
+      "model": "HOME-05-09",
+      "aliases": [
+        "空气净化器9号"
+      ]
+    },
+    {
+      "id": "SKU-100",
+      "name": "空气净化器 10款",
+      "model": "HOME-05-10",
+      "aliases": [
+        "空气净化器10号"
+      ]
+    },
+    {
+      "id": "SKU-101",
+      "name": "保温杯 01款",
+      "model": "HOME-06-01",
+      "aliases": [
+        "保温杯1号"
+      ]
+    },
+    {
+      "id": "SKU-102",
+      "name": "保温杯 02款",
+      "model": "HOME-06-02",
+      "aliases": [
+        "保温杯2号"
+      ]
+    },
+    {
+      "id": "SKU-103",
+      "name": "保温杯 03款",
+      "model": "HOME-06-03",
+      "aliases": [
+        "保温杯3号"
+      ]
+    },
+    {
+      "id": "SKU-104",
+      "name": "保温杯 04款",
+      "model": "HOME-06-04",
+      "aliases": [
+        "保温杯4号"
+      ]
+    },
+    {
+      "id": "SKU-105",
+      "name": "保温杯 05款",
+      "model": "HOME-06-05",
+      "aliases": [
+        "保温杯5号"
+      ]
+    },
+    {
+      "id": "SKU-106",
+      "name": "保温杯 06款",
+      "model": "HOME-06-06",
+      "aliases": [
+        "保温杯6号"
+      ]
+    },
+    {
+      "id": "SKU-107",
+      "name": "保温杯 07款",
+      "model": "HOME-06-07",
+      "aliases": [
+        "保温杯7号"
+      ]
+    },
+    {
+      "id": "SKU-108",
+      "name": "保温杯 08款",
+      "model": "HOME-06-08",
+      "aliases": [
+        "保温杯8号"
+      ]
+    },
+    {
+      "id": "SKU-109",
+      "name": "保温杯 09款",
+      "model": "HOME-06-09",
+      "aliases": [
+        "保温杯9号"
+      ]
+    },
+    {
+      "id": "SKU-110",
+      "name": "保温杯 10款",
+      "model": "HOME-06-10",
+      "aliases": [
+        "保温杯10号"
+      ]
+    },
+    {
+      "id": "SKU-111",
+      "name": "运动背包 01款",
+      "model": "HOME-07-01",
+      "aliases": [
+        "运动背包1号"
+      ]
+    },
+    {
+      "id": "SKU-112",
+      "name": "运动背包 02款",
+      "model": "HOME-07-02",
+      "aliases": [
+        "运动背包2号"
+      ]
+    },
+    {
+      "id": "SKU-113",
+      "name": "运动背包 03款",
+      "model": "HOME-07-03",
+      "aliases": [
+        "运动背包3号"
+      ]
+    },
+    {
+      "id": "SKU-114",
+      "name": "运动背包 04款",
+      "model": "HOME-07-04",
+      "aliases": [
+        "运动背包4号"
+      ]
+    },
+    {
+      "id": "SKU-115",
+      "name": "运动背包 05款",
+      "model": "HOME-07-05",
+      "aliases": [
+        "运动背包5号"
+      ]
+    },
+    {
+      "id": "SKU-116",
+      "name": "运动背包 06款",
+      "model": "HOME-07-06",
+      "aliases": [
+        "运动背包6号"
+      ]
+    },
+    {
+      "id": "SKU-117",
+      "name": "运动背包 07款",
+      "model": "HOME-07-07",
+      "aliases": [
+        "运动背包7号"
+      ]
+    },
+    {
+      "id": "SKU-118",
+      "name": "运动背包 08款",
+      "model": "HOME-07-08",
+      "aliases": [
+        "运动背包8号"
+      ]
+    },
+    {
+      "id": "SKU-119",
+      "name": "运动背包 09款",
+      "model": "HOME-07-09",
+      "aliases": [
+        "运动背包9号"
+      ]
+    },
+    {
+      "id": "SKU-120",
+      "name": "运动背包 10款",
+      "model": "HOME-07-10",
+      "aliases": [
+        "运动背包10号"
+      ]
+    },
+    {
+      "id": "SKU-121",
+      "name": "瑜伽垫 01款",
+      "model": "HOME-08-01",
+      "aliases": [
+        "瑜伽垫1号"
+      ]
+    },
+    {
+      "id": "SKU-122",
+      "name": "瑜伽垫 02款",
+      "model": "HOME-08-02",
+      "aliases": [
+        "瑜伽垫2号"
+      ]
+    },
+    {
+      "id": "SKU-123",
+      "name": "瑜伽垫 03款",
+      "model": "HOME-08-03",
+      "aliases": [
+        "瑜伽垫3号"
+      ]
+    },
+    {
+      "id": "SKU-124",
+      "name": "瑜伽垫 04款",
+      "model": "HOME-08-04",
+      "aliases": [
+        "瑜伽垫4号"
+      ]
+    },
+    {
+      "id": "SKU-125",
+      "name": "瑜伽垫 05款",
+      "model": "HOME-08-05",
+      "aliases": [
+        "瑜伽垫5号"
+      ]
+    },
+    {
+      "id": "SKU-126",
+      "name": "瑜伽垫 06款",
+      "model": "HOME-08-06",
+      "aliases": [
+        "瑜伽垫6号"
+      ]
+    },
+    {
+      "id": "SKU-127",
+      "name": "瑜伽垫 07款",
+      "model": "HOME-08-07",
+      "aliases": [
+        "瑜伽垫7号"
+      ]
+    },
+    {
+      "id": "SKU-128",
+      "name": "瑜伽垫 08款",
+      "model": "HOME-08-08",
+      "aliases": [
+        "瑜伽垫8号"
+      ]
+    },
+    {
+      "id": "SKU-129",
+      "name": "瑜伽垫 09款",
+      "model": "HOME-08-09",
+      "aliases": [
+        "瑜伽垫9号"
+      ]
+    },
+    {
+      "id": "SKU-130",
+      "name": "瑜伽垫 10款",
+      "model": "HOME-08-10",
+      "aliases": [
+        "瑜伽垫10号"
+      ]
+    },
+    {
+      "id": "SKU-131",
+      "name": "旅行箱 01款",
+      "model": "HOME-09-01",
+      "aliases": [
+        "旅行箱1号"
+      ]
+    },
+    {
+      "id": "SKU-132",
+      "name": "旅行箱 02款",
+      "model": "HOME-09-02",
+      "aliases": [
+        "旅行箱2号"
+      ]
+    },
+    {
+      "id": "SKU-133",
+      "name": "旅行箱 03款",
+      "model": "HOME-09-03",
+      "aliases": [
+        "旅行箱3号"
+      ]
+    },
+    {
+      "id": "SKU-134",
+      "name": "旅行箱 04款",
+      "model": "HOME-09-04",
+      "aliases": [
+        "旅行箱4号"
+      ]
+    },
+    {
+      "id": "SKU-135",
+      "name": "旅行箱 05款",
+      "model": "HOME-09-05",
+      "aliases": [
+        "旅行箱5号"
+      ]
+    },
+    {
+      "id": "SKU-136",
+      "name": "旅行箱 06款",
+      "model": "HOME-09-06",
+      "aliases": [
+        "旅行箱6号"
+      ]
+    },
+    {
+      "id": "SKU-137",
+      "name": "旅行箱 07款",
+      "model": "HOME-09-07",
+      "aliases": [
+        "旅行箱7号"
+      ]
+    },
+    {
+      "id": "SKU-138",
+      "name": "旅行箱 08款",
+      "model": "HOME-09-08",
+      "aliases": [
+        "旅行箱8号"
+      ]
+    },
+    {
+      "id": "SKU-139",
+      "name": "旅行箱 09款",
+      "model": "HOME-09-09",
+      "aliases": [
+        "旅行箱9号"
+      ]
+    },
+    {
+      "id": "SKU-140",
+      "name": "旅行箱 10款",
+      "model": "HOME-09-10",
+      "aliases": [
+        "旅行箱10号"
+      ]
+    },
+    {
+      "id": "SKU-141",
+      "name": "棉质床单 01款",
+      "model": "HOME-10-01",
+      "aliases": [
+        "棉质床单1号"
+      ]
+    },
+    {
+      "id": "SKU-142",
+      "name": "棉质床单 02款",
+      "model": "HOME-10-02",
+      "aliases": [
+        "棉质床单2号"
+      ]
+    },
+    {
+      "id": "SKU-143",
+      "name": "棉质床单 03款",
+      "model": "HOME-10-03",
+      "aliases": [
+        "棉质床单3号"
+      ]
+    },
+    {
+      "id": "SKU-144",
+      "name": "棉质床单 04款",
+      "model": "HOME-10-04",
+      "aliases": [
+        "棉质床单4号"
+      ]
+    },
+    {
+      "id": "SKU-145",
+      "name": "棉质床单 05款",
+      "model": "HOME-10-05",
+      "aliases": [
+        "棉质床单5号"
+      ]
+    },
+    {
+      "id": "SKU-146",
+      "name": "棉质床单 06款",
+      "model": "HOME-10-06",
+      "aliases": [
+        "棉质床单6号"
+      ]
+    },
+    {
+      "id": "SKU-147",
+      "name": "棉质床单 07款",
+      "model": "HOME-10-07",
+      "aliases": [
+        "棉质床单7号"
+      ]
+    },
+    {
+      "id": "SKU-148",
+      "name": "棉质床单 08款",
+      "model": "HOME-10-08",
+      "aliases": [
+        "棉质床单8号"
+      ]
+    },
+    {
+      "id": "SKU-149",
+      "name": "棉质床单 09款",
+      "model": "HOME-10-09",
+      "aliases": [
+        "棉质床单9号"
+      ]
+    },
+    {
+      "id": "SKU-150",
+      "name": "棉质床单 10款",
+      "model": "HOME-10-10",
+      "aliases": [
+        "棉质床单10号"
+      ]
+    },
+    {
+      "id": "SKU-151",
+      "name": "阅读灯 01款",
+      "model": "HOME-11-01",
+      "aliases": [
+        "阅读灯1号"
+      ]
+    },
+    {
+      "id": "SKU-152",
+      "name": "阅读灯 02款",
+      "model": "HOME-11-02",
+      "aliases": [
+        "阅读灯2号"
+      ]
+    },
+    {
+      "id": "SKU-153",
+      "name": "阅读灯 03款",
+      "model": "HOME-11-03",
+      "aliases": [
+        "阅读灯3号"
+      ]
+    },
+    {
+      "id": "SKU-154",
+      "name": "阅读灯 04款",
+      "model": "HOME-11-04",
+      "aliases": [
+        "阅读灯4号"
+      ]
+    },
+    {
+      "id": "SKU-155",
+      "name": "阅读灯 05款",
+      "model": "HOME-11-05",
+      "aliases": [
+        "阅读灯5号"
+      ]
+    },
+    {
+      "id": "SKU-156",
+      "name": "阅读灯 06款",
+      "model": "HOME-11-06",
+      "aliases": [
+        "阅读灯6号"
+      ]
+    },
+    {
+      "id": "SKU-157",
+      "name": "阅读灯 07款",
+      "model": "HOME-11-07",
+      "aliases": [
+        "阅读灯7号"
+      ]
+    },
+    {
+      "id": "SKU-158",
+      "name": "阅读灯 08款",
+      "model": "HOME-11-08",
+      "aliases": [
+        "阅读灯8号"
+      ]
+    },
+    {
+      "id": "SKU-159",
+      "name": "阅读灯 09款",
+      "model": "HOME-11-09",
+      "aliases": [
+        "阅读灯9号"
+      ]
+    },
+    {
+      "id": "SKU-160",
+      "name": "阅读灯 10款",
+      "model": "HOME-11-10",
+      "aliases": [
+        "阅读灯10号"
+      ]
+    },
+    {
+      "id": "SKU-161",
+      "name": "手工具套装 01款",
+      "model": "HOME-12-01",
+      "aliases": [
+        "手工具套装1号"
+      ]
+    },
+    {
+      "id": "SKU-162",
+      "name": "手工具套装 02款",
+      "model": "HOME-12-02",
+      "aliases": [
+        "手工具套装2号"
+      ]
+    },
+    {
+      "id": "SKU-163",
+      "name": "手工具套装 03款",
+      "model": "HOME-12-03",
+      "aliases": [
+        "手工具套装3号"
+      ]
+    },
+    {
+      "id": "SKU-164",
+      "name": "手工具套装 04款",
+      "model": "HOME-12-04",
+      "aliases": [
+        "手工具套装4号"
+      ]
+    },
+    {
+      "id": "SKU-165",
+      "name": "手工具套装 05款",
+      "model": "HOME-12-05",
+      "aliases": [
+        "手工具套装5号"
+      ]
+    },
+    {
+      "id": "SKU-166",
+      "name": "手工具套装 06款",
+      "model": "HOME-12-06",
+      "aliases": [
+        "手工具套装6号"
+      ]
+    },
+    {
+      "id": "SKU-167",
+      "name": "手工具套装 07款",
+      "model": "HOME-12-07",
+      "aliases": [
+        "手工具套装7号"
+      ]
+    },
+    {
+      "id": "SKU-168",
+      "name": "手工具套装 08款",
+      "model": "HOME-12-08",
+      "aliases": [
+        "手工具套装8号"
+      ]
+    },
+    {
+      "id": "SKU-169",
+      "name": "手工具套装 09款",
+      "model": "HOME-12-09",
+      "aliases": [
+        "手工具套装9号"
+      ]
+    },
+    {
+      "id": "SKU-170",
+      "name": "手工具套装 10款",
+      "model": "HOME-12-10",
+      "aliases": [
+        "手工具套装10号"
+      ]
+    },
+    {
+      "id": "SKU-171",
+      "name": "宠物食盆 01款",
+      "model": "HOME-13-01",
+      "aliases": [
+        "宠物食盆1号"
+      ]
+    },
+    {
+      "id": "SKU-172",
+      "name": "宠物食盆 02款",
+      "model": "HOME-13-02",
+      "aliases": [
+        "宠物食盆2号"
+      ]
+    },
+    {
+      "id": "SKU-173",
+      "name": "宠物食盆 03款",
+      "model": "HOME-13-03",
+      "aliases": [
+        "宠物食盆3号"
+      ]
+    },
+    {
+      "id": "SKU-174",
+      "name": "宠物食盆 04款",
+      "model": "HOME-13-04",
+      "aliases": [
+        "宠物食盆4号"
+      ]
+    },
+    {
+      "id": "SKU-175",
+      "name": "宠物食盆 05款",
+      "model": "HOME-13-05",
+      "aliases": [
+        "宠物食盆5号"
+      ]
+    },
+    {
+      "id": "SKU-176",
+      "name": "宠物食盆 06款",
+      "model": "HOME-13-06",
+      "aliases": [
+        "宠物食盆6号"
+      ]
+    },
+    {
+      "id": "SKU-177",
+      "name": "宠物食盆 07款",
+      "model": "HOME-13-07",
+      "aliases": [
+        "宠物食盆7号"
+      ]
+    },
+    {
+      "id": "SKU-178",
+      "name": "宠物食盆 08款",
+      "model": "HOME-13-08",
+      "aliases": [
+        "宠物食盆8号"
+      ]
+    },
+    {
+      "id": "SKU-179",
+      "name": "宠物食盆 09款",
+      "model": "HOME-13-09",
+      "aliases": [
+        "宠物食盆9号"
+      ]
+    },
+    {
+      "id": "SKU-180",
+      "name": "宠物食盆 10款",
+      "model": "HOME-13-10",
+      "aliases": [
+        "宠物食盆10号"
+      ]
+    },
+    {
+      "id": "SKU-181",
+      "name": "绘画套装 01款",
+      "model": "HOME-14-01",
+      "aliases": [
+        "绘画套装1号"
+      ]
+    },
+    {
+      "id": "SKU-182",
+      "name": "绘画套装 02款",
+      "model": "HOME-14-02",
+      "aliases": [
+        "绘画套装2号"
+      ]
+    },
+    {
+      "id": "SKU-183",
+      "name": "绘画套装 03款",
+      "model": "HOME-14-03",
+      "aliases": [
+        "绘画套装3号"
+      ]
+    },
+    {
+      "id": "SKU-184",
+      "name": "绘画套装 04款",
+      "model": "HOME-14-04",
+      "aliases": [
+        "绘画套装4号"
+      ]
+    },
+    {
+      "id": "SKU-185",
+      "name": "绘画套装 05款",
+      "model": "HOME-14-05",
+      "aliases": [
+        "绘画套装5号"
+      ]
+    },
+    {
+      "id": "SKU-186",
+      "name": "绘画套装 06款",
+      "model": "HOME-14-06",
+      "aliases": [
+        "绘画套装6号"
+      ]
+    },
+    {
+      "id": "SKU-187",
+      "name": "绘画套装 07款",
+      "model": "HOME-14-07",
+      "aliases": [
+        "绘画套装7号"
+      ]
+    },
+    {
+      "id": "SKU-188",
+      "name": "绘画套装 08款",
+      "model": "HOME-14-08",
+      "aliases": [
+        "绘画套装8号"
+      ]
+    },
+    {
+      "id": "SKU-189",
+      "name": "绘画套装 09款",
+      "model": "HOME-14-09",
+      "aliases": [
+        "绘画套装9号"
+      ]
+    },
+    {
+      "id": "SKU-190",
+      "name": "绘画套装 10款",
+      "model": "HOME-14-10",
+      "aliases": [
+        "绘画套装10号"
+      ]
+    },
+    {
+      "id": "SKU-191",
+      "name": "园艺花盆 01款",
+      "model": "HOME-15-01",
+      "aliases": [
+        "园艺花盆1号"
+      ]
+    },
+    {
+      "id": "SKU-192",
+      "name": "园艺花盆 02款",
+      "model": "HOME-15-02",
+      "aliases": [
+        "园艺花盆2号"
+      ]
+    },
+    {
+      "id": "SKU-193",
+      "name": "园艺花盆 03款",
+      "model": "HOME-15-03",
+      "aliases": [
+        "园艺花盆3号"
+      ]
+    },
+    {
+      "id": "SKU-194",
+      "name": "园艺花盆 04款",
+      "model": "HOME-15-04",
+      "aliases": [
+        "园艺花盆4号"
+      ]
+    },
+    {
+      "id": "SKU-195",
+      "name": "园艺花盆 05款",
+      "model": "HOME-15-05",
+      "aliases": [
+        "园艺花盆5号"
+      ]
+    },
+    {
+      "id": "SKU-196",
+      "name": "园艺花盆 06款",
+      "model": "HOME-15-06",
+      "aliases": [
+        "园艺花盆6号"
+      ]
+    },
+    {
+      "id": "SKU-197",
+      "name": "园艺花盆 07款",
+      "model": "HOME-15-07",
+      "aliases": [
+        "园艺花盆7号"
+      ]
+    },
+    {
+      "id": "SKU-198",
+      "name": "园艺花盆 08款",
+      "model": "HOME-15-08",
+      "aliases": [
+        "园艺花盆8号"
+      ]
+    },
+    {
+      "id": "SKU-199",
+      "name": "园艺花盆 09款",
+      "model": "HOME-15-09",
+      "aliases": [
+        "园艺花盆9号"
+      ]
+    },
+    {
+      "id": "SKU-200",
+      "name": "园艺花盆 10款",
+      "model": "HOME-15-10",
+      "aliases": [
+        "园艺花盆10号"
+      ]
+    }
+  ],
+  "documents": [
+    {
+      "id": "POL-001",
+      "file": "policies/POL-001.md",
+      "title": "注册使用可接收验证码的手机号或邮箱",
+      "kind": "policy",
+      "category": "账户与身份",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-002",
+      "file": "policies/POL-002.md",
+      "title": "登录失败连续五次暂停密码登录十五分钟",
+      "kind": "policy",
+      "category": "账户与身份",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-003",
+      "file": "policies/POL-003.md",
+      "title": "修改绑定联系方式需要验证旧渠道",
+      "kind": "policy",
+      "category": "账户与身份",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-004",
+      "file": "policies/POL-004.md",
+      "title": "账户昵称可每三十日修改一次",
+      "kind": "policy",
+      "category": "账户与身份",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-005",
+      "file": "policies/POL-005.md",
+      "title": "注销前须结清在途订单和售后",
+      "kind": "policy",
+      "category": "账户与身份",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-006",
+      "file": "policies/POL-006.md",
+      "title": "游客可浏览公开资料",
+      "kind": "policy",
+      "category": "账户与身份",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-007",
+      "file": "policies/POL-007.md",
+      "title": "未成年人购买须由监护人同意",
+      "kind": "policy",
+      "category": "账户与身份",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-008",
+      "file": "policies/POL-008.md",
+      "title": "设备异常登录会提示二次验证",
+      "kind": "policy",
+      "category": "账户与身份",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-009",
+      "file": "policies/POL-009.md",
+      "title": "账户合并不受支持",
+      "kind": "policy",
+      "category": "账户与身份",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-010",
+      "file": "policies/POL-010.md",
+      "title": "账户冻结期间可查询已有售后",
+      "kind": "policy",
+      "category": "账户与身份",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-011",
+      "file": "policies/POL-011.md",
+      "title": "加入购物车不锁定库存",
+      "kind": "policy",
+      "category": "下单与库存",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-012",
+      "file": "policies/POL-012.md",
+      "title": "订单提交后保留待付款库存三十分钟",
+      "kind": "policy",
+      "category": "下单与库存",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-013",
+      "file": "policies/POL-013.md",
+      "title": "单笔订单最多包含二十个商品行",
+      "kind": "policy",
+      "category": "下单与库存",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-014",
+      "file": "policies/POL-014.md",
+      "title": "商品限购数量以详情页为准",
+      "kind": "policy",
+      "category": "下单与库存",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-015",
+      "file": "policies/POL-015.md",
+      "title": "预售商品须标示预计发货区间",
+      "kind": "policy",
+      "category": "下单与库存",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-016",
+      "file": "policies/POL-016.md",
+      "title": "赠品缺货需明确告知替代方案",
+      "kind": "policy",
+      "category": "下单与库存",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-017",
+      "file": "policies/POL-017.md",
+      "title": "订单备注不构成商家已接受的履约变更",
+      "kind": "policy",
+      "category": "下单与库存",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-018",
+      "file": "policies/POL-018.md",
+      "title": "商品页面展示库存为参考",
+      "kind": "policy",
+      "category": "下单与库存",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-019",
+      "file": "policies/POL-019.md",
+      "title": "组合套装按整套销售",
+      "kind": "policy",
+      "category": "下单与库存",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-020",
+      "file": "policies/POL-020.md",
+      "title": "企业批量采购须询价",
+      "kind": "policy",
+      "category": "下单与库存",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-021",
+      "file": "policies/POL-021.md",
+      "title": "结算价格以提交订单的商品明细为准",
+      "kind": "policy",
+      "category": "价格与促销",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-022",
+      "file": "policies/POL-022.md",
+      "title": "划线价为展示参考价",
+      "kind": "policy",
+      "category": "价格与促销",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-023",
+      "file": "policies/POL-023.md",
+      "title": "限时活动只适用于活动期间提交且按时支付的订单",
+      "kind": "policy",
+      "category": "价格与促销",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-024",
+      "file": "policies/POL-024.md",
+      "title": "同一商品的地区和规格差异可能导致价格不同",
+      "kind": "policy",
+      "category": "价格与促销",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-025",
+      "file": "policies/POL-025.md",
+      "title": "价格错误订单需人工沟通处理",
+      "kind": "policy",
+      "category": "价格与促销",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-026",
+      "file": "policies/POL-026.md",
+      "title": "赠品价值不计入商品退款金额",
+      "kind": "policy",
+      "category": "价格与促销",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-027",
+      "file": "policies/POL-027.md",
+      "title": "预售定金规则必须独立展示",
+      "kind": "policy",
+      "category": "价格与促销",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-028",
+      "file": "policies/POL-028.md",
+      "title": "运费不计入商品满减门槛，活动另有明示的除外",
+      "kind": "policy",
+      "category": "价格与促销",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-029",
+      "file": "policies/POL-029.md",
+      "title": "活动叠加资格在结算页明确显示",
+      "kind": "policy",
+      "category": "价格与促销",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-030",
+      "file": "policies/POL-030.md",
+      "title": "会员价仅适用于有效会员购买",
+      "kind": "policy",
+      "category": "价格与促销",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-031",
+      "file": "policies/POL-031.md",
+      "title": "每笔订单最多使用一张平台优惠券",
+      "kind": "policy",
+      "category": "优惠券",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-032",
+      "file": "policies/POL-032.md",
+      "title": "优惠券须在有效期内提交订单",
+      "kind": "policy",
+      "category": "优惠券",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-033",
+      "file": "policies/POL-033.md",
+      "title": "指定品类券仅抵扣该品类商品，不抵扣运费",
+      "kind": "policy",
+      "category": "优惠券",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-034",
+      "file": "policies/POL-034.md",
+      "title": "退款按优惠分摊后的实付金额计算",
+      "kind": "policy",
+      "category": "优惠券",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-035",
+      "file": "policies/POL-035.md",
+      "title": "整单取消且券未过期时返还优惠券",
+      "kind": "policy",
+      "category": "优惠券",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-036",
+      "file": "policies/POL-036.md",
+      "title": "优惠券不兑换现金，不能提现或转让",
+      "kind": "policy",
+      "category": "优惠券",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-037",
+      "file": "policies/POL-037.md",
+      "title": "新客券以账户资格校验为准",
+      "kind": "policy",
+      "category": "优惠券",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-038",
+      "file": "policies/POL-038.md",
+      "title": "满减门槛按适用商品优惠前金额计算，不包含不适用品",
+      "kind": "policy",
+      "category": "优惠券",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-039",
+      "file": "policies/POL-039.md",
+      "title": "赠送券发生风控争议时可申请人工复核",
+      "kind": "policy",
+      "category": "优惠券",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-040",
+      "file": "policies/POL-040.md",
+      "title": "券详情未标示的叠加规则不得由客服自行补充",
+      "kind": "policy",
+      "category": "优惠券",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-041",
+      "file": "policies/POL-041.md",
+      "title": "支持的付款渠道以结算页面选项为准",
+      "kind": "policy",
+      "category": "支付与安全",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-042",
+      "file": "policies/POL-042.md",
+      "title": "支付成功以支付系统回执为准，截图不能替代查账",
+      "kind": "policy",
+      "category": "支付与安全",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-043",
+      "file": "policies/POL-043.md",
+      "title": "银行处理中不代表付款失败",
+      "kind": "policy",
+      "category": "支付与安全",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-044",
+      "file": "policies/POL-044.md",
+      "title": "平台不要求向个人账户转账办理订单或退款",
+      "kind": "policy",
+      "category": "支付与安全",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-045",
+      "file": "policies/POL-045.md",
+      "title": "支付密码和短信验证码不得提供给客服",
+      "kind": "policy",
+      "category": "支付与安全",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-046",
+      "file": "policies/POL-046.md",
+      "title": "信用卡分期手续费由渠道结算页展示",
+      "kind": "policy",
+      "category": "支付与安全",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-047",
+      "file": "policies/POL-047.md",
+      "title": "支付失败且已扣款时应提交交易凭证供查账",
+      "kind": "policy",
+      "category": "支付与安全",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-048",
+      "file": "policies/POL-048.md",
+      "title": "同一订单不得重复扣款",
+      "kind": "policy",
+      "category": "支付与安全",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-049",
+      "file": "policies/POL-049.md",
+      "title": "跨币种结算的汇率与费用由支付渠道展示",
+      "kind": "policy",
+      "category": "支付与安全",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-050",
+      "file": "policies/POL-050.md",
+      "title": "本地演示付款仅修改样例状态，不发生真实扣款",
+      "kind": "policy",
+      "category": "支付与安全",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-051",
+      "file": "policies/POL-051.md",
+      "title": "配送范围须以收货地区校验结果为准",
+      "kind": "policy",
+      "category": "配送范围",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-052",
+      "file": "policies/POL-052.md",
+      "title": "偏远地区可能产生附加费用",
+      "kind": "policy",
+      "category": "配送范围",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-053",
+      "file": "policies/POL-053.md",
+      "title": "暂不配送的地址不能通过填写其他地区绕过",
+      "kind": "policy",
+      "category": "配送范围",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-054",
+      "file": "policies/POL-054.md",
+      "title": "邮政信箱及自提柜能否收货取决于具体承运方式",
+      "kind": "policy",
+      "category": "配送范围",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-055",
+      "file": "policies/POL-055.md",
+      "title": "大件上楼服务与普通快递分开计费",
+      "kind": "policy",
+      "category": "配送范围",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-056",
+      "file": "policies/POL-056.md",
+      "title": "跨境地址须提供清关所需信息",
+      "kind": "policy",
+      "category": "配送范围",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-057",
+      "file": "policies/POL-057.md",
+      "title": "同一订单不同仓库可拆包发货，分别提供物流单号",
+      "kind": "policy",
+      "category": "配送范围",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-058",
+      "file": "policies/POL-058.md",
+      "title": "地址含糊时暂停发货并联系收件人确认",
+      "kind": "policy",
+      "category": "配送范围",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-059",
+      "file": "policies/POL-059.md",
+      "title": "禁运地区或临时交通管制可能调整履约方案",
+      "kind": "policy",
+      "category": "配送范围",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-060",
+      "file": "policies/POL-060.md",
+      "title": "配送范围查询不能当作精确送达时间承诺",
+      "kind": "policy",
+      "category": "配送范围",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-061",
+      "file": "policies/POL-061.md",
+      "title": "现货订单一般在付款后两个工作日内安排出库，节假日另计",
+      "kind": "policy",
+      "category": "发货与时效",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-062",
+      "file": "policies/POL-062.md",
+      "title": "普通配送参考三至五个工作日，不属于实际送达保证",
+      "kind": "policy",
+      "category": "发货与时效",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-063",
+      "file": "policies/POL-063.md",
+      "title": "预售以商品标示的发货窗口为准",
+      "kind": "policy",
+      "category": "发货与时效",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-064",
+      "file": "policies/POL-064.md",
+      "title": "物流揽收记录出现前只能确认商家出库，不代表运输开始",
+      "kind": "policy",
+      "category": "发货与时效",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-065",
+      "file": "policies/POL-065.md",
+      "title": "缺货延期须告知用户可选方案，不擅自替换商品",
+      "kind": "policy",
+      "category": "发货与时效",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-066",
+      "file": "policies/POL-066.md",
+      "title": "多件商品合单发货需确保地址和收件人一致",
+      "kind": "policy",
+      "category": "发货与时效",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-067",
+      "file": "policies/POL-067.md",
+      "title": "天气或交通导致的延误需有承运方证据，不能凭天气推断因果",
+      "kind": "policy",
+      "category": "发货与时效",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-068",
+      "file": "policies/POL-068.md",
+      "title": "加急服务须以结算页可选项为准",
+      "kind": "policy",
+      "category": "发货与时效",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-069",
+      "file": "policies/POL-069.md",
+      "title": "周末是否揽收以对应仓库及承运方安排为准",
+      "kind": "policy",
+      "category": "发货与时效",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-070",
+      "file": "policies/POL-070.md",
+      "title": "超过承诺发货窗口可申请人工核查，不能直接承诺赔偿",
+      "kind": "policy",
+      "category": "发货与时效",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-071",
+      "file": "policies/POL-071.md",
+      "title": "付款前可在结算页修改收货地址",
+      "kind": "policy",
+      "category": "地址与改派",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-072",
+      "file": "policies/POL-072.md",
+      "title": "付款后尚未出库的地址修改需商家确认",
+      "kind": "policy",
+      "category": "地址与改派",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-073",
+      "file": "policies/POL-073.md",
+      "title": "已揽收包裹改派由承运方审核，不能保证成功",
+      "kind": "policy",
+      "category": "地址与改派",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-074",
+      "file": "policies/POL-074.md",
+      "title": "地址修改可能改变配送费用，须事先告知",
+      "kind": "policy",
+      "category": "地址与改派",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-075",
+      "file": "policies/POL-075.md",
+      "title": "收件人联系方式错误需通过账户核验后更正",
+      "kind": "policy",
+      "category": "地址与改派",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-076",
+      "file": "policies/POL-076.md",
+      "title": "跨省改派可能需要退回重发，不能直接承诺原时效",
+      "kind": "policy",
+      "category": "地址与改派",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-077",
+      "file": "policies/POL-077.md",
+      "title": "修改默认地址不自动修改已有订单地址",
+      "kind": "policy",
+      "category": "地址与改派",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-078",
+      "file": "policies/POL-078.md",
+      "title": "代收人信息由用户确认，不推断代收授权",
+      "kind": "policy",
+      "category": "地址与改派",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-079",
+      "file": "policies/POL-079.md",
+      "title": "涉及门禁密码的信息应通过安全渠道提交，不写入公开备注",
+      "kind": "policy",
+      "category": "地址与改派",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-080",
+      "file": "policies/POL-080.md",
+      "title": "本地助手暂未接入地址修改或改派工具",
+      "kind": "policy",
+      "category": "地址与改派",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-081",
+      "file": "policies/POL-081.md",
+      "title": "签收前检查外包装是否破损、浸水或明显挤压",
+      "kind": "policy",
+      "category": "签收与验货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-082",
+      "file": "policies/POL-082.md",
+      "title": "外包装异常可在承运人员见证下拍照并登记",
+      "kind": "policy",
+      "category": "签收与验货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-083",
+      "file": "policies/POL-083.md",
+      "title": "签收不代表放弃质量问题售后权利",
+      "kind": "policy",
+      "category": "签收与验货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-084",
+      "file": "policies/POL-084.md",
+      "title": "高价值商品建议保留连续开箱记录",
+      "kind": "policy",
+      "category": "签收与验货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-085",
+      "file": "policies/POL-085.md",
+      "title": "缺少配件应提供包装清单和实际收到物品的照片",
+      "kind": "policy",
+      "category": "签收与验货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-086",
+      "file": "policies/POL-086.md",
+      "title": "代签收时间可作为物流记录，争议需进一步核验",
+      "kind": "policy",
+      "category": "签收与验货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-087",
+      "file": "policies/POL-087.md",
+      "title": "自提柜取件须核对包裹编号，不向陌生人转发取件码",
+      "kind": "policy",
+      "category": "签收与验货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-088",
+      "file": "policies/POL-088.md",
+      "title": "收到非本人包裹应联系承运方，不拆封使用",
+      "kind": "policy",
+      "category": "签收与验货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-089",
+      "file": "policies/POL-089.md",
+      "title": "大件安装前需核对型号与外观",
+      "kind": "policy",
+      "category": "签收与验货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-090",
+      "file": "policies/POL-090.md",
+      "title": "拒收后的退款需核实退回物流与商家收货情况",
+      "kind": "policy",
+      "category": "签收与验货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-091",
+      "file": "policies/POL-091.md",
+      "title": "待付款订单可在平台订单页申请取消",
+      "kind": "policy",
+      "category": "取消订单",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-092",
+      "file": "policies/POL-092.md",
+      "title": "已付款未出库的取消请求需核实仓库拦截结果",
+      "kind": "policy",
+      "category": "取消订单",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-093",
+      "file": "policies/POL-093.md",
+      "title": "已发货订单不能保证取消，应协商拒收或退货",
+      "kind": "policy",
+      "category": "取消订单",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-094",
+      "file": "policies/POL-094.md",
+      "title": "定制订单开始生产后取消可能产生已确认的合理费用",
+      "kind": "policy",
+      "category": "取消订单",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-095",
+      "file": "policies/POL-095.md",
+      "title": "预售取消条件以付款前展示的条款为准",
+      "kind": "policy",
+      "category": "取消订单",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-096",
+      "file": "policies/POL-096.md",
+      "title": "取消申请提交不代表已完成取消",
+      "kind": "policy",
+      "category": "取消订单",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-097",
+      "file": "policies/POL-097.md",
+      "title": "取消成功后的资金退回仍需查询退款进度",
+      "kind": "policy",
+      "category": "取消订单",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-098",
+      "file": "policies/POL-098.md",
+      "title": "取消部分商品须重新核算优惠分摊",
+      "kind": "policy",
+      "category": "取消订单",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-099",
+      "file": "policies/POL-099.md",
+      "title": "取消后原库存不会为再次购买保留",
+      "kind": "policy",
+      "category": "取消订单",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-100",
+      "file": "policies/POL-100.md",
+      "title": "当前本地助手没有取消订单工具，不能声称已取消",
+      "kind": "policy",
+      "category": "取消订单",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-101",
+      "file": "policies/POL-101.md",
+      "title": "支持无理由退货的商品须在签收后七日内提出申请",
+      "kind": "policy",
+      "category": "无理由退货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-102",
+      "file": "policies/POL-102.md",
+      "title": "定制商品不适用普通无理由退货，质量问题另行处理",
+      "kind": "policy",
+      "category": "无理由退货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-103",
+      "file": "policies/POL-103.md",
+      "title": "食品拆封后不支持无理由退货，质量异常可提交证据",
+      "kind": "policy",
+      "category": "无理由退货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-104",
+      "file": "policies/POL-104.md",
+      "title": "耳机等商品拆封不直接等于可退，须核实卫生封签和完好状态",
+      "kind": "policy",
+      "category": "无理由退货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-105",
+      "file": "policies/POL-105.md",
+      "title": "商品应保持完好，不能影响再次销售",
+      "kind": "policy",
+      "category": "无理由退货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-106",
+      "file": "policies/POL-106.md",
+      "title": "缺少非必要外包装不得直接等同于商品损坏，须按具体品类核实",
+      "kind": "policy",
+      "category": "无理由退货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-107",
+      "file": "policies/POL-107.md",
+      "title": "退货应包含附件、赠品与可识别的商品主体",
+      "kind": "policy",
+      "category": "无理由退货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-108",
+      "file": "policies/POL-108.md",
+      "title": "激活绑定类商品需核对是否可解除绑定",
+      "kind": "policy",
+      "category": "无理由退货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-109",
+      "file": "policies/POL-109.md",
+      "title": "人为损坏不能以无理由退货方式掩盖",
+      "kind": "policy",
+      "category": "无理由退货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-110",
+      "file": "policies/POL-110.md",
+      "title": "七日规则是模拟平台规则，本地资格程序未实现期限检查",
+      "kind": "policy",
+      "category": "无理由退货",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-111",
+      "file": "policies/POL-111.md",
+      "title": "功能故障应先排查使用环境与说明书要求",
+      "kind": "policy",
+      "category": "质量售后",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-112",
+      "file": "policies/POL-112.md",
+      "title": "明显质量异常可提交照片、视频和故障描述",
+      "kind": "policy",
+      "category": "质量售后",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-113",
+      "file": "policies/POL-113.md",
+      "title": "检测结果应说明故障现象，不仅给出结论",
+      "kind": "policy",
+      "category": "质量售后",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-114",
+      "file": "policies/POL-114.md",
+      "title": "运输损坏与产品固有缺陷按证据区分",
+      "kind": "policy",
+      "category": "质量售后",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-115",
+      "file": "policies/POL-115.md",
+      "title": "人为进液、跌落或擅自拆修可能影响免费服务资格",
+      "kind": "policy",
+      "category": "质量售后",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-116",
+      "file": "policies/POL-116.md",
+      "title": "同一故障复发需提供既往维修单据",
+      "kind": "policy",
+      "category": "质量售后",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-117",
+      "file": "policies/POL-117.md",
+      "title": "检测期间预计时长为参考，不承诺固定完成日",
+      "kind": "policy",
+      "category": "质量售后",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-118",
+      "file": "policies/POL-118.md",
+      "title": "无法复现的问题可补充发生条件与设备信息",
+      "kind": "policy",
+      "category": "质量售后",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-119",
+      "file": "policies/POL-119.md",
+      "title": "质量争议可申请复检，费用承担需预先说明",
+      "kind": "policy",
+      "category": "质量售后",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-120",
+      "file": "policies/POL-120.md",
+      "title": "平台规则不能替代品牌具体保修条款",
+      "kind": "policy",
+      "category": "质量售后",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-121",
+      "file": "policies/POL-121.md",
+      "title": "通过售后单确认退货地址后再寄回",
+      "kind": "policy",
+      "category": "退货物流",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-122",
+      "file": "policies/POL-122.md",
+      "title": "勿寄到原包裹发件地址，除非售后明确确认",
+      "kind": "policy",
+      "category": "退货物流",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-123",
+      "file": "policies/POL-123.md",
+      "title": "普通无理由退货运费原则上由买家承担",
+      "kind": "policy",
+      "category": "退货物流",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-124",
+      "file": "policies/POL-124.md",
+      "title": "核实的质量问题退回运费按合理凭证处理",
+      "kind": "policy",
+      "category": "退货物流",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-125",
+      "file": "policies/POL-125.md",
+      "title": "到付包裹需事先获得商家同意",
+      "kind": "policy",
+      "category": "退货物流",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-126",
+      "file": "policies/POL-126.md",
+      "title": "退货物流单号应填写在对应售后单",
+      "kind": "policy",
+      "category": "退货物流",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-127",
+      "file": "policies/POL-127.md",
+      "title": "贵重商品建议合理保价，保价费是否承担须另行确认",
+      "kind": "policy",
+      "category": "退货物流",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-128",
+      "file": "policies/POL-128.md",
+      "title": "含电池商品须遵守承运方运输要求",
+      "kind": "policy",
+      "category": "退货物流",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-129",
+      "file": "policies/POL-129.md",
+      "title": "退回包装应防止二次运输损坏",
+      "kind": "policy",
+      "category": "退货物流",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-130",
+      "file": "policies/POL-130.md",
+      "title": "商家签收退件不代表验收完成或退款已到账",
+      "kind": "policy",
+      "category": "退货物流",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-131",
+      "file": "policies/POL-131.md",
+      "title": "退款申请提交后先进行资格和材料审核",
+      "kind": "policy",
+      "category": "退款进度",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-132",
+      "file": "policies/POL-132.md",
+      "title": "审核通过与实际资金到账是不同阶段",
+      "kind": "policy",
+      "category": "退款进度",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-133",
+      "file": "policies/POL-133.md",
+      "title": "到账时间取决于支付渠道，不能统一承诺固定天数",
+      "kind": "policy",
+      "category": "退款进度",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-134",
+      "file": "policies/POL-134.md",
+      "title": "退款原则上原路退回，不转入陌生第三方账户",
+      "kind": "policy",
+      "category": "退款进度",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-135",
+      "file": "policies/POL-135.md",
+      "title": "部分退款不能超过该商品分摊实付金额",
+      "kind": "policy",
+      "category": "退款进度",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-136",
+      "file": "policies/POL-136.md",
+      "title": "重复申请须先核实已有售后状态",
+      "kind": "policy",
+      "category": "退款进度",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-137",
+      "file": "policies/POL-137.md",
+      "title": "退款失败应核实渠道原因，不要求用户再次付款解冻",
+      "kind": "policy",
+      "category": "退款进度",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-138",
+      "file": "policies/POL-138.md",
+      "title": "银行账户失效时须由支付渠道提供合规处理路径",
+      "kind": "policy",
+      "category": "退款进度",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-139",
+      "file": "policies/POL-139.md",
+      "title": "查看退款进度必须使用真实回执和状态记录",
+      "kind": "policy",
+      "category": "退款进度",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-140",
+      "file": "policies/POL-140.md",
+      "title": "本地requested仅表示申请已记录，不代表到账",
+      "kind": "policy",
+      "category": "退款进度",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-141",
+      "file": "policies/POL-141.md",
+      "title": "换货需先核实库存与原商品故障情况",
+      "kind": "policy",
+      "category": "换货与维修",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-142",
+      "file": "policies/POL-142.md",
+      "title": "不同型号换货需重新确认价格差额",
+      "kind": "policy",
+      "category": "换货与维修",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-143",
+      "file": "policies/POL-143.md",
+      "title": "换货返回商品应与原申请商品身份一致",
+      "kind": "policy",
+      "category": "换货与维修",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-144",
+      "file": "policies/POL-144.md",
+      "title": "维修前建议备份个人数据并解除账户绑定",
+      "kind": "policy",
+      "category": "换货与维修",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-145",
+      "file": "policies/POL-145.md",
+      "title": "维修过程可能恢复出厂设置，须提前提示",
+      "kind": "policy",
+      "category": "换货与维修",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-146",
+      "file": "policies/POL-146.md",
+      "title": "人为损坏付费维修须先报价后获得同意",
+      "kind": "policy",
+      "category": "换货与维修",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-147",
+      "file": "policies/POL-147.md",
+      "title": "换货后的保修计算依品牌和售后单条款确认",
+      "kind": "policy",
+      "category": "换货与维修",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-148",
+      "file": "policies/POL-148.md",
+      "title": "寄修配件清单应在交接时记录",
+      "kind": "policy",
+      "category": "换货与维修",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-149",
+      "file": "policies/POL-149.md",
+      "title": "维修完成应提供处理项目和检测结果",
+      "kind": "policy",
+      "category": "换货与维修",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-150",
+      "file": "policies/POL-150.md",
+      "title": "本地助手没有换货或维修执行工具，只能解释规则",
+      "kind": "policy",
+      "category": "换货与维修",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-151",
+      "file": "policies/POL-151.md",
+      "title": "发票抬头应在申请时准确填写",
+      "kind": "policy",
+      "category": "发票与凭证",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-152",
+      "file": "policies/POL-152.md",
+      "title": "企业发票需核对名称与税号",
+      "kind": "policy",
+      "category": "发票与凭证",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-153",
+      "file": "policies/POL-153.md",
+      "title": "电子发票与纸质凭证的适用性以当地规定及开票说明为准",
+      "kind": "policy",
+      "category": "发票与凭证",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-154",
+      "file": "policies/POL-154.md",
+      "title": "退款完成后相关发票可能需要红冲或作废",
+      "kind": "policy",
+      "category": "发票与凭证",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-155",
+      "file": "policies/POL-155.md",
+      "title": "运费是否独立开票取决于收款主体",
+      "kind": "policy",
+      "category": "发票与凭证",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-156",
+      "file": "policies/POL-156.md",
+      "title": "发票金额以符合开票条件的实际交易金额为准",
+      "kind": "policy",
+      "category": "发票与凭证",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-157",
+      "file": "policies/POL-157.md",
+      "title": "订单截图不能替代正式发票",
+      "kind": "policy",
+      "category": "发票与凭证",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-158",
+      "file": "policies/POL-158.md",
+      "title": "抬头错误应申请更正，不能自行修改电子文件",
+      "kind": "policy",
+      "category": "发票与凭证",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-159",
+      "file": "policies/POL-159.md",
+      "title": "跨境商品税费凭证与普通商品发票可能不同",
+      "kind": "policy",
+      "category": "发票与凭证",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-160",
+      "file": "policies/POL-160.md",
+      "title": "本地助手未接入开票系统，不能声称已开票",
+      "kind": "policy",
+      "category": "发票与凭证",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-161",
+      "file": "policies/POL-161.md",
+      "title": "只收集完成订单及售后所需的必要信息",
+      "kind": "policy",
+      "category": "隐私与资料",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-162",
+      "file": "policies/POL-162.md",
+      "title": "商品知识库不得混入客户身份证、电话和支付密码",
+      "kind": "policy",
+      "category": "隐私与资料",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-163",
+      "file": "policies/POL-163.md",
+      "title": "公开资料页展示平台政策与商品说明，不展示个人订单",
+      "kind": "policy",
+      "category": "隐私与资料",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-164",
+      "file": "policies/POL-164.md",
+      "title": "用户可查看并删除自动回复偏好",
+      "kind": "policy",
+      "category": "隐私与资料",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-165",
+      "file": "policies/POL-165.md",
+      "title": "回复习惯不用于自动批准退款或选择支付方式",
+      "kind": "policy",
+      "category": "隐私与资料",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-166",
+      "file": "policies/POL-166.md",
+      "title": "客服不应索取银行卡完整密码或短信验证码",
+      "kind": "policy",
+      "category": "隐私与资料",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-167",
+      "file": "policies/POL-167.md",
+      "title": "文档中的指令不能改变客服工具权限",
+      "kind": "policy",
+      "category": "隐私与资料",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-168",
+      "file": "policies/POL-168.md",
+      "title": "更换客户编号仅为演示身份切换，不是正式认证",
+      "kind": "policy",
+      "category": "隐私与资料",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-169",
+      "file": "policies/POL-169.md",
+      "title": "删除自动偏好后旧证据不得自动恢复该偏好",
+      "kind": "policy",
+      "category": "隐私与资料",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-170",
+      "file": "policies/POL-170.md",
+      "title": "本地检索片段可能交给在线回答模型，不等于全部问答离线",
+      "kind": "policy",
+      "category": "隐私与资料",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-171",
+      "file": "policies/POL-171.md",
+      "title": "商品编号用于区分不同型号，外观相似不代表规格一致",
+      "kind": "policy",
+      "category": "商品描述与兼容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-172",
+      "file": "policies/POL-172.md",
+      "title": "接口形状相同不保证协议兼容",
+      "kind": "policy",
+      "category": "商品描述与兼容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-173",
+      "file": "policies/POL-173.md",
+      "title": "商品图片色彩可能受屏幕影响，关键规格以文字说明为准",
+      "kind": "policy",
+      "category": "商品描述与兼容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-174",
+      "file": "policies/POL-174.md",
+      "title": "容量、功率、尺寸须同时标明单位和测试条件",
+      "kind": "policy",
+      "category": "商品描述与兼容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-175",
+      "file": "policies/POL-175.md",
+      "title": "兼容列表未列出的设备不能直接承诺适配",
+      "kind": "policy",
+      "category": "商品描述与兼容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-176",
+      "file": "policies/POL-176.md",
+      "title": "防水等级不代表可以热水冲洗或长期浸泡",
+      "kind": "policy",
+      "category": "商品描述与兼容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-177",
+      "file": "policies/POL-177.md",
+      "title": "续航取决于音量、负载及环境，标称值不是每次保证",
+      "kind": "policy",
+      "category": "商品描述与兼容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-178",
+      "file": "policies/POL-178.md",
+      "title": "安装空间需考虑接线和散热余量",
+      "kind": "policy",
+      "category": "商品描述与兼容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-179",
+      "file": "policies/POL-179.md",
+      "title": "附送配件以当前型号包装清单为准",
+      "kind": "policy",
+      "category": "商品描述与兼容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-180",
+      "file": "policies/POL-180.md",
+      "title": "模拟商品参数不能当作真实品牌官方规格",
+      "kind": "policy",
+      "category": "商品描述与兼容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-181",
+      "file": "policies/POL-181.md",
+      "title": "评价应基于实际交易体验，不得发布他人隐私",
+      "kind": "policy",
+      "category": "评价与内容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-182",
+      "file": "policies/POL-182.md",
+      "title": "不能以删除差评为退款前提",
+      "kind": "policy",
+      "category": "评价与内容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-183",
+      "file": "policies/POL-183.md",
+      "title": "赠品或积分激励评价应明确标注活动条件",
+      "kind": "policy",
+      "category": "评价与内容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-184",
+      "file": "policies/POL-184.md",
+      "title": "商品问答不能冒充官方质量认证",
+      "kind": "policy",
+      "category": "评价与内容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-185",
+      "file": "policies/POL-185.md",
+      "title": "不支持通过虚构订单获取评价资格",
+      "kind": "policy",
+      "category": "评价与内容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-186",
+      "file": "policies/POL-186.md",
+      "title": "评价涉及故障可引导提交售后证据，但不屏蔽合理批评",
+      "kind": "policy",
+      "category": "评价与内容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-187",
+      "file": "policies/POL-187.md",
+      "title": "商家回复不得公开用户联系方式",
+      "kind": "policy",
+      "category": "评价与内容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-188",
+      "file": "policies/POL-188.md",
+      "title": "晒图须避免暴露地址、取件码与支付信息",
+      "kind": "policy",
+      "category": "评价与内容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-189",
+      "file": "policies/POL-189.md",
+      "title": "发现不实宣传可提交具体链接和证据供审核",
+      "kind": "policy",
+      "category": "评价与内容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-190",
+      "file": "policies/POL-190.md",
+      "title": "平台不承诺所有评价都能证明商品适合某一用户",
+      "kind": "policy",
+      "category": "评价与内容",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-191",
+      "file": "policies/POL-191.md",
+      "title": "查询订单应提供订单号，系统仅返回本人可访问记录",
+      "kind": "policy",
+      "category": "客服与争议",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-192",
+      "file": "policies/POL-192.md",
+      "title": "技术故障不会自动创建投诉工单",
+      "kind": "policy",
+      "category": "客服与争议",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-193",
+      "file": "policies/POL-193.md",
+      "title": "明确要求转人工或正式投诉后才能创建工单",
+      "kind": "policy",
+      "category": "客服与争议",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-194",
+      "file": "policies/POL-194.md",
+      "title": "工单编号表示记录已建立，不代表真人已经接单",
+      "kind": "policy",
+      "category": "客服与争议",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-195",
+      "file": "policies/POL-195.md",
+      "title": "争议材料应包括订单、问题描述和相关凭证",
+      "kind": "policy",
+      "category": "客服与争议",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-196",
+      "file": "policies/POL-196.md",
+      "title": "客服回复引用规则时应标注文档及章节",
+      "kind": "policy",
+      "category": "客服与争议",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-197",
+      "file": "policies/POL-197.md",
+      "title": "资料不足时应说明缺少信息，不自行编造承诺",
+      "kind": "policy",
+      "category": "客服与争议",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-198",
+      "file": "policies/POL-198.md",
+      "title": "支付与退款须逐项按钮确认，聊天中的确认不执行资金动作",
+      "kind": "policy",
+      "category": "客服与争议",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-199",
+      "file": "policies/POL-199.md",
+      "title": "新建会话保留订单事实与长期偏好，不重置业务数据库",
+      "kind": "policy",
+      "category": "客服与争议",
+      "version": "模拟版1"
+    },
+    {
+      "id": "POL-200",
+      "file": "policies/POL-200.md",
+      "title": "模拟平台没有真实客服通知渠道，工单仅在本地保存",
+      "kind": "policy",
+      "category": "客服与争议",
+      "version": "模拟版1"
+    },
+    {
+      "id": "SKU-001",
+      "file": "products/SKU-001.md",
+      "title": "无线耳机",
+      "kind": "product",
+      "category": "无线耳机",
+      "version": "模拟版1",
+      "product_id": "SKU-001"
+    },
+    {
+      "id": "SKU-002",
+      "file": "products/SKU-002.md",
+      "title": "无线耳机 B款",
+      "kind": "product",
+      "category": "无线耳机",
+      "version": "模拟版1",
+      "product_id": "SKU-002"
+    },
+    {
+      "id": "SKU-003",
+      "file": "products/SKU-003.md",
+      "title": "无线耳机 C款",
+      "kind": "product",
+      "category": "无线耳机",
+      "version": "模拟版1",
+      "product_id": "SKU-003"
+    },
+    {
+      "id": "SKU-004",
+      "file": "products/SKU-004.md",
+      "title": "无线耳机 D款",
+      "kind": "product",
+      "category": "无线耳机",
+      "version": "模拟版1",
+      "product_id": "SKU-004"
+    },
+    {
+      "id": "SKU-005",
+      "file": "products/SKU-005.md",
+      "title": "无线耳机 E款",
+      "kind": "product",
+      "category": "无线耳机",
+      "version": "模拟版1",
+      "product_id": "SKU-005"
+    },
+    {
+      "id": "SKU-006",
+      "file": "products/SKU-006.md",
+      "title": "机械键盘",
+      "kind": "product",
+      "category": "机械键盘",
+      "version": "模拟版1",
+      "product_id": "SKU-006"
+    },
+    {
+      "id": "SKU-007",
+      "file": "products/SKU-007.md",
+      "title": "机械键盘 B款",
+      "kind": "product",
+      "category": "机械键盘",
+      "version": "模拟版1",
+      "product_id": "SKU-007"
+    },
+    {
+      "id": "SKU-008",
+      "file": "products/SKU-008.md",
+      "title": "机械键盘 C款",
+      "kind": "product",
+      "category": "机械键盘",
+      "version": "模拟版1",
+      "product_id": "SKU-008"
+    },
+    {
+      "id": "SKU-009",
+      "file": "products/SKU-009.md",
+      "title": "机械键盘 D款",
+      "kind": "product",
+      "category": "机械键盘",
+      "version": "模拟版1",
+      "product_id": "SKU-009"
+    },
+    {
+      "id": "SKU-010",
+      "file": "products/SKU-010.md",
+      "title": "机械键盘 E款",
+      "kind": "product",
+      "category": "机械键盘",
+      "version": "模拟版1",
+      "product_id": "SKU-010"
+    },
+    {
+      "id": "SKU-011",
+      "file": "products/SKU-011.md",
+      "title": "USB-C扩展坞",
+      "kind": "product",
+      "category": "USB-C扩展坞",
+      "version": "模拟版1",
+      "product_id": "SKU-011"
+    },
+    {
+      "id": "SKU-012",
+      "file": "products/SKU-012.md",
+      "title": "USB-C扩展坞 B款",
+      "kind": "product",
+      "category": "USB-C扩展坞",
+      "version": "模拟版1",
+      "product_id": "SKU-012"
+    },
+    {
+      "id": "SKU-013",
+      "file": "products/SKU-013.md",
+      "title": "USB-C扩展坞 C款",
+      "kind": "product",
+      "category": "USB-C扩展坞",
+      "version": "模拟版1",
+      "product_id": "SKU-013"
+    },
+    {
+      "id": "SKU-014",
+      "file": "products/SKU-014.md",
+      "title": "USB-C扩展坞 D款",
+      "kind": "product",
+      "category": "USB-C扩展坞",
+      "version": "模拟版1",
+      "product_id": "SKU-014"
+    },
+    {
+      "id": "SKU-015",
+      "file": "products/SKU-015.md",
+      "title": "USB-C扩展坞 E款",
+      "kind": "product",
+      "category": "USB-C扩展坞",
+      "version": "模拟版1",
+      "product_id": "SKU-015"
+    },
+    {
+      "id": "SKU-016",
+      "file": "products/SKU-016.md",
+      "title": "升降桌",
+      "kind": "product",
+      "category": "升降桌",
+      "version": "模拟版1",
+      "product_id": "SKU-016"
+    },
+    {
+      "id": "SKU-017",
+      "file": "products/SKU-017.md",
+      "title": "升降桌 B款",
+      "kind": "product",
+      "category": "升降桌",
+      "version": "模拟版1",
+      "product_id": "SKU-017"
+    },
+    {
+      "id": "SKU-018",
+      "file": "products/SKU-018.md",
+      "title": "升降桌 C款",
+      "kind": "product",
+      "category": "升降桌",
+      "version": "模拟版1",
+      "product_id": "SKU-018"
+    },
+    {
+      "id": "SKU-019",
+      "file": "products/SKU-019.md",
+      "title": "升降桌 D款",
+      "kind": "product",
+      "category": "升降桌",
+      "version": "模拟版1",
+      "product_id": "SKU-019"
+    },
+    {
+      "id": "SKU-020",
+      "file": "products/SKU-020.md",
+      "title": "升降桌 E款",
+      "kind": "product",
+      "category": "升降桌",
+      "version": "模拟版1",
+      "product_id": "SKU-020"
+    },
+    {
+      "id": "SKU-021",
+      "file": "products/SKU-021.md",
+      "title": "台灯",
+      "kind": "product",
+      "category": "台灯",
+      "version": "模拟版1",
+      "product_id": "SKU-021"
+    },
+    {
+      "id": "SKU-022",
+      "file": "products/SKU-022.md",
+      "title": "台灯 B款",
+      "kind": "product",
+      "category": "台灯",
+      "version": "模拟版1",
+      "product_id": "SKU-022"
+    },
+    {
+      "id": "SKU-023",
+      "file": "products/SKU-023.md",
+      "title": "台灯 C款",
+      "kind": "product",
+      "category": "台灯",
+      "version": "模拟版1",
+      "product_id": "SKU-023"
+    },
+    {
+      "id": "SKU-024",
+      "file": "products/SKU-024.md",
+      "title": "台灯 D款",
+      "kind": "product",
+      "category": "台灯",
+      "version": "模拟版1",
+      "product_id": "SKU-024"
+    },
+    {
+      "id": "SKU-025",
+      "file": "products/SKU-025.md",
+      "title": "台灯 E款",
+      "kind": "product",
+      "category": "台灯",
+      "version": "模拟版1",
+      "product_id": "SKU-025"
+    },
+    {
+      "id": "SKU-026",
+      "file": "products/SKU-026.md",
+      "title": "蓝牙音箱",
+      "kind": "product",
+      "category": "蓝牙音箱",
+      "version": "模拟版1",
+      "product_id": "SKU-026"
+    },
+    {
+      "id": "SKU-027",
+      "file": "products/SKU-027.md",
+      "title": "蓝牙音箱 B款",
+      "kind": "product",
+      "category": "蓝牙音箱",
+      "version": "模拟版1",
+      "product_id": "SKU-027"
+    },
+    {
+      "id": "SKU-028",
+      "file": "products/SKU-028.md",
+      "title": "蓝牙音箱 C款",
+      "kind": "product",
+      "category": "蓝牙音箱",
+      "version": "模拟版1",
+      "product_id": "SKU-028"
+    },
+    {
+      "id": "SKU-029",
+      "file": "products/SKU-029.md",
+      "title": "蓝牙音箱 D款",
+      "kind": "product",
+      "category": "蓝牙音箱",
+      "version": "模拟版1",
+      "product_id": "SKU-029"
+    },
+    {
+      "id": "SKU-030",
+      "file": "products/SKU-030.md",
+      "title": "蓝牙音箱 E款",
+      "kind": "product",
+      "category": "蓝牙音箱",
+      "version": "模拟版1",
+      "product_id": "SKU-030"
+    },
+    {
+      "id": "SKU-031",
+      "file": "products/SKU-031.md",
+      "title": "笔记本支架",
+      "kind": "product",
+      "category": "笔记本支架",
+      "version": "模拟版1",
+      "product_id": "SKU-031"
+    },
+    {
+      "id": "SKU-032",
+      "file": "products/SKU-032.md",
+      "title": "笔记本支架 B款",
+      "kind": "product",
+      "category": "笔记本支架",
+      "version": "模拟版1",
+      "product_id": "SKU-032"
+    },
+    {
+      "id": "SKU-033",
+      "file": "products/SKU-033.md",
+      "title": "笔记本支架 C款",
+      "kind": "product",
+      "category": "笔记本支架",
+      "version": "模拟版1",
+      "product_id": "SKU-033"
+    },
+    {
+      "id": "SKU-034",
+      "file": "products/SKU-034.md",
+      "title": "笔记本支架 D款",
+      "kind": "product",
+      "category": "笔记本支架",
+      "version": "模拟版1",
+      "product_id": "SKU-034"
+    },
+    {
+      "id": "SKU-035",
+      "file": "products/SKU-035.md",
+      "title": "笔记本支架 E款",
+      "kind": "product",
+      "category": "笔记本支架",
+      "version": "模拟版1",
+      "product_id": "SKU-035"
+    },
+    {
+      "id": "SKU-036",
+      "file": "products/SKU-036.md",
+      "title": "1080p摄像头",
+      "kind": "product",
+      "category": "1080p摄像头",
+      "version": "模拟版1",
+      "product_id": "SKU-036"
+    },
+    {
+      "id": "SKU-037",
+      "file": "products/SKU-037.md",
+      "title": "1080p摄像头 B款",
+      "kind": "product",
+      "category": "1080p摄像头",
+      "version": "模拟版1",
+      "product_id": "SKU-037"
+    },
+    {
+      "id": "SKU-038",
+      "file": "products/SKU-038.md",
+      "title": "1080p摄像头 C款",
+      "kind": "product",
+      "category": "1080p摄像头",
+      "version": "模拟版1",
+      "product_id": "SKU-038"
+    },
+    {
+      "id": "SKU-039",
+      "file": "products/SKU-039.md",
+      "title": "1080p摄像头 D款",
+      "kind": "product",
+      "category": "1080p摄像头",
+      "version": "模拟版1",
+      "product_id": "SKU-039"
+    },
+    {
+      "id": "SKU-040",
+      "file": "products/SKU-040.md",
+      "title": "1080p摄像头 E款",
+      "kind": "product",
+      "category": "1080p摄像头",
+      "version": "模拟版1",
+      "product_id": "SKU-040"
+    },
+    {
+      "id": "SKU-041",
+      "file": "products/SKU-041.md",
+      "title": "人体工学鼠标",
+      "kind": "product",
+      "category": "人体工学鼠标",
+      "version": "模拟版1",
+      "product_id": "SKU-041"
+    },
+    {
+      "id": "SKU-042",
+      "file": "products/SKU-042.md",
+      "title": "人体工学鼠标 B款",
+      "kind": "product",
+      "category": "人体工学鼠标",
+      "version": "模拟版1",
+      "product_id": "SKU-042"
+    },
+    {
+      "id": "SKU-043",
+      "file": "products/SKU-043.md",
+      "title": "人体工学鼠标 C款",
+      "kind": "product",
+      "category": "人体工学鼠标",
+      "version": "模拟版1",
+      "product_id": "SKU-043"
+    },
+    {
+      "id": "SKU-044",
+      "file": "products/SKU-044.md",
+      "title": "人体工学鼠标 D款",
+      "kind": "product",
+      "category": "人体工学鼠标",
+      "version": "模拟版1",
+      "product_id": "SKU-044"
+    },
+    {
+      "id": "SKU-045",
+      "file": "products/SKU-045.md",
+      "title": "人体工学鼠标 E款",
+      "kind": "product",
+      "category": "人体工学鼠标",
+      "version": "模拟版1",
+      "product_id": "SKU-045"
+    },
+    {
+      "id": "SKU-046",
+      "file": "products/SKU-046.md",
+      "title": "降噪耳塞",
+      "kind": "product",
+      "category": "降噪耳塞",
+      "version": "模拟版1",
+      "product_id": "SKU-046"
+    },
+    {
+      "id": "SKU-047",
+      "file": "products/SKU-047.md",
+      "title": "降噪耳塞 B款",
+      "kind": "product",
+      "category": "降噪耳塞",
+      "version": "模拟版1",
+      "product_id": "SKU-047"
+    },
+    {
+      "id": "SKU-048",
+      "file": "products/SKU-048.md",
+      "title": "降噪耳塞 C款",
+      "kind": "product",
+      "category": "降噪耳塞",
+      "version": "模拟版1",
+      "product_id": "SKU-048"
+    },
+    {
+      "id": "SKU-049",
+      "file": "products/SKU-049.md",
+      "title": "降噪耳塞 D款",
+      "kind": "product",
+      "category": "降噪耳塞",
+      "version": "模拟版1",
+      "product_id": "SKU-049"
+    },
+    {
+      "id": "SKU-050",
+      "file": "products/SKU-050.md",
+      "title": "降噪耳塞 E款",
+      "kind": "product",
+      "category": "降噪耳塞",
+      "version": "模拟版1",
+      "product_id": "SKU-050"
+    },
+    {
+      "id": "SKU-051",
+      "file": "products/SKU-051.md",
+      "title": "电饭煲 01款",
+      "kind": "product",
+      "category": "电饭煲",
+      "version": "模拟版1",
+      "product_id": "SKU-051"
+    },
+    {
+      "id": "SKU-052",
+      "file": "products/SKU-052.md",
+      "title": "电饭煲 02款",
+      "kind": "product",
+      "category": "电饭煲",
+      "version": "模拟版1",
+      "product_id": "SKU-052"
+    },
+    {
+      "id": "SKU-053",
+      "file": "products/SKU-053.md",
+      "title": "电饭煲 03款",
+      "kind": "product",
+      "category": "电饭煲",
+      "version": "模拟版1",
+      "product_id": "SKU-053"
+    },
+    {
+      "id": "SKU-054",
+      "file": "products/SKU-054.md",
+      "title": "电饭煲 04款",
+      "kind": "product",
+      "category": "电饭煲",
+      "version": "模拟版1",
+      "product_id": "SKU-054"
+    },
+    {
+      "id": "SKU-055",
+      "file": "products/SKU-055.md",
+      "title": "电饭煲 05款",
+      "kind": "product",
+      "category": "电饭煲",
+      "version": "模拟版1",
+      "product_id": "SKU-055"
+    },
+    {
+      "id": "SKU-056",
+      "file": "products/SKU-056.md",
+      "title": "电饭煲 06款",
+      "kind": "product",
+      "category": "电饭煲",
+      "version": "模拟版1",
+      "product_id": "SKU-056"
+    },
+    {
+      "id": "SKU-057",
+      "file": "products/SKU-057.md",
+      "title": "电饭煲 07款",
+      "kind": "product",
+      "category": "电饭煲",
+      "version": "模拟版1",
+      "product_id": "SKU-057"
+    },
+    {
+      "id": "SKU-058",
+      "file": "products/SKU-058.md",
+      "title": "电饭煲 08款",
+      "kind": "product",
+      "category": "电饭煲",
+      "version": "模拟版1",
+      "product_id": "SKU-058"
+    },
+    {
+      "id": "SKU-059",
+      "file": "products/SKU-059.md",
+      "title": "电饭煲 09款",
+      "kind": "product",
+      "category": "电饭煲",
+      "version": "模拟版1",
+      "product_id": "SKU-059"
+    },
+    {
+      "id": "SKU-060",
+      "file": "products/SKU-060.md",
+      "title": "电饭煲 10款",
+      "kind": "product",
+      "category": "电饭煲",
+      "version": "模拟版1",
+      "product_id": "SKU-060"
+    },
+    {
+      "id": "SKU-061",
+      "file": "products/SKU-061.md",
+      "title": "电热水壶 01款",
+      "kind": "product",
+      "category": "电热水壶",
+      "version": "模拟版1",
+      "product_id": "SKU-061"
+    },
+    {
+      "id": "SKU-062",
+      "file": "products/SKU-062.md",
+      "title": "电热水壶 02款",
+      "kind": "product",
+      "category": "电热水壶",
+      "version": "模拟版1",
+      "product_id": "SKU-062"
+    },
+    {
+      "id": "SKU-063",
+      "file": "products/SKU-063.md",
+      "title": "电热水壶 03款",
+      "kind": "product",
+      "category": "电热水壶",
+      "version": "模拟版1",
+      "product_id": "SKU-063"
+    },
+    {
+      "id": "SKU-064",
+      "file": "products/SKU-064.md",
+      "title": "电热水壶 04款",
+      "kind": "product",
+      "category": "电热水壶",
+      "version": "模拟版1",
+      "product_id": "SKU-064"
+    },
+    {
+      "id": "SKU-065",
+      "file": "products/SKU-065.md",
+      "title": "电热水壶 05款",
+      "kind": "product",
+      "category": "电热水壶",
+      "version": "模拟版1",
+      "product_id": "SKU-065"
+    },
+    {
+      "id": "SKU-066",
+      "file": "products/SKU-066.md",
+      "title": "电热水壶 06款",
+      "kind": "product",
+      "category": "电热水壶",
+      "version": "模拟版1",
+      "product_id": "SKU-066"
+    },
+    {
+      "id": "SKU-067",
+      "file": "products/SKU-067.md",
+      "title": "电热水壶 07款",
+      "kind": "product",
+      "category": "电热水壶",
+      "version": "模拟版1",
+      "product_id": "SKU-067"
+    },
+    {
+      "id": "SKU-068",
+      "file": "products/SKU-068.md",
+      "title": "电热水壶 08款",
+      "kind": "product",
+      "category": "电热水壶",
+      "version": "模拟版1",
+      "product_id": "SKU-068"
+    },
+    {
+      "id": "SKU-069",
+      "file": "products/SKU-069.md",
+      "title": "电热水壶 09款",
+      "kind": "product",
+      "category": "电热水壶",
+      "version": "模拟版1",
+      "product_id": "SKU-069"
+    },
+    {
+      "id": "SKU-070",
+      "file": "products/SKU-070.md",
+      "title": "电热水壶 10款",
+      "kind": "product",
+      "category": "电热水壶",
+      "version": "模拟版1",
+      "product_id": "SKU-070"
+    },
+    {
+      "id": "SKU-071",
+      "file": "products/SKU-071.md",
+      "title": "空气炸锅 01款",
+      "kind": "product",
+      "category": "空气炸锅",
+      "version": "模拟版1",
+      "product_id": "SKU-071"
+    },
+    {
+      "id": "SKU-072",
+      "file": "products/SKU-072.md",
+      "title": "空气炸锅 02款",
+      "kind": "product",
+      "category": "空气炸锅",
+      "version": "模拟版1",
+      "product_id": "SKU-072"
+    },
+    {
+      "id": "SKU-073",
+      "file": "products/SKU-073.md",
+      "title": "空气炸锅 03款",
+      "kind": "product",
+      "category": "空气炸锅",
+      "version": "模拟版1",
+      "product_id": "SKU-073"
+    },
+    {
+      "id": "SKU-074",
+      "file": "products/SKU-074.md",
+      "title": "空气炸锅 04款",
+      "kind": "product",
+      "category": "空气炸锅",
+      "version": "模拟版1",
+      "product_id": "SKU-074"
+    },
+    {
+      "id": "SKU-075",
+      "file": "products/SKU-075.md",
+      "title": "空气炸锅 05款",
+      "kind": "product",
+      "category": "空气炸锅",
+      "version": "模拟版1",
+      "product_id": "SKU-075"
+    },
+    {
+      "id": "SKU-076",
+      "file": "products/SKU-076.md",
+      "title": "空气炸锅 06款",
+      "kind": "product",
+      "category": "空气炸锅",
+      "version": "模拟版1",
+      "product_id": "SKU-076"
+    },
+    {
+      "id": "SKU-077",
+      "file": "products/SKU-077.md",
+      "title": "空气炸锅 07款",
+      "kind": "product",
+      "category": "空气炸锅",
+      "version": "模拟版1",
+      "product_id": "SKU-077"
+    },
+    {
+      "id": "SKU-078",
+      "file": "products/SKU-078.md",
+      "title": "空气炸锅 08款",
+      "kind": "product",
+      "category": "空气炸锅",
+      "version": "模拟版1",
+      "product_id": "SKU-078"
+    },
+    {
+      "id": "SKU-079",
+      "file": "products/SKU-079.md",
+      "title": "空气炸锅 09款",
+      "kind": "product",
+      "category": "空气炸锅",
+      "version": "模拟版1",
+      "product_id": "SKU-079"
+    },
+    {
+      "id": "SKU-080",
+      "file": "products/SKU-080.md",
+      "title": "空气炸锅 10款",
+      "kind": "product",
+      "category": "空气炸锅",
+      "version": "模拟版1",
+      "product_id": "SKU-080"
+    },
+    {
+      "id": "SKU-081",
+      "file": "products/SKU-081.md",
+      "title": "吸尘器 01款",
+      "kind": "product",
+      "category": "吸尘器",
+      "version": "模拟版1",
+      "product_id": "SKU-081"
+    },
+    {
+      "id": "SKU-082",
+      "file": "products/SKU-082.md",
+      "title": "吸尘器 02款",
+      "kind": "product",
+      "category": "吸尘器",
+      "version": "模拟版1",
+      "product_id": "SKU-082"
+    },
+    {
+      "id": "SKU-083",
+      "file": "products/SKU-083.md",
+      "title": "吸尘器 03款",
+      "kind": "product",
+      "category": "吸尘器",
+      "version": "模拟版1",
+      "product_id": "SKU-083"
+    },
+    {
+      "id": "SKU-084",
+      "file": "products/SKU-084.md",
+      "title": "吸尘器 04款",
+      "kind": "product",
+      "category": "吸尘器",
+      "version": "模拟版1",
+      "product_id": "SKU-084"
+    },
+    {
+      "id": "SKU-085",
+      "file": "products/SKU-085.md",
+      "title": "吸尘器 05款",
+      "kind": "product",
+      "category": "吸尘器",
+      "version": "模拟版1",
+      "product_id": "SKU-085"
+    },
+    {
+      "id": "SKU-086",
+      "file": "products/SKU-086.md",
+      "title": "吸尘器 06款",
+      "kind": "product",
+      "category": "吸尘器",
+      "version": "模拟版1",
+      "product_id": "SKU-086"
+    },
+    {
+      "id": "SKU-087",
+      "file": "products/SKU-087.md",
+      "title": "吸尘器 07款",
+      "kind": "product",
+      "category": "吸尘器",
+      "version": "模拟版1",
+      "product_id": "SKU-087"
+    },
+    {
+      "id": "SKU-088",
+      "file": "products/SKU-088.md",
+      "title": "吸尘器 08款",
+      "kind": "product",
+      "category": "吸尘器",
+      "version": "模拟版1",
+      "product_id": "SKU-088"
+    },
+    {
+      "id": "SKU-089",
+      "file": "products/SKU-089.md",
+      "title": "吸尘器 09款",
+      "kind": "product",
+      "category": "吸尘器",
+      "version": "模拟版1",
+      "product_id": "SKU-089"
+    },
+    {
+      "id": "SKU-090",
+      "file": "products/SKU-090.md",
+      "title": "吸尘器 10款",
+      "kind": "product",
+      "category": "吸尘器",
+      "version": "模拟版1",
+      "product_id": "SKU-090"
+    },
+    {
+      "id": "SKU-091",
+      "file": "products/SKU-091.md",
+      "title": "空气净化器 01款",
+      "kind": "product",
+      "category": "空气净化器",
+      "version": "模拟版1",
+      "product_id": "SKU-091"
+    },
+    {
+      "id": "SKU-092",
+      "file": "products/SKU-092.md",
+      "title": "空气净化器 02款",
+      "kind": "product",
+      "category": "空气净化器",
+      "version": "模拟版1",
+      "product_id": "SKU-092"
+    },
+    {
+      "id": "SKU-093",
+      "file": "products/SKU-093.md",
+      "title": "空气净化器 03款",
+      "kind": "product",
+      "category": "空气净化器",
+      "version": "模拟版1",
+      "product_id": "SKU-093"
+    },
+    {
+      "id": "SKU-094",
+      "file": "products/SKU-094.md",
+      "title": "空气净化器 04款",
+      "kind": "product",
+      "category": "空气净化器",
+      "version": "模拟版1",
+      "product_id": "SKU-094"
+    },
+    {
+      "id": "SKU-095",
+      "file": "products/SKU-095.md",
+      "title": "空气净化器 05款",
+      "kind": "product",
+      "category": "空气净化器",
+      "version": "模拟版1",
+      "product_id": "SKU-095"
+    },
+    {
+      "id": "SKU-096",
+      "file": "products/SKU-096.md",
+      "title": "空气净化器 06款",
+      "kind": "product",
+      "category": "空气净化器",
+      "version": "模拟版1",
+      "product_id": "SKU-096"
+    },
+    {
+      "id": "SKU-097",
+      "file": "products/SKU-097.md",
+      "title": "空气净化器 07款",
+      "kind": "product",
+      "category": "空气净化器",
+      "version": "模拟版1",
+      "product_id": "SKU-097"
+    },
+    {
+      "id": "SKU-098",
+      "file": "products/SKU-098.md",
+      "title": "空气净化器 08款",
+      "kind": "product",
+      "category": "空气净化器",
+      "version": "模拟版1",
+      "product_id": "SKU-098"
+    },
+    {
+      "id": "SKU-099",
+      "file": "products/SKU-099.md",
+      "title": "空气净化器 09款",
+      "kind": "product",
+      "category": "空气净化器",
+      "version": "模拟版1",
+      "product_id": "SKU-099"
+    },
+    {
+      "id": "SKU-100",
+      "file": "products/SKU-100.md",
+      "title": "空气净化器 10款",
+      "kind": "product",
+      "category": "空气净化器",
+      "version": "模拟版1",
+      "product_id": "SKU-100"
+    },
+    {
+      "id": "SKU-101",
+      "file": "products/SKU-101.md",
+      "title": "保温杯 01款",
+      "kind": "product",
+      "category": "保温杯",
+      "version": "模拟版1",
+      "product_id": "SKU-101"
+    },
+    {
+      "id": "SKU-102",
+      "file": "products/SKU-102.md",
+      "title": "保温杯 02款",
+      "kind": "product",
+      "category": "保温杯",
+      "version": "模拟版1",
+      "product_id": "SKU-102"
+    },
+    {
+      "id": "SKU-103",
+      "file": "products/SKU-103.md",
+      "title": "保温杯 03款",
+      "kind": "product",
+      "category": "保温杯",
+      "version": "模拟版1",
+      "product_id": "SKU-103"
+    },
+    {
+      "id": "SKU-104",
+      "file": "products/SKU-104.md",
+      "title": "保温杯 04款",
+      "kind": "product",
+      "category": "保温杯",
+      "version": "模拟版1",
+      "product_id": "SKU-104"
+    },
+    {
+      "id": "SKU-105",
+      "file": "products/SKU-105.md",
+      "title": "保温杯 05款",
+      "kind": "product",
+      "category": "保温杯",
+      "version": "模拟版1",
+      "product_id": "SKU-105"
+    },
+    {
+      "id": "SKU-106",
+      "file": "products/SKU-106.md",
+      "title": "保温杯 06款",
+      "kind": "product",
+      "category": "保温杯",
+      "version": "模拟版1",
+      "product_id": "SKU-106"
+    },
+    {
+      "id": "SKU-107",
+      "file": "products/SKU-107.md",
+      "title": "保温杯 07款",
+      "kind": "product",
+      "category": "保温杯",
+      "version": "模拟版1",
+      "product_id": "SKU-107"
+    },
+    {
+      "id": "SKU-108",
+      "file": "products/SKU-108.md",
+      "title": "保温杯 08款",
+      "kind": "product",
+      "category": "保温杯",
+      "version": "模拟版1",
+      "product_id": "SKU-108"
+    },
+    {
+      "id": "SKU-109",
+      "file": "products/SKU-109.md",
+      "title": "保温杯 09款",
+      "kind": "product",
+      "category": "保温杯",
+      "version": "模拟版1",
+      "product_id": "SKU-109"
+    },
+    {
+      "id": "SKU-110",
+      "file": "products/SKU-110.md",
+      "title": "保温杯 10款",
+      "kind": "product",
+      "category": "保温杯",
+      "version": "模拟版1",
+      "product_id": "SKU-110"
+    },
+    {
+      "id": "SKU-111",
+      "file": "products/SKU-111.md",
+      "title": "运动背包 01款",
+      "kind": "product",
+      "category": "运动背包",
+      "version": "模拟版1",
+      "product_id": "SKU-111"
+    },
+    {
+      "id": "SKU-112",
+      "file": "products/SKU-112.md",
+      "title": "运动背包 02款",
+      "kind": "product",
+      "category": "运动背包",
+      "version": "模拟版1",
+      "product_id": "SKU-112"
+    },
+    {
+      "id": "SKU-113",
+      "file": "products/SKU-113.md",
+      "title": "运动背包 03款",
+      "kind": "product",
+      "category": "运动背包",
+      "version": "模拟版1",
+      "product_id": "SKU-113"
+    },
+    {
+      "id": "SKU-114",
+      "file": "products/SKU-114.md",
+      "title": "运动背包 04款",
+      "kind": "product",
+      "category": "运动背包",
+      "version": "模拟版1",
+      "product_id": "SKU-114"
+    },
+    {
+      "id": "SKU-115",
+      "file": "products/SKU-115.md",
+      "title": "运动背包 05款",
+      "kind": "product",
+      "category": "运动背包",
+      "version": "模拟版1",
+      "product_id": "SKU-115"
+    },
+    {
+      "id": "SKU-116",
+      "file": "products/SKU-116.md",
+      "title": "运动背包 06款",
+      "kind": "product",
+      "category": "运动背包",
+      "version": "模拟版1",
+      "product_id": "SKU-116"
+    },
+    {
+      "id": "SKU-117",
+      "file": "products/SKU-117.md",
+      "title": "运动背包 07款",
+      "kind": "product",
+      "category": "运动背包",
+      "version": "模拟版1",
+      "product_id": "SKU-117"
+    },
+    {
+      "id": "SKU-118",
+      "file": "products/SKU-118.md",
+      "title": "运动背包 08款",
+      "kind": "product",
+      "category": "运动背包",
+      "version": "模拟版1",
+      "product_id": "SKU-118"
+    },
+    {
+      "id": "SKU-119",
+      "file": "products/SKU-119.md",
+      "title": "运动背包 09款",
+      "kind": "product",
+      "category": "运动背包",
+      "version": "模拟版1",
+      "product_id": "SKU-119"
+    },
+    {
+      "id": "SKU-120",
+      "file": "products/SKU-120.md",
+      "title": "运动背包 10款",
+      "kind": "product",
+      "category": "运动背包",
+      "version": "模拟版1",
+      "product_id": "SKU-120"
+    },
+    {
+      "id": "SKU-121",
+      "file": "products/SKU-121.md",
+      "title": "瑜伽垫 01款",
+      "kind": "product",
+      "category": "瑜伽垫",
+      "version": "模拟版1",
+      "product_id": "SKU-121"
+    },
+    {
+      "id": "SKU-122",
+      "file": "products/SKU-122.md",
+      "title": "瑜伽垫 02款",
+      "kind": "product",
+      "category": "瑜伽垫",
+      "version": "模拟版1",
+      "product_id": "SKU-122"
+    },
+    {
+      "id": "SKU-123",
+      "file": "products/SKU-123.md",
+      "title": "瑜伽垫 03款",
+      "kind": "product",
+      "category": "瑜伽垫",
+      "version": "模拟版1",
+      "product_id": "SKU-123"
+    },
+    {
+      "id": "SKU-124",
+      "file": "products/SKU-124.md",
+      "title": "瑜伽垫 04款",
+      "kind": "product",
+      "category": "瑜伽垫",
+      "version": "模拟版1",
+      "product_id": "SKU-124"
+    },
+    {
+      "id": "SKU-125",
+      "file": "products/SKU-125.md",
+      "title": "瑜伽垫 05款",
+      "kind": "product",
+      "category": "瑜伽垫",
+      "version": "模拟版1",
+      "product_id": "SKU-125"
+    },
+    {
+      "id": "SKU-126",
+      "file": "products/SKU-126.md",
+      "title": "瑜伽垫 06款",
+      "kind": "product",
+      "category": "瑜伽垫",
+      "version": "模拟版1",
+      "product_id": "SKU-126"
+    },
+    {
+      "id": "SKU-127",
+      "file": "products/SKU-127.md",
+      "title": "瑜伽垫 07款",
+      "kind": "product",
+      "category": "瑜伽垫",
+      "version": "模拟版1",
+      "product_id": "SKU-127"
+    },
+    {
+      "id": "SKU-128",
+      "file": "products/SKU-128.md",
+      "title": "瑜伽垫 08款",
+      "kind": "product",
+      "category": "瑜伽垫",
+      "version": "模拟版1",
+      "product_id": "SKU-128"
+    },
+    {
+      "id": "SKU-129",
+      "file": "products/SKU-129.md",
+      "title": "瑜伽垫 09款",
+      "kind": "product",
+      "category": "瑜伽垫",
+      "version": "模拟版1",
+      "product_id": "SKU-129"
+    },
+    {
+      "id": "SKU-130",
+      "file": "products/SKU-130.md",
+      "title": "瑜伽垫 10款",
+      "kind": "product",
+      "category": "瑜伽垫",
+      "version": "模拟版1",
+      "product_id": "SKU-130"
+    },
+    {
+      "id": "SKU-131",
+      "file": "products/SKU-131.md",
+      "title": "旅行箱 01款",
+      "kind": "product",
+      "category": "旅行箱",
+      "version": "模拟版1",
+      "product_id": "SKU-131"
+    },
+    {
+      "id": "SKU-132",
+      "file": "products/SKU-132.md",
+      "title": "旅行箱 02款",
+      "kind": "product",
+      "category": "旅行箱",
+      "version": "模拟版1",
+      "product_id": "SKU-132"
+    },
+    {
+      "id": "SKU-133",
+      "file": "products/SKU-133.md",
+      "title": "旅行箱 03款",
+      "kind": "product",
+      "category": "旅行箱",
+      "version": "模拟版1",
+      "product_id": "SKU-133"
+    },
+    {
+      "id": "SKU-134",
+      "file": "products/SKU-134.md",
+      "title": "旅行箱 04款",
+      "kind": "product",
+      "category": "旅行箱",
+      "version": "模拟版1",
+      "product_id": "SKU-134"
+    },
+    {
+      "id": "SKU-135",
+      "file": "products/SKU-135.md",
+      "title": "旅行箱 05款",
+      "kind": "product",
+      "category": "旅行箱",
+      "version": "模拟版1",
+      "product_id": "SKU-135"
+    },
+    {
+      "id": "SKU-136",
+      "file": "products/SKU-136.md",
+      "title": "旅行箱 06款",
+      "kind": "product",
+      "category": "旅行箱",
+      "version": "模拟版1",
+      "product_id": "SKU-136"
+    },
+    {
+      "id": "SKU-137",
+      "file": "products/SKU-137.md",
+      "title": "旅行箱 07款",
+      "kind": "product",
+      "category": "旅行箱",
+      "version": "模拟版1",
+      "product_id": "SKU-137"
+    },
+    {
+      "id": "SKU-138",
+      "file": "products/SKU-138.md",
+      "title": "旅行箱 08款",
+      "kind": "product",
+      "category": "旅行箱",
+      "version": "模拟版1",
+      "product_id": "SKU-138"
+    },
+    {
+      "id": "SKU-139",
+      "file": "products/SKU-139.md",
+      "title": "旅行箱 09款",
+      "kind": "product",
+      "category": "旅行箱",
+      "version": "模拟版1",
+      "product_id": "SKU-139"
+    },
+    {
+      "id": "SKU-140",
+      "file": "products/SKU-140.md",
+      "title": "旅行箱 10款",
+      "kind": "product",
+      "category": "旅行箱",
+      "version": "模拟版1",
+      "product_id": "SKU-140"
+    },
+    {
+      "id": "SKU-141",
+      "file": "products/SKU-141.md",
+      "title": "棉质床单 01款",
+      "kind": "product",
+      "category": "棉质床单",
+      "version": "模拟版1",
+      "product_id": "SKU-141"
+    },
+    {
+      "id": "SKU-142",
+      "file": "products/SKU-142.md",
+      "title": "棉质床单 02款",
+      "kind": "product",
+      "category": "棉质床单",
+      "version": "模拟版1",
+      "product_id": "SKU-142"
+    },
+    {
+      "id": "SKU-143",
+      "file": "products/SKU-143.md",
+      "title": "棉质床单 03款",
+      "kind": "product",
+      "category": "棉质床单",
+      "version": "模拟版1",
+      "product_id": "SKU-143"
+    },
+    {
+      "id": "SKU-144",
+      "file": "products/SKU-144.md",
+      "title": "棉质床单 04款",
+      "kind": "product",
+      "category": "棉质床单",
+      "version": "模拟版1",
+      "product_id": "SKU-144"
+    },
+    {
+      "id": "SKU-145",
+      "file": "products/SKU-145.md",
+      "title": "棉质床单 05款",
+      "kind": "product",
+      "category": "棉质床单",
+      "version": "模拟版1",
+      "product_id": "SKU-145"
+    },
+    {
+      "id": "SKU-146",
+      "file": "products/SKU-146.md",
+      "title": "棉质床单 06款",
+      "kind": "product",
+      "category": "棉质床单",
+      "version": "模拟版1",
+      "product_id": "SKU-146"
+    },
+    {
+      "id": "SKU-147",
+      "file": "products/SKU-147.md",
+      "title": "棉质床单 07款",
+      "kind": "product",
+      "category": "棉质床单",
+      "version": "模拟版1",
+      "product_id": "SKU-147"
+    },
+    {
+      "id": "SKU-148",
+      "file": "products/SKU-148.md",
+      "title": "棉质床单 08款",
+      "kind": "product",
+      "category": "棉质床单",
+      "version": "模拟版1",
+      "product_id": "SKU-148"
+    },
+    {
+      "id": "SKU-149",
+      "file": "products/SKU-149.md",
+      "title": "棉质床单 09款",
+      "kind": "product",
+      "category": "棉质床单",
+      "version": "模拟版1",
+      "product_id": "SKU-149"
+    },
+    {
+      "id": "SKU-150",
+      "file": "products/SKU-150.md",
+      "title": "棉质床单 10款",
+      "kind": "product",
+      "category": "棉质床单",
+      "version": "模拟版1",
+      "product_id": "SKU-150"
+    },
+    {
+      "id": "SKU-151",
+      "file": "products/SKU-151.md",
+      "title": "阅读灯 01款",
+      "kind": "product",
+      "category": "阅读灯",
+      "version": "模拟版1",
+      "product_id": "SKU-151"
+    },
+    {
+      "id": "SKU-152",
+      "file": "products/SKU-152.md",
+      "title": "阅读灯 02款",
+      "kind": "product",
+      "category": "阅读灯",
+      "version": "模拟版1",
+      "product_id": "SKU-152"
+    },
+    {
+      "id": "SKU-153",
+      "file": "products/SKU-153.md",
+      "title": "阅读灯 03款",
+      "kind": "product",
+      "category": "阅读灯",
+      "version": "模拟版1",
+      "product_id": "SKU-153"
+    },
+    {
+      "id": "SKU-154",
+      "file": "products/SKU-154.md",
+      "title": "阅读灯 04款",
+      "kind": "product",
+      "category": "阅读灯",
+      "version": "模拟版1",
+      "product_id": "SKU-154"
+    },
+    {
+      "id": "SKU-155",
+      "file": "products/SKU-155.md",
+      "title": "阅读灯 05款",
+      "kind": "product",
+      "category": "阅读灯",
+      "version": "模拟版1",
+      "product_id": "SKU-155"
+    },
+    {
+      "id": "SKU-156",
+      "file": "products/SKU-156.md",
+      "title": "阅读灯 06款",
+      "kind": "product",
+      "category": "阅读灯",
+      "version": "模拟版1",
+      "product_id": "SKU-156"
+    },
+    {
+      "id": "SKU-157",
+      "file": "products/SKU-157.md",
+      "title": "阅读灯 07款",
+      "kind": "product",
+      "category": "阅读灯",
+      "version": "模拟版1",
+      "product_id": "SKU-157"
+    },
+    {
+      "id": "SKU-158",
+      "file": "products/SKU-158.md",
+      "title": "阅读灯 08款",
+      "kind": "product",
+      "category": "阅读灯",
+      "version": "模拟版1",
+      "product_id": "SKU-158"
+    },
+    {
+      "id": "SKU-159",
+      "file": "products/SKU-159.md",
+      "title": "阅读灯 09款",
+      "kind": "product",
+      "category": "阅读灯",
+      "version": "模拟版1",
+      "product_id": "SKU-159"
+    },
+    {
+      "id": "SKU-160",
+      "file": "products/SKU-160.md",
+      "title": "阅读灯 10款",
+      "kind": "product",
+      "category": "阅读灯",
+      "version": "模拟版1",
+      "product_id": "SKU-160"
+    },
+    {
+      "id": "SKU-161",
+      "file": "products/SKU-161.md",
+      "title": "手工具套装 01款",
+      "kind": "product",
+      "category": "手工具套装",
+      "version": "模拟版1",
+      "product_id": "SKU-161"
+    },
+    {
+      "id": "SKU-162",
+      "file": "products/SKU-162.md",
+      "title": "手工具套装 02款",
+      "kind": "product",
+      "category": "手工具套装",
+      "version": "模拟版1",
+      "product_id": "SKU-162"
+    },
+    {
+      "id": "SKU-163",
+      "file": "products/SKU-163.md",
+      "title": "手工具套装 03款",
+      "kind": "product",
+      "category": "手工具套装",
+      "version": "模拟版1",
+      "product_id": "SKU-163"
+    },
+    {
+      "id": "SKU-164",
+      "file": "products/SKU-164.md",
+      "title": "手工具套装 04款",
+      "kind": "product",
+      "category": "手工具套装",
+      "version": "模拟版1",
+      "product_id": "SKU-164"
+    },
+    {
+      "id": "SKU-165",
+      "file": "products/SKU-165.md",
+      "title": "手工具套装 05款",
+      "kind": "product",
+      "category": "手工具套装",
+      "version": "模拟版1",
+      "product_id": "SKU-165"
+    },
+    {
+      "id": "SKU-166",
+      "file": "products/SKU-166.md",
+      "title": "手工具套装 06款",
+      "kind": "product",
+      "category": "手工具套装",
+      "version": "模拟版1",
+      "product_id": "SKU-166"
+    },
+    {
+      "id": "SKU-167",
+      "file": "products/SKU-167.md",
+      "title": "手工具套装 07款",
+      "kind": "product",
+      "category": "手工具套装",
+      "version": "模拟版1",
+      "product_id": "SKU-167"
+    },
+    {
+      "id": "SKU-168",
+      "file": "products/SKU-168.md",
+      "title": "手工具套装 08款",
+      "kind": "product",
+      "category": "手工具套装",
+      "version": "模拟版1",
+      "product_id": "SKU-168"
+    },
+    {
+      "id": "SKU-169",
+      "file": "products/SKU-169.md",
+      "title": "手工具套装 09款",
+      "kind": "product",
+      "category": "手工具套装",
+      "version": "模拟版1",
+      "product_id": "SKU-169"
+    },
+    {
+      "id": "SKU-170",
+      "file": "products/SKU-170.md",
+      "title": "手工具套装 10款",
+      "kind": "product",
+      "category": "手工具套装",
+      "version": "模拟版1",
+      "product_id": "SKU-170"
+    },
+    {
+      "id": "SKU-171",
+      "file": "products/SKU-171.md",
+      "title": "宠物食盆 01款",
+      "kind": "product",
+      "category": "宠物食盆",
+      "version": "模拟版1",
+      "product_id": "SKU-171"
+    },
+    {
+      "id": "SKU-172",
+      "file": "products/SKU-172.md",
+      "title": "宠物食盆 02款",
+      "kind": "product",
+      "category": "宠物食盆",
+      "version": "模拟版1",
+      "product_id": "SKU-172"
+    },
+    {
+      "id": "SKU-173",
+      "file": "products/SKU-173.md",
+      "title": "宠物食盆 03款",
+      "kind": "product",
+      "category": "宠物食盆",
+      "version": "模拟版1",
+      "product_id": "SKU-173"
+    },
+    {
+      "id": "SKU-174",
+      "file": "products/SKU-174.md",
+      "title": "宠物食盆 04款",
+      "kind": "product",
+      "category": "宠物食盆",
+      "version": "模拟版1",
+      "product_id": "SKU-174"
+    },
+    {
+      "id": "SKU-175",
+      "file": "products/SKU-175.md",
+      "title": "宠物食盆 05款",
+      "kind": "product",
+      "category": "宠物食盆",
+      "version": "模拟版1",
+      "product_id": "SKU-175"
+    },
+    {
+      "id": "SKU-176",
+      "file": "products/SKU-176.md",
+      "title": "宠物食盆 06款",
+      "kind": "product",
+      "category": "宠物食盆",
+      "version": "模拟版1",
+      "product_id": "SKU-176"
+    },
+    {
+      "id": "SKU-177",
+      "file": "products/SKU-177.md",
+      "title": "宠物食盆 07款",
+      "kind": "product",
+      "category": "宠物食盆",
+      "version": "模拟版1",
+      "product_id": "SKU-177"
+    },
+    {
+      "id": "SKU-178",
+      "file": "products/SKU-178.md",
+      "title": "宠物食盆 08款",
+      "kind": "product",
+      "category": "宠物食盆",
+      "version": "模拟版1",
+      "product_id": "SKU-178"
+    },
+    {
+      "id": "SKU-179",
+      "file": "products/SKU-179.md",
+      "title": "宠物食盆 09款",
+      "kind": "product",
+      "category": "宠物食盆",
+      "version": "模拟版1",
+      "product_id": "SKU-179"
+    },
+    {
+      "id": "SKU-180",
+      "file": "products/SKU-180.md",
+      "title": "宠物食盆 10款",
+      "kind": "product",
+      "category": "宠物食盆",
+      "version": "模拟版1",
+      "product_id": "SKU-180"
+    },
+    {
+      "id": "SKU-181",
+      "file": "products/SKU-181.md",
+      "title": "绘画套装 01款",
+      "kind": "product",
+      "category": "绘画套装",
+      "version": "模拟版1",
+      "product_id": "SKU-181"
+    },
+    {
+      "id": "SKU-182",
+      "file": "products/SKU-182.md",
+      "title": "绘画套装 02款",
+      "kind": "product",
+      "category": "绘画套装",
+      "version": "模拟版1",
+      "product_id": "SKU-182"
+    },
+    {
+      "id": "SKU-183",
+      "file": "products/SKU-183.md",
+      "title": "绘画套装 03款",
+      "kind": "product",
+      "category": "绘画套装",
+      "version": "模拟版1",
+      "product_id": "SKU-183"
+    },
+    {
+      "id": "SKU-184",
+      "file": "products/SKU-184.md",
+      "title": "绘画套装 04款",
+      "kind": "product",
+      "category": "绘画套装",
+      "version": "模拟版1",
+      "product_id": "SKU-184"
+    },
+    {
+      "id": "SKU-185",
+      "file": "products/SKU-185.md",
+      "title": "绘画套装 05款",
+      "kind": "product",
+      "category": "绘画套装",
+      "version": "模拟版1",
+      "product_id": "SKU-185"
+    },
+    {
+      "id": "SKU-186",
+      "file": "products/SKU-186.md",
+      "title": "绘画套装 06款",
+      "kind": "product",
+      "category": "绘画套装",
+      "version": "模拟版1",
+      "product_id": "SKU-186"
+    },
+    {
+      "id": "SKU-187",
+      "file": "products/SKU-187.md",
+      "title": "绘画套装 07款",
+      "kind": "product",
+      "category": "绘画套装",
+      "version": "模拟版1",
+      "product_id": "SKU-187"
+    },
+    {
+      "id": "SKU-188",
+      "file": "products/SKU-188.md",
+      "title": "绘画套装 08款",
+      "kind": "product",
+      "category": "绘画套装",
+      "version": "模拟版1",
+      "product_id": "SKU-188"
+    },
+    {
+      "id": "SKU-189",
+      "file": "products/SKU-189.md",
+      "title": "绘画套装 09款",
+      "kind": "product",
+      "category": "绘画套装",
+      "version": "模拟版1",
+      "product_id": "SKU-189"
+    },
+    {
+      "id": "SKU-190",
+      "file": "products/SKU-190.md",
+      "title": "绘画套装 10款",
+      "kind": "product",
+      "category": "绘画套装",
+      "version": "模拟版1",
+      "product_id": "SKU-190"
+    },
+    {
+      "id": "SKU-191",
+      "file": "products/SKU-191.md",
+      "title": "园艺花盆 01款",
+      "kind": "product",
+      "category": "园艺花盆",
+      "version": "模拟版1",
+      "product_id": "SKU-191"
+    },
+    {
+      "id": "SKU-192",
+      "file": "products/SKU-192.md",
+      "title": "园艺花盆 02款",
+      "kind": "product",
+      "category": "园艺花盆",
+      "version": "模拟版1",
+      "product_id": "SKU-192"
+    },
+    {
+      "id": "SKU-193",
+      "file": "products/SKU-193.md",
+      "title": "园艺花盆 03款",
+      "kind": "product",
+      "category": "园艺花盆",
+      "version": "模拟版1",
+      "product_id": "SKU-193"
+    },
+    {
+      "id": "SKU-194",
+      "file": "products/SKU-194.md",
+      "title": "园艺花盆 04款",
+      "kind": "product",
+      "category": "园艺花盆",
+      "version": "模拟版1",
+      "product_id": "SKU-194"
+    },
+    {
+      "id": "SKU-195",
+      "file": "products/SKU-195.md",
+      "title": "园艺花盆 05款",
+      "kind": "product",
+      "category": "园艺花盆",
+      "version": "模拟版1",
+      "product_id": "SKU-195"
+    },
+    {
+      "id": "SKU-196",
+      "file": "products/SKU-196.md",
+      "title": "园艺花盆 06款",
+      "kind": "product",
+      "category": "园艺花盆",
+      "version": "模拟版1",
+      "product_id": "SKU-196"
+    },
+    {
+      "id": "SKU-197",
+      "file": "products/SKU-197.md",
+      "title": "园艺花盆 07款",
+      "kind": "product",
+      "category": "园艺花盆",
+      "version": "模拟版1",
+      "product_id": "SKU-197"
+    },
+    {
+      "id": "SKU-198",
+      "file": "products/SKU-198.md",
+      "title": "园艺花盆 08款",
+      "kind": "product",
+      "category": "园艺花盆",
+      "version": "模拟版1",
+      "product_id": "SKU-198"
+    },
+    {
+      "id": "SKU-199",
+      "file": "products/SKU-199.md",
+      "title": "园艺花盆 09款",
+      "kind": "product",
+      "category": "园艺花盆",
+      "version": "模拟版1",
+      "product_id": "SKU-199"
+    },
+    {
+      "id": "SKU-200",
+      "file": "products/SKU-200.md",
+      "title": "园艺花盆 10款",
+      "kind": "product",
+      "category": "园艺花盆",
+      "version": "模拟版1",
+      "product_id": "SKU-200"
+    }
+  ]
+}

@@ -3,8 +3,8 @@ from src import tools as backend_tools
 
 
 def get_policies(topics=None):
-    allowed = ['shipping', 'return', 'cancel', 'refund', 'contact']
-    return {topic: backend_tools.answer_faq(topic) for topic in (topics or allowed) if topic in allowed}
+    allowed = ['shipping', 'return', 'cancel', 'refund', 'contact', 'system']
+    return {topic: backend_tools.answer_faq(topic) for topic in (topics or allowed[:5]) if topic in allowed}
 
 
 def run_faq_agent(user_message: str, history: list | None = None, topics=None) -> dict:
