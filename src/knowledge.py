@@ -2,6 +2,7 @@
 import fcntl
 import hashlib
 import json
+import re
 import os
 import sqlite3
 import threading
@@ -171,7 +172,7 @@ class KnowledgeStore:
         from qdrant_client import models
         if self.status() != 'ready':
             raise ValueError('知识库尚未导入完成，请先运行目录导入')
-        if kind != 'product' and not product_ref and any(word in query for word in ('全部政策','所有政策','政策概览','全部规则','所有规则')):
+        if kind != 'product' and not product_ref and (any(word in query for word in ('全部政策','所有政策','政策概览','全部规则','所有规则')) or re.search(r'\b(?:all (?:the )?(?:platform )?(?:policies|rules)|polic(?:y|ies) overview|overview of (?:the )?(?:platform )?(?:policies|rules))\b', query, re.I)):
             with self.connect() as db:
                 rows = db.execute("SELECT payload FROM documents WHERE json_extract(payload,'$.kind')='policy' ORDER BY id").fetchall()
             sources, seen = [], set()
@@ -191,6 +192,10 @@ class KnowledgeStore:
         if product_ref and kind != 'policy':
             with self.connect() as db:
                 matches = db.execute('SELECT product_id,payload FROM aliases WHERE alias=?',(normalized(product_ref),)).fetchall()
+                if not matches and re.match(r'^the\s+', product_ref.strip(), re.I):
+                    # Permit only an optional English article, never fuzzy product matching.
+                    reference = re.sub(r'^the\s+', '', product_ref.strip(), flags=re.I)
+                    matches = db.execute('SELECT product_id,payload FROM aliases WHERE alias=?', (normalized(reference),)).fetchall()
             if len(matches) != 1:
                 return {'knowledge':True,'sources':[], 'message':'请提供准确商品名称、型号或编号。', 'candidates':[json.loads(r[1]) for r in matches]}
             product_condition = models.FieldCondition(key='product_id',match=models.MatchValue(value=matches[0][0]))

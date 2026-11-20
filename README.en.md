@@ -151,6 +151,8 @@ Pytest uses offline doubles and isolated data. The two check scripts use real mo
 
 The evaluation runner creates temporary business/session data but does not import a temporary knowledge corpus. It is not a complete RAG evaluation. Historical model reports are under `eval/results/`.
 
+Run three long conversations with `python eval/run_long_conversations.py --report eval/results/long-conversations-new.json`. This uses the real API, existing Chinese knowledge index and isolated synthetic business data, including interactions and replay. Import the corpus first; calls incur charges. See the [records](eval/results/README.en.md).
+
 ## 6 Connect the online model
 
 Copy `.env.example` to `.env` only on first setup; edit existing files rather than overwriting secrets.
@@ -265,7 +267,7 @@ python -m scripts.ingest_knowledge --root ./my_knowledge
 
 The manifest describes the **entire current corpus**. Documents omitted from it are removed from the catalog and vector index; source files are not deleted. Reimport after edits. Unchanged documents skip encoding. Failed index writes block search until repaired; earlier validation failures can leave an old ready index available. Version labels do not implement historical policy isolation.
 
-English duplicates are optional: multilingual E5 can retrieve Chinese content for English queries. Add English aliases for exact product identification. For customer-facing English policy text, human-reviewed English sources are preferable. Duplicates need distinct document IDs and aligned versions; the current schema has no language field or language-aware filter.
+Chinese and English questions share the existing Chinese corpus and manifest. The existing planning call can split compound questions and produce equivalent Chinese search queries, without a separate translation call. Product references still require exact IDs, models, registered names or aliases; an optional English article is ignored. English policy overviews are supported. Generated answers follow explicit current-turn language instructions, then active language preferences, otherwise the question's main language. Source titles and original text stay Chinese; interface language only changes controls. Cross-language retrieval can still miss evidence and must acknowledge gaps.
 
 ## 9 Memory design
 

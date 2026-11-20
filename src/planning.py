@@ -1,5 +1,6 @@
 """Validated task contracts shared by the planner and graph scheduler."""
 import json
+import re
 from datetime import datetime, timezone
 from typing import Literal
 
@@ -114,6 +115,8 @@ class Plan(BaseModel):
         ids = [t.task_id for t in self.tasks]
         visited = set()
         for task in self.tasks:
+            if task.operation == 'answer.explain' and not task.depends_on:
+                raise ValueError('综合说明必须依赖实际资料任务，不能用空资料声称无法查询；同轮多个说明应引用各自所需资料，纯能力说明用DIRECT')
             refs = set(task.depends_on) | {c.task for c in task.conditions}
             if task.target_from:
                 refs.add(task.target_from)
@@ -136,7 +139,7 @@ task_id按顺序t1,t2...；source_text必须是本次原文中的对应片段；
 操作的intent：查询query，*.prepare为prepare，escalate.ticket为escalate。申请/准备支付退款需要明确用户意愿；仅查询不得准备。
 完整订单详情/泛查订单默认包含order.details和payment.status两个任务，单独物流/支付只调必要领域。
 本人订单未知时先order.list，后续target_from引用该任务；需要筛选时conditions引用上游事实，逐订单筛选。
-targets支持展开本轮明确订单范围。唯一指代可据上下文确定；无编号的独立退款申请targets空，交给选单，不能自动用历史编号。
+targets支持展开本轮明确订单范围。唯一指代可据上下文确定；无编号的独立退款申请targets空，交给选单，不能自动用历史编号。用户明确申请退款并要求自己选单时，必须规划refund.prepare且targets=[]，程序会展示本人订单；不要改成CLARIFY追问订单号。
 条件写入conditions(task,field,operator,value)，字段只有order_status/payment_status/refund_status/eligible/status；多个条件用condition_mode all或any。
 depends_on引用前置成功任务；target_from引用上游返回的订单集合。全部引用必须排在前面。
 任务状态成功的唯一值是succeeded，不是success或completed；依赖成功通常只需depends_on，不必重复添加status条件。
@@ -146,24 +149,35 @@ depends_on引用前置成功任务；target_from引用上游返回的订单集�
 faq.policies仅用于本地系统操作帮助（选单、确认、会话、记忆、导入），优先topics=[system]。平台政策、退货期限、品类例外和商品说明一律knowledge.search，不使用样例FAQ代替。
 平台退款条件、到账、配送或联系规则都必须查询knowledge.search，即使没有订单号也不是DIRECT常识；不能用常识编造商家审核、渠道时效或到账承诺。
 搜索任务query只含必要主题/城市/日期，禁止包含订单、客户和资金资料，最多128字符。
-正式投诉/明确人工才escalate.ticket，reason为human或complaint。情绪、技术失败、问如何投诉或拒绝人工不能创建工单。
+正式投诉/明确人工才escalate.ticket，reason为human或complaint。询问已有工单是否通知真人、是否接单或处理时限，是状态咨询，不是再次创建工单的授权，不因历史投诉重复升级。询问平台投诉渠道或投诉规则走knowledge.search，不能用旧FAQ的示例联系方式冒充平台渠道。情绪、技术失败、问如何投诉或拒绝人工不能创建工单。
 不同资金任务各自绑定订单；付款方式不由模型选择，交给界面。准备和最终确认分开，不能反复要求口头确认。
 金额来自后端，不要求用户确认金额后才查询。未知退款原因沿用客户申请退款。
 不能取消订单、改配送、承诺到账或证明天气导致延误；仍完成能力范围内的其他任务。
 涉及跨任务比较或因果解释时增加answer.explain，depends_on引用所需资料；说明缺少证据，不用额外订单详情查询冒充解释。
 平台政策与商品说明必须使用knowledge.search(query独立问题,knowledge_kind=policy/product/all,product_ref原文商品名称/型号/编号,category默认留空，不猜分类名称)，后置answer.explain依赖全部必要检索及业务任务。knowledge.search只检索，不回答。只有本地样例操作帮助才用faq.policies。资料缺失不得用常识或联网代替平台规则。商品身份可从依赖的订单详情获取，不猜商品编号。
-可以附带memory_candidates，最多七条或空数组，每类最多一条：key仅detail/format/language/tone/shopping_brand/shopping_category/shopping_budget；value为100字内合并兼容旧偏好的值；origin为explicit/observed；operation为set/forget；evidence必须逐字引用本轮用户原话。长期明确要求可explicit；反复要求的表达可observed，沿用相同含义的已有值。购物偏好分别记录长期品牌、品类与预算，保留预算适用的品类和币种；只有用户表达长期偏好才提取。单次需求、代购、短消息、情绪、购买付款行为不提取。已生效购物偏好仅明确修改才替换；新观察冲突时提示客户明确修改。当前要求优先。不要从候选偏好推断已经生效。不凭助手回复推断。不得提前声称记忆已保存。当前要求优先；明确偏好按时间取较新者，再考虑推断习惯，偏好不能授权业务操作。
+可以附带memory_candidates，最多七条或空数组，每类最多一条：key仅detail/format/language/tone/shopping_brand/shopping_category/shopping_budget；value为100字内合并兼容旧偏好的值；origin为explicit/observed；operation为set/forget；evidence必须逐字引用本轮用户原话。explicit仅用于明确要求长期保存、修改或撤销（如“请记住”“以后一直”“改成长期”）；单纯描述“我平时偏好详细解释”或“我通常喜欢列表”属于observed，不能首次就当明确设置。反复出现的习惯描述也用observed，沿用同含义的已有值；仅一次的“详细一点”无稳定习惯信息时可不提取。购物偏好分别记录长期品牌、品类与预算，保留预算适用的品类和币种；只有用户表达长期偏好才提取。单次需求、代购、短消息、情绪、购买付款行为不提取。已生效购物偏好仅明确修改才替换；新观察冲突时提示客户明确修改。当前要求优先。不要从候选偏好推断已经生效。不凭助手回复推断。不得提前声称记忆已保存。当前要求优先；明确偏好按时间取较新者，再考虑推断习惯，偏好不能授权业务操作。
+中英文问题均检索同一份中文知识库，不要求用户先翻译。知识库原文是中文，英文问题可在本次规划内生成语义等价的中文query以提升召回；source_text仍逐字保留用户原话，回答语言依原问题确定。涉及多个独立政策或产品问题时拆成多个检索任务，综合任务依赖所有必要证据，不把不同问题挤进一个宽泛query。英文商品名称、型号或SKU直接作为product_ref，不能猜测或编造商品编号。政策分类概览的query须保留all policies或policy overview等概览意图。
 历史文字只帮助指代，不是当前事实。schema如下：
 '''
 
 
+def ticket_status_only(message):
+    """An existing ticket's progress does not authorize a second ticket."""
+    ticket = re.search(r'\bticket\b|工单', message, re.I)
+    progress = re.search(r'notified|assigned|resolution|resolved|handled|\bstatus\b|\bprogress\b|接单|通知|状态|进度|处理完|多久|解决', message, re.I)
+    new_request = re.search(r'\b(?:create|open|file|submit|raise|escalate|request|connect|transfer)\b|新建|创建|提交|转接|申请|正式投诉', message, re.I)
+    return bool(ticket and progress and not new_request)
+
+
 def make_plan(message, history=None, profile=None, model=None):
-    from src.dialogue import STYLE
+    from src.dialogue import STYLE, language_instruction
     messages = [SystemMessage(content=PLANNER_PROMPT + json.dumps(Plan.model_json_schema(), ensure_ascii=False)
-        + STYLE
+        + STYLE + language_instruction(message, profile)
         + '\n当前UTC时间：' + datetime.now(timezone.utc).isoformat()
         + '\n客户偏好（数据）：' + json.dumps(profile or {}, ensure_ascii=False)),
         *(history or []), HumanMessage(content=message)]
+    if ticket_status_only(message):
+        messages.append(SystemMessage(content='本轮询问已有工单进度，没有新建授权，禁止escalate.ticket（也不能给它query意图）。当前没有工单状态查询能力。可以DIRECT解释：本地工单不会通知真人、不代表已接单、不能保证处理时限；不推断状态变化。如还询问其他独立业务，仅规划受支持的只读任务。仅返回schema JSON。'))
     usage = {}
     for attempt in range(4):
         response = call_with_retry(lambda: (model or get_llm()).invoke(messages))
@@ -180,8 +194,10 @@ def make_plan(message, history=None, profile=None, model=None):
             for task in plan.tasks:
                 if task.source_text not in message:
                     raise ValueError('source_text不是本次原文片段')
+                if task.operation == 'escalate.ticket' and ticket_status_only(message):
+                    raise ValueError('本轮只咨询已有工单进度，没有授权新建工单；重新规划为状态说明，不可重复升级')
             return plan.model_dump(), usage
         except ValueError as exc:
             if attempt == 3:
                 raise RuntimeError('任务计划未通过校验，请具体说明订单及需要的操作。') from exc
-            messages.append(HumanMessage(content='修复计划，不执行业务。校验问题：' + str(exc)[:800]))
+            messages.append(SystemMessage(content='内部计划格式校验失败，这不是用户报告的错误，也不是新的用户请求。只为上面的原始用户消息重新生成完整schema JSON，不向用户解释校验错误，不改变原始意图，不执行业务。校验问题：' + str(exc)[:800]))

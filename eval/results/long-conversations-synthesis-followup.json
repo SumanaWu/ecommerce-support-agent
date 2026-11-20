@@ -1,0 +1,35 @@
+{
+  "kind": "real API synthesis follow-up using recorded actual task facts; no business writes",
+  "source": "long-conversations-final-3b.json",
+  "results": [
+    {
+      "focus": "summarize their current facts",
+      "answer": "**Three orders — current facts**\n\n- **Order 1008** — Webcam 1080p, Hassan Ali, placed 2026-06-29, amount 55.0, order status: placed; payment: paid via wechat_pay.\n- **Order 1009** — Ergonomic Mouse, Ines Moreau, placed 2026-06-12, amount 29.99, order status: delivered; payment: paid via card.\n- **Order 1010** — Noise-Cancelling Earbuds, Jonas Weber, placed 2026-06-27, amount 149.0, order status: shipped; payment: paid via card.\n\nAll three show payment as paid. No new ticket or financial action was taken.",
+      "usage": {
+        "input_tokens": 2269,
+        "output_tokens": 159,
+        "total_tokens": 2428
+      }
+    },
+    {
+      "focus": "Explain whether you can read customer_a preferences",
+      "answer": "I can't read customer_a's preferences. The materials I have contain order records only — order IDs, customer names, items, dates, amounts, and statuses — with no stored preference data for any customer, including customer_a. So I have no basis to state what customer_a prefers, and I won't infer it from their orders.",
+      "usage": {
+        "input_tokens": 2138,
+        "output_tokens": 69,
+        "total_tokens": 2207
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "order synthesis excludes unrelated preference question",
+      "passed": true
+    },
+    {
+      "name": "profile synthesis excludes repeated order list",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

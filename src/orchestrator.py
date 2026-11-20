@@ -184,7 +184,7 @@ def expert(state):
                             fact['sources'].append(source)
                             seen.add(source['id'])
                             budget -= size
-            answer, usage = dialogue.compose(task['source_text'], evidence)
+            answer, usage = dialogue.compose(state['message'], evidence, state.get('history'), task['source_text'])
             kb_sources = [source for result in evidence.values() for fact in result.get('facts',[]) if fact.get('knowledge') for source in fact.get('sources',[]) if source['id'] in answer]
             return {'results': {tid: {'status': 'succeeded', 'facts': [], 'answer': answer, 'usage': usage, 'sources': kb_sources,
                 'trace': [{'task_id': tid, 'agent': 'assistant', 'tool': 'compose', 'args': {'depends_on': task['depends_on']}, 'result': {'answer': answer}}]}}}
@@ -203,7 +203,7 @@ def expert(state):
         if facts and all(r.get('error') for r in facts):
             result['status'] = 'failed'
         if op in {'faq.policies', 'search.web'} and result['status'] == 'succeeded':
-            result['answer'], result['usage'] = dialogue.compose(task['source_text'], facts[0], state.get('history'))
+            result['answer'], result['usage'] = dialogue.compose(state['message'], facts[0], state.get('history'))
         return {'results': {tid: result}}
     except Exception as exc:
         return {'results': {tid: {'status': 'failed', 'facts': facts, 'trace': trace, 'reason': str(exc)}}}
@@ -364,7 +364,12 @@ def response(state):
         sources.extend(result.get('sources',[]))
         if task['operation'] == 'knowledge.search':
             continue
-        if result.get('answer'):
+        explained = task['operation'] in {'faq.policies', 'search.web'} and any(
+            other['operation'] == 'answer.explain' and task['task_id'] in other['depends_on']
+            and state['results'].get(other['task_id'], {}).get('answer')
+            and state['results'][other['task_id']]['status'] == 'succeeded'
+            for other in state['plan']['tasks'])
+        if result.get('answer') and not explained:
             lines.append(('### 政策说明\n\n' if task['operation'] == 'faq.policies' else '### 综合说明\n\n' if task['operation'] == 'answer.explain' else '### 联网资料\n\n') + result['answer'])
         for oid in result.get('excluded', []):
             row = orders.setdefault(oid, {})
@@ -393,7 +398,7 @@ def response(state):
                 order_results.append(item)
             if row.get('sources') is not None:
                 sources.extend(row['sources'])
-                if not result.get('answer'):
+                if not result.get('answer') and not explained:
                     lines.append(row.get('error') or '联网资料已获取，见来源。')
             elif row.get('message'):
                 lines.append(row['message'])
