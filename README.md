@@ -1,12 +1,13 @@
 # 电商订单与售后助手
 
+[English](README.en.md) · 中文
+
 一个可以本地运行的小型多 Agent 业务应用。主对话层结合历史直接回答、澄清，或将业务请求拆成多个领域任务，交给订单、支付、退款、系统FAQ、知识库及联网搜索执行器按需协作。独立只读任务可以并行，存在条件或先后关系的任务按依赖执行；支付、退款由用户逐项确认后才修改 SQLite 业务数据。应用按会话保存最近讨论订单组，未指定订单的独立退款申请先查询本人全部订单并通过开关选单；客户偏好则独立保存，供新会话继续读取。
 
-应用使用 DeepSeek 在线模型，默认 `deepseek-flash`，通过 OpenAI 格式的 Chat Completions 生成任务计划及资料回答。主图按能力登记调用领域工具，订单、支付、退款查询不再分别运行一轮模型选工具。已移除 demo 和运行模式切换。支付、退款先生成待确认方案，用户逐项确认后才修改本地样例数据；等待选单或确认时当前会话暂停输入，其他客户会话可独立使用。
+应用使用 DeepSeek 在线模型，默认 `deepseek-flash`，通过 OpenAI 格式的 Chat Completions 生成任务计划及资料回答。主图按能力登记调用领域工具，订单、支付、退款查询不再分别运行一轮模型选工具。支付、退款先生成待确认方案，用户逐项确认后才修改本地样例数据；等待选单或确认时当前会话暂停输入，其他客户会话可独立使用。
 
 **所有订单、客户、支付和退款均为本地样例，不连接真实电商、支付、物流或人工客服平台。** 操作会改变样例数据库，但不会产生真实扣款、退款或通知。
 
-当前第5阶段在阶段4的持久化协作主图上增加自动回复偏好、本地多语言E5＋Qdrant知识检索、资料详情与记忆转换展示，以及五组共77轮手工验收脚本。各阶段成果见[优化成果](improve.md)，当前调用链见[架构说明](ARCHITECTURE.md)。
 
 ## 1 先理解项目提供什么
 
@@ -19,7 +20,7 @@
 | 混合方案与续跑     | 收集当前必要选择，展示当前全部可准备方案；按钮确认后继续后续任务                  | 后续依赖未满足时不提前准备，聊天“确认”不执行资金操作            |
 | 业务规则           | 退款统一检查付款、已有退款、余额及已下单/已签收状态；支付只接受 pending           | 不是完整真实商家退款规则                                          |
 | 会话 Memory        | 展示最近 50 轮，保存最近订单与累计 Token；请求记录独立保留                        | 整张主图按节点持久化，未完成节点内调用可能重做                    |
-| 长期客户偏好       | 手动保存回复/联系偏好；模型同次规划提取最多两条回复习惯候选，观察证据累计三次生效 | 只支持详略、组织、语言、语气；不是训练模型，联系偏好不会发消息    |
+| 长期客户偏好       | 手动保存回复/联系偏好；模型同次规划提取最多七类偏好候选，观察证据累计三次生效 | 支持回复习惯及购物品牌、品类、预算；不是训练模型，联系偏好不会发消息    |
 | 记忆转换展示       | 候选1/3、2/3进度、已生效/撤销状态、来源原话及最近六条对话的提取记录               | 统计实际保存的证据；手动填写表单不累计观察次数                    |
 | 上下文             | 最近 6 个完整用户轮次与会话内订单组                                               | 不是精确 Token 预算或摘要系统                                     |
 | 模拟升级           | 明确转人工或正式投诉时生成原有本地工单                                            | 技术失败、含糊和闲聊不升级，没有外部通知                          |
@@ -38,7 +39,14 @@
 
 ```text
 ecommerce-support-agent/
-  app.py                      中文 Streamlit 页面
+  app.py                      Streamlit 页面入口
+  ui/
+    chat.py                   消息、选单、支付方式及逐项确认展示
+    memory.py                 偏好分类、证据、撤销与手动档案表单
+    knowledge.py              目录筛选、分页和原文双栏浏览
+    guide.py                  从Markdown加载使用说明与验收脚本
+    i18n.py                   中英文界面文本与显示格式转换
+    __init__.py               展示包标识
   api.py                      FastAPI 接口
   src/
     service.py                页面与 API 共用的应用服务
@@ -67,25 +75,14 @@ ecommerce-support-agent/
       db.py                   SQLAlchemy 数据表、连接与建表
       seed.py                 10 笔样例订单及状态
     __init__.py               src、agents、backend 均有包标识文件
-  tests/                      业务、协议、确认恢复与页面回归用例
-    conftest.py               隔离数据库、离线模型与测试适配
-    fake_model.py             离线规划及工具调用测试模型
-  scripts/
-    check_ui.py               真实模型页面交互检查
-    check_restart.py          真实模型跨进程会话检查
-    ingest_knowledge.py       离线清单导入命令入口
-  eval/
-    scenarios.json            当前22组自动评估场景；前端另用五组长对话脚本
-    run_eval.py               当前合成数据端到端评估入口
-    eval_dataset.json         保留的旧单路由数据集，当前评估不读取
-    results/                  阶段4评估及阶段5三组真实问答记录
+  tests/                      隔离数据的离线业务、API、恢复与页面回归测试
+  scripts/                    知识导入、真实模型页面及跨进程检查命令
+  eval/                       自动评估场景、运行器与历史验证报告
   knowledge/                  manifest.json及200条政策、200件商品Markdown
-  docs/
-    usage_and_scenarios.md    导入说明、模型路径、五组共77轮手工脚本
-    Ecommerce_Agent_Deep_Dive.docx  历史深挖文档
-  README.md                   运行、代码导航与行为说明
-  ARCHITECTURE.md              当前架构与调用链
-  improve.md                   分阶段优化成果与验收记录
+  docs/                       业务实现文档、多轮使用说明和参考图片
+  README.md / README.en.md    中英文运行、代码导航与行为说明
+  ARCHITECTURE*.md             架构说明导航，正文已整合至README
+  IMPROVE*.md                  中英文分阶段优化成果与验收记录
   requirements.txt            本次验证的精确依赖
   requirements.in             顶层依赖范围
   pytest.ini                  pytest 的模块路径与测试目录
@@ -93,6 +90,7 @@ ecommerce-support-agent/
   compose.yaml                仅定义本地Qdrant服务及持久卷
   .dockerignore               排除密钥、虚拟环境与运行数据
   .gitignore                  版本控制忽略规则
+  .streamlit/config.toml      默认浅色主题
   .env.example                配置模板
   LICENSE                     必要版权与开源许可
   NOTICE.md                   修改范围与版本标识
@@ -163,7 +161,7 @@ python -m streamlit run app.py
 3. 在项目根目录重新启动。确认 Docker Desktop 正在运行，然后执行：
 
 ```bash
-cd /Users/geyang/Desktop/ecommerce-support-agent
+cd /path/to/ecommerce-support-agent
 source .venv/bin/activate
 docker compose up -d qdrant
 python -m streamlit run app.py
@@ -206,7 +204,7 @@ python -c "import langgraph, streamlit, sqlalchemy; print('依赖导入成功')"
 **先停止再清理：**停止 Streamlit 和 FastAPI 进程；在项目根目录执行下面命令停止使用向量目录的 Qdrant 容器。
 
 ```sh
-cd /Users/geyang/Desktop/ecommerce-support-agent
+cd /path/to/ecommerce-support-agent
 docker compose stop qdrant
 ```
 
@@ -234,7 +232,7 @@ docker compose up -d qdrant
 
 启动后打开 `http://127.0.0.1:8501`，在“平台资料详情”核对资料总数400、索引状态 `ready`，再询问“退货需要几天内申请，定制商品能退吗？”，检查回答是否有原文来源。应用启动负责新业务库与十笔订单初始化；原始资料和本地模型的恢复由前面的导入命令负责。
 
-## 4 一条贯穿五个阶段的完整体验
+## 4 完整业务体验
 
 先按第3节完成模型配置、Qdrant启动及400份模拟资料导入。使用**全新业务与记忆数据库**，选择`customer_a`、会话`walkthrough`；每次只发送一行对话，等待回复或完成指定页面操作再继续。本节是一条手工体验路线，不是所有轮次已经通过的自动报告。
 
@@ -263,104 +261,50 @@ docker compose up -d qdrant
 | 19   | 切换`customer_b`并新建会话，输入“列出我的订单，查询1008至1010详情；也查1001。” | B只拥有1008～1010；A的1001及其客户偏好不能泄露。                                                         |
 | 20   | 切回A、返回`walkthrough`，核对1001退款、1003付款和会话记录。                     | 客户独立会话恢复，真实已执行状态保留，未确认动作不算执行。                                               |
 
-每轮可展开**任务进度、工具执行轨迹和来源**核对调用。观察次数以实际提取的同类同值证据为准，手动保存表单不累计次数；聊天中说“确认”不替代资金按钮。前端“平台资料详情”可按分类、商品和文档编号浏览全文。
+侧栏可切换中文/English界面，不会改写历史消息、原话证据、知识原文或长期回复语言偏好。每轮可展开**任务进度、工具执行轨迹和来源**核对调用。观察次数以实际提取的同类同值证据为准，手动保存表单不累计次数；聊天中说“确认”不替代资金按钮。前端“平台资料详情”可按分类、商品和文档编号浏览全文。
 
-这条路线串起消息展示、客户隔离、确认与状态保护、FAQ/联网、条件多任务，以及第五阶段的RAG和自动记忆。六轮上下文、五十条展示窗口、API重放和并发故障等边界，分别见第9节、第5节及[五组77轮手工脚本](docs/usage_and_scenarios.md)。各组脚本应独立初始化；仅新建会话不重置订单。
+这条路线串起消息展示、客户隔离、确认与状态保护、FAQ/联网、条件多任务、RAG和自动记忆。六轮上下文、五十条展示窗口、API重放和并发故障等边界，分别见第9节、第5节及[五组77轮手工脚本](docs/usage_and_scenarios.md)。各组脚本应独立初始化；仅新建会话不重置订单。
 
 ## 5 不打开页面也能验证
 
 ```bash
-python -m pytest -q
-python scripts/check_ui.py
-python scripts/check_restart.py
+python -m pytest -q                         # 离线回归
+python scripts/check_ui.py                  # 真实模型页面检查
+python scripts/check_restart.py             # 真实模型跨进程恢复检查
+python eval/run_eval.py --dry-run           # 仅检查场景操作登记
 ```
 
-`pytest` 使用测试模型或模拟 HTTP，并在隔离数据库中验证业务逻辑，不调用真实 DeepSeek。`check_ui.py` 和 `check_restart.py` 使用临时数据目录，但会调用真实模型，需要配置 Key，并会产生模型请求。前者覆盖查询、退款选单与确认、工单、新会话和客户切换；后者用两个独立进程验证偏好、聊天及近期订单恢复，不等于逐项测试所有主图检查点。
+`pytest`不调用真实模型；两个check脚本使用临时数据库，但需要模型密钥并产生请求费用。页面多轮脚本是手工验收说明，不等于已全部执行。
 
-第五阶段当前离线回归为**161项通过**，覆盖新增的候选校验、1/3与2/3显示、第三次升级、重复证据、撤销、客户隔离、文档数量/格式、重复导入、商品过滤及检索后说明。离线测试的Qdrant使用SDK本地内存模式、固定向量，不等于实际服务的索引性能测试。
-
-[第五阶段真实问答记录](eval/results/memory-rag-live.json)保存三组DeepSeek＋真实E5问答及一条有效偏好：耳机连接、退货期限/定制例外、英文签收问题。该JSON不是通用评估器的全量断言报告。本地Qdrant容器已完成400份资料导入、中文政策与英文商品检索及页面ready检查；未完成十万片段压测或应用Docker镜像构建验收。五组77轮前端脚本仍是手工验收说明，不标记为全部已运行通过。
-
-阶段4此前已记录的验收结果如下，详情与完整轨迹见[验证记录](eval/results/README.md)：
-
-
-| 验证范围                   | 结果      | 主要检查内容                                                                                               |
-| -------------------------- | --------- | ---------------------------------------------------------------------------------------------------------- |
-| 离线自动化回归             | 141项通过 | 业务工具与API、客户权限、条件与筛选、多项输入、确认/取消、请求重放、并发确认、重启及响应丢失恢复、页面交互 |
-| 真实DeepSeek基础与泛化场景 | 22/22通过 | 原16组输入及6组新增组合，在临时合成库中执行并断言结果                                                      |
-| 真实DeepSeek重复验证       | 36/36通过 | 第11～22组各执行3次，每次使用新临时合成库                                                                  |
-
-初始失败报告也保留在`eval/results/`：发现过政策问题误入直接回答、任务成功值错误以及未付款条件使用未定义值`unpaid`。修复采用通用政策规划约束、任务与业务状态枚举校验及跨任务证据解释。
-
-自动化测试不调用真实模型。阶段4另使用全新临时合成库完成真实DeepSeek流程联调；报告包括初始失败、修复及最终复测，不能据此保证任意自然语言都能无误识别。真实电商、资金渠道和云部署未实测；阶段4报告没有覆盖第五阶段RAG，Qdrant本地运行检查与应用容器构建须分别看待。
-
-```bash
-python eval/run_eval.py --dry-run
-python eval/run_eval.py --case 11 12 13 14 15 16 17 --repeats 3 --report /tmp/support-eval.json
-```
-
-`--dry-run` 只校验场景登记的操作是否在能力表内，不验证模型回答。在线评估会调用模型/搜索，并按脚本规则确认或取消临时合成库的动作，不读取现有业务库；每个场景、每次重复使用新的库。无参数运行会评估全部22组，默认报告为 `eval/live-results.json`。页面旧16组已撤下，现从 `docs/usage_and_scenarios.md` 展示五组长对话；`eval/scenarios.json`继续供自动评估使用；`eval/eval_dataset.json` 是保留的旧数据，不参与当前评估。上表是已保存的阶段4结果，不代表当前源码的22组已重新通过。现有run_eval.py只初始化临时业务/记忆库，没有导入临时知识库，不能直接把它当作第五阶段完整RAG评估；相应适配尚待完成。
+`eval/run_eval.py`在线运行会调用模型并按场景处理模拟动作；每次使用新库。该评估器尚未导入临时知识库，不能作为完整RAG验收。历史真实模型及RAG记录见[验证说明](eval/results/README.md)。
 
 ## 6 接入在线模型
 
-回答与规划使用DeepSeek在线模型；E5 Small仅用于本地检索编码。先复制配置模板。
-
-macOS/Linux：
-
-```bash
-cp .env.example .env
-```
-
-Windows：
-
-```powershell
-Copy-Item .env.example .env
-```
-
-已有 `.env` 时直接编辑，保留原来的密钥，不要重新复制模板覆盖。填写 `.env`：
+首次复制 `.env.example` 为 `.env`，填入以下配置；已有配置时直接编辑，避免覆盖密钥。
 
 ```dotenv
 DEEPSEEK_API_KEY=你的密钥
 DEEPSEEK_BASE_URL=https://api.deepseek.com
 DEEPSEEK_MODEL=deepseek-flash
-SUPPORT_DATA_DIR=data
-SUPPORT_AGENT_DB_URL=
-SUPPORT_QDRANT_URL=http://127.0.0.1:6333
 ```
 
-模型配置由 `src/llm.py` 的 `load_dotenv()` 加载，已设置的进程环境变量优先。**自定义数据配置需在启动 Python 前设置到进程环境中**：`src/tools.py` 在导入时就创建业务连接、建表并检查样例，而 `SupportService` 也先确定记忆路径，再导入模型模块；只修改 `.env` 中的数据变量不能可靠地配置本次启动的全部数据库。
+规划与资料回答使用在线DeepSeek；E5只负责本地向量编码。模型采用Chat Completions，默认非思考、非流式、temperature=0、60秒超时；技术失败局部重试，规划格式另可修复三次。模型名可配置，账号可用性与价格以供应商为准。
 
+联网搜索共用密钥与地址，调用`/v1/tools/search`，最多5条结果、15秒超时；仅兼容Chat Completions的替代服务不一定支持搜索。
 
-| 配置                   | 当前读取方式与作用                                                                                      |
-| ---------------------- | ------------------------------------------------------------------------------------------------------- |
-| `DEEPSEEK_API_KEY`     | 必填；模型与搜索共用                                                                                    |
-| `DEEPSEEK_BASE_URL`    | 默认`https://api.deepseek.com`，模型和搜索均使用                                                        |
-| `DEEPSEEK_MODEL`       | 默认`deepseek-flash`，可覆盖；`get_llm(model=...)` 的显式参数优先                                       |
-| `SUPPORT_DATA_DIR`     | 启动前设置；默认项目根目录下的`data/`，决定默认业务库、记忆库、检查点、知识目录库、锁文件和模型缓存位置 |
-| `SUPPORT_QDRANT_URL`   | 默认`http://127.0.0.1:6333`；Qdrant连接在需要时创建，导入与应用须使用同一设置                           |
-| `SUPPORT_AGENT_DB_URL` | 启动前设置；非空时仅覆盖业务库地址，不移动记忆库和检查点                                                |
+| 数据配置 | 默认值与用途 |
+| --- | --- |
+| `SUPPORT_DATA_DIR` | 项目`data/`；业务、记忆、检查点、知识目录与模型缓存 |
+| `SUPPORT_AGENT_DB_URL` | 留空；非空时仅覆盖业务库地址 |
+| `SUPPORT_QDRANT_URL` | `http://127.0.0.1:6333` |
 
-例如，在 macOS/Linux 使用独立数据目录启动页面：
+**数据配置须在启动Python前导出为进程环境变量。** 业务连接与记忆路径可能早于`.env`加载；只修改`.env`不能可靠地移动全部数据。导入和应用必须使用相同配置；Compose的`./data/qdrant`卷需独立调整。
 
 ```bash
 SUPPORT_DATA_DIR=/absolute/path/support-data python -m streamlit run app.py
 ```
 
-Windows需在WSL2内按上面的Linux方式配置；第7节PowerShell示例仅作为访问已运行API的HTTP客户端。
-
-启动 API 时使用同样的环境设置。Python 代码显式传入 `SupportService(path=...)` 时改变记忆文件及同目录检查点、知识目录、模型缓存和锁文件，业务连接仍由 `tools.py` 的引擎决定；测试和评估会分别隔离两者。
-
-对话和联网搜索共用 `DEEPSEEK_API_KEY`，无需额外搜索密钥。当前 `search_web()` 调用路径为 `/v1/tools/search`（服务说明见 [DeepSeek Search API](https://api-docs.deepseek.com/guides/search/)）；沿用 `DEEPSEEK_BASE_URL`，处理官方根地址和带 `/v1` 的地址。自定义兼容服务还必须实现此搜索接口，仅兼容 Chat Completions 不够。
-
-每次请求最多5条结果，超时15秒；网络故障、限流或服务端错误最多重试一次，鉴权失败不重复请求。搜索词为1至128个字符；结果摘要、链接和可用的来源发布时间随原请求保存。搜索与模型调用分别计费。修改配置后停止并重新启动 Streamlit 即可，无需删库或重新安装依赖。可输入“北京现在天气如何”，在回答下方检查来源链接，并在工具轨迹中查看 `search_web`。
-
-模型可用性、配额和收费以服务提供方当前说明为准。模板中的模型名只是配置起点，不能保证某个账号一直可用。不要把 Key 写进源码或 README。
-
-页面和 API 均直接使用在线模型，不再传入 mode。改环境变量后重启进程，避免导入时读取的配置仍是旧值。
-
-`src/llm.py` 使用 `ChatOpenAI` 连接 DeepSeek 的 OpenAI 格式 Chat Completions，默认 temperature 为0，固定关闭 thinking 和 Responses API，单次请求超时60秒。已移除 Gemini、Groq 和模型池轮换。若更换兼容端点，应验证主图的 JSON 规划、消息和 usage；只有继续使用独立工具 Agent 时才还涉及 `bind_tools`。
-
-客户端 SDK 重试为零，`call_with_retry()` 默认最多尝试两次、失败后立即重试。规划格式另允许初次输出后最多3次修复，因此不能把两次尝试当作整轮模型调用上限。服务只在已有计划检查点时最多额外恢复一次图执行；继续失败则保留原请求为 `processing`。已完成节点从检查点恢复，未完成节点内的模型或查询可能重做；被领域执行器捕获并标为 `failed` 的任务不会因此自动重试。正常 `interrupt` 不作为失败处理，资金动作由事务结果防重。
+配置修改后重启服务；不要提交`.env`。
 
 ## 7 使用 FastAPI
 
@@ -368,242 +312,76 @@ Windows需在WSL2内按上面的Linux方式配置；第7节PowerShell示例仅�
 python -m uvicorn api:app --host 127.0.0.1 --port 8000
 ```
 
-健康检查：`http://127.0.0.1:8000/health`。
+打开[交互文档](http://127.0.0.1:8000/docs)查看请求模型，健康检查为`GET /health`（不检查模型或索引）。
 
-交互文档：`http://127.0.0.1:8000/docs`。
-
-
-| 方法与路径                                               | 对应服务方法                           | 用途                                                               |
-| -------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------ |
-| `GET /health`                                            | 无业务调用                             | 返回`{"status":"ok"}`；不检查模型可用性                            |
-| `POST /chat`                                             | `chat()`                               | 新建或继续原聊天请求                                               |
-| `GET /requests/{request_id}`                             | `get_request()`                        | 按`user_id`、`session_id` 读取原聊天请求；不推进图                 |
-| `POST /requests/{chat_request_id}/resume`                | `resume()`                             | 确认或取消当前`action_id`                                          |
-| `POST /requests/{chat_request_id}/select-orders`         | `select_orders()`                      | 提交或取消指定选单输入                                             |
-| `POST /requests/{chat_request_id}/select-payment-method` | `select_payment_method()`              | 提交或取消指定支付方式输入                                         |
-| `GET /users/{user_id}/memories`                          | `store.profile()` / `store.memories()` | 手动档案、候选、有效/撤销记忆及原话证据                            |
-| `DELETE /users/{user_id}/memories/{key}`                 | `store.forget_memory()`                | 撤销detail/format/language/tone之一，无请求体                      |
-| `GET /knowledge/documents`                               | `knowledge.documents()`                | kind/category/product_id/q筛选，offset默认0、limit默认20且限1～100 |
-| `GET /knowledge/documents/{document_id}`                 | `knowledge.document()`                 | 文档元数据及完整sections，未找到返回404                            |
-
-记忆与知识目录接口同样没有登录认证。`GET /users/.../memories`直接调用编号校验，当前未捕获其`ValueError`，不能宣称所有无效编号都返回400；删除接口的`ValueError`映射400。目录列表的无效kind或分页范围返回422，单文档不存在返回404。接口不提供文件上传或在线导入。
-
-所有 POST 请求模型禁止额外字段。`/chat` 的消息长度为1～2000字符，`user_id` 默认 `customer_a`，客户和会话编号限1～40位字母、数字、下划线或短横线，`request_id` 限1～64位且可自动生成。恢复接口须显式传入客户、会话和本次操作的 `request_id`，编号由服务校验为1～64位；`order_ids` 必须为严格整数数组，不能传字符串或布尔值。页面直接使用服务层的64位编号限制。
-
-请求示例：
+| 接口 | 用途 |
+| --- | --- |
+| `POST /chat` | 发起聊天；返回会话、回复、任务、来源及办理状态 |
+| `GET /requests/{request_id}` | 用客户和会话编号读取原请求 |
+| `POST /requests/{chat_request_id}/select-orders` | 提交或取消退款选单 |
+| `POST /requests/{chat_request_id}/select-payment-method` | 选择或取消支付方式 |
+| `POST /requests/{chat_request_id}/resume` | 确认或取消当前资金动作 |
+| `GET /users/{user_id}/memories` | 读取档案、候选及已保存/撤销记忆 |
+| `DELETE /users/{user_id}/memories/{key}` | 撤销七类偏好中的指定类别 |
+| `GET /knowledge/documents` | 按类型、分类、商品或关键词分页浏览 |
+| `GET /knowledge/documents/{document_id}` | 读取元数据与原文 |
 
 ```bash
 curl -X POST http://127.0.0.1:8000/chat \
   -H 'Content-Type: application/json' \
-  -d '{"user_id":"customer_a","session_id":"case_api","request_id":"query_001","message":"查询订单 1002 的物流"}'
+  -d '{"user_id":"customer_a","session_id":"case_api","request_id":"query_001","message":"查询订单1002的物流"}'
 ```
 
-同一客户、会话再发一个新的请求编号：
+同一会话的新消息使用新`request_id`；重试相同请求使用原编号。去重范围是客户＋请求编号，跨会话也不能复用编号处理不同内容。消息最多2000字符，POST请求禁止额外字段。
 
-```bash
-curl -X POST http://127.0.0.1:8000/chat \
-  -H 'Content-Type: application/json' \
-  -d '{"user_id":"customer_a","session_id":"case_api","request_id":"refund_001","message":"帮我申请退款"}'
-```
+等待选择时提交对应`input_id`，等待确认时提交`current_action.action_id`；恢复路径始终使用原聊天编号，操作请求另用新编号。支付方式为`card/visa/alipay/wechat_pay/paypal`，只选择方式不会付款。聊天“确认”不执行资金操作。
 
-Windows PowerShell 可使用：
+聊天处理中返回202，其他正常响应通常为200；请求体校验失败422，请求冲突409，聊天服务校验失败400，未捕获的聊天/恢复运行错误503。业务拒绝或子任务失败可能仍返回200，应检查任务和动作结果。具体错误映射以接口代码为准；记忆读取的无效编号目前未统一映射为客户端错误。
 
-```powershell
-$body = @{user_id='customer_a'; session_id='case_api'; request_id='query_001'; message='查询订单 1002 的物流'} | ConvertTo-Json
-Invoke-RestMethod -Uri 'http://127.0.0.1:8000/chat' -Method Post -ContentType 'application/json; charset=utf-8' -Body $body
-```
-
-新请求省略会话编号时生成新编号；用相同请求编号重试时可复用已记录的会话。后续新请求必须复用返回的 `session_id` 才能沿用上下文。响应提供 `reply`、`agent`、`trace`、`usage` 和 `sources`。多个有执行轨迹的主体参与时，`agent=collaboration`，页面显示“协作处理”及参与者；直接回答、澄清和单独搜索使用 `agent=assistant`，`agents` 仍可记录 `search`。网页`sources`保存标题、URL、摘要及可用时间；知识库来源保存id、doc_id、标题、版本、章节/页码及原文content，不保证有URL。来源随请求重放。澄清属于正常完成的聊天，不锁定输入。
-
-完成请求还可能包含`memory={status,candidates}`：`pending`表示记忆待写入，`applied`表示已检查/应用候选，不等于每条候选都已升级。候选可能为空或仍待累计，见第9.6节。
-
-响应另提供 `user_id`、`session_id`、`request_id`、`status`、`actions` 和 `current_action`。相同请求编号与输入重发时，已完成或等待用户的响应直接重放；处理中则恢复原图，未完成节点内的模型或只读调用可能重做，业务执行由动作结果防重。**请求去重键是 `user_id + request_id`，同一客户跨会话也不能复用编号处理不同内容**，聊天与恢复操作同样占用该编号空间。冲突返回409。省略 `request_id` 会生成新编号，需要重试去重时应由客户端提供稳定编号。当前主流程不返回旧的 `routing` 或 `cached` 字段；已移除的 `mode` 请求字段返回422。
-
-阶段4的协作字段与交互编号如下：
-
-
-| 字段                              | 含义与用途                                                               |
-| --------------------------------- | ------------------------------------------------------------------------ |
-| `tasks` / `task_id`               | 各子任务的操作、目标、依赖、状态、事实与轨迹；全局`trace`也附带`task_id` |
-| `agents`                          | 本轮实际参与的执行主体，用于核对是否发生协作                             |
-| `pending_inputs` / `input_id`     | 全部当前等待的选单或支付方式输入；提交选择时定位具体输入项               |
-| `selection` / `payment_selection` | 首个选单 / 首个支付方式输入的便捷投影；不能据此判断只有一个输入          |
-| `actions` / `action_id`           | 已准备的业务动作；确认和取消使用`action_id`，只处理当前项                |
-| `current_action`                  | 当前可确认动作；必要选择未完成时为空，先处理`pending_inputs`             |
-
-选单与支付方式接口支持`input_id`，从对应`pending_inputs`项读取。只有唯一匹配项时可省略；多项时必须提供，不能让服务猜测目标。恢复始终使用原聊天请求编号，不创建另一份计划。
-
-`GET /requests/{chat_request_id}?user_id=customer_a&session_id=case_api` 查询原请求状态。前面的无订单号退款示例进入 `awaiting_selection`，需要选单或取消才能在该会话发新消息。下面另用 `case_refund` 演示明确订单1001的申请及确认；订单仍须满足当前资格：
-
-```bash
-curl -X POST http://127.0.0.1:8000/chat \
-  -H 'Content-Type: application/json' \
-  -d '{"user_id":"customer_a","session_id":"case_refund","request_id":"refund_002","message":"帮我申请订单 1001 的退款"}'
-
-curl -X POST http://127.0.0.1:8000/requests/refund_002/resume \
-  -H 'Content-Type: application/json' \
-  -d '{"user_id":"customer_a","session_id":"case_refund","request_id":"confirm_001","action_id":"返回的动作编号","decision":"confirm"}'
-```
-
-恢复接口路径使用原聊天的 `refund_002`，请求体中的 `confirm_001` 是这次决定的新编号。取消使用 `decision=cancel`；同一次决定重试应复用它自己的 request_id。
-
-HTTP 状态按接口区分，不能把所有参数错误都归为422：
-
-
-| 情况                                           | 当前返回                                                      |
-| ---------------------------------------------- | ------------------------------------------------------------- |
-| `/chat` 或读取原请求成功                       | `processing` 为202，其余已保存结果为200                       |
-| 三类恢复接口成功                               | 200，响应体给出当前业务阶段                                   |
-| 请求体或查询参数不符合 FastAPI / Pydantic 契约 | 422，例如缺少必填参数、额外请求体字段、无效决定或非整数订单号 |
-| `/chat` 服务层校验失败 / 请求冲突              | 400 / 409，例如纯空白消息 / 未处理完就发新请求                |
-| 读取或确认的目标无效、阶段冲突                 | 409；`/resume` 的服务层 `ValueError` 也映射为409              |
-| 选单或方式提交的冲突 / 其他服务校验失败        | 409 / 422，例如候选集合已不匹配 / 空选择、无效方式            |
-| 聊天或恢复抛出`RuntimeError`                   | 503，例如规划阶段模型不可用；原请求可保留为`processing`       |
-
-业务资格拒绝及被执行器捕获的子任务失败通常仍是200，需检查任务和动作结果。原请求 `completed` 只表示本轮不再等待，不代表所有子任务成功，状态层次见第8.3节。
-
-API 和页面使用同一数据目录时能读到已保存会话，但若作为两个独立进程同时修改同一会话，进程内锁不能防止相互覆盖。当前推荐单入口、单实例运行。不要将无认证接口直接暴露为处理真实订单的公网服务。
-
-多订单选单响应增加 `status=awaiting_selection` 和 `selection`（本人候选订单及近期订单编号）。提交选择：
-
-```http
-POST /requests/{chat_request_id}/select-orders
-Content-Type: application/json
-
-{"user_id":"customer_a","session_id":"case_api","request_id":"selection_001","input_id":"返回的input_id","decision":"submit","order_ids":[1006]}
-```
-
-取消使用 `decision=cancel`。列表须非空、去重后属于候选集合；参数错误为 422，阶段或候选冲突为 409。同一操作编号相同内容重试返回已有结果。响应 `order_results` 保存每笔资格、准备、确认及取消结果。退款原因码包括 ORDER_NOT_ACCESSIBLE、ALREADY_REFUNDED、REFUND_IN_PROGRESS、UNPAID、NO_REFUNDABLE_BALANCE、STATUS_NOT_ELIGIBLE 和 ELIGIBLE。
-
-付款请求先返回 `status=awaiting_payment_method`，`payment_selection` 提供订单、金额和方式选项。选择方式后才准备确认动作，页面自动提交选择，无需额外点击“下一步”：
-
-```http
-POST /requests/{chat_request_id}/select-payment-method
-Content-Type: application/json
-
-{"user_id":"customer_a","session_id":"case_api","request_id":"method_001","input_id":"返回的input_id","decision":"submit","method":"paypal"}
-```
-
-以上两处`返回的input_id`均替换为实际响应值。方式编号为`card`、`visa`、`alipay`、`wechat_pay`、`paypal`；取消使用`decision=cancel`，不传`method`。同一请求有多笔待付订单时逐项选择，提交时传对应`input_id`；全部当前选择完成后再逐项确认。返回`awaiting_confirmation`后使用原`/resume`接口确认或取消；仅选择方式不会付款。请求去重、客户归属和支付状态校验仍在后端执行。
+接口没有登录认证或上传发布功能。页面与API共用服务逻辑，但不建议多个进程同时写同一会话。
 
 ## 8 LangGraph 多专家怎样协作
 
 ### 8.1 任务计划与调度
 
+入口模型直接回答、澄清，或生成经过校验的领域任务。调度器并行执行独立只读任务，串行准备业务动作；依赖成功且条件满足才继续。知识检索只返回证据，后置综合任务组织回答。模型规划不是业务事实，工具仍须校验客户归属和资格。
+
 ```mermaid
 flowchart TD
-    S[Service：历史、偏好、请求去重] --> P[主模型：直接回答、澄清或任务计划]
-    P -->|直接回答或澄清| M[保存回复、事实与操作回执]
-    P -->|任务计划| D[校验与调度]
-    D -->|独立只读任务| R[Send并行：订单 / 支付 / 退款 / 系统FAQ / 知识库 / 联网]
+    S[Service 历史与客户偏好] --> P[plan 规划与校验]
+    P --> D[schedule 计算就绪任务]
+    D -->|独立只读任务| R[expert 并行执行]
     R --> D
-    D -->|准备任务| A[串行资格检查与方案准备]
+    D -->|业务准备或工单| A[prepare 串行执行]
     A --> D
-    D -->|需要用户输入| I[当前方案总览 / interrupt等待选择或确认]
-    I -->|用户提交| E[处理选择 / 确认后事务执行或取消]
+    D --> V[review 汇总事实与回复]
+    V -->|等待选择或确认| W[wait interrupt]
+    W --> E[apply_input 恢复并处理输入]
     E --> D
-    D -->|所有任务终结| M
+    V -->|本轮结束| M[Service 保存响应与记忆证据]
 ```
 
-一条原请求对应一次持久化主图。入口模型输出 `DIRECT`（直接回答）、`CLARIFY`（澄清）或 `PLAN`（任务计划）；已有计划恢复时不重新规划整句。格式错误最多修复3次。程序合并除任务编号与原文片段外各字段相同的任务，重绑定引用，再校验能力与前置依赖，禁止循环。工具校验订单归属和业务资格，条件不执行模型代码，技术失败不升级人工。
+`SupportService.chat()`先按客户与请求编号查重，再把最近六个完成轮次及客户档案送入主图。规划结果是直接回答、澄清或任务计划；任务的来源片段必须出现在本轮输入中。相同任务合并，依赖只能指向前置任务，知识检索必须交给依赖它的综合任务回答。
 
-当前能力表如下，`agent` 由能力登记派生，不由模型任意指定：
+完整订单详情由订单、支付两个领域取数；单查物流或付款只调用必要领域。订单已下单不代表未付款，两类状态分别展示。任务依赖、条件、结果和真实参与者可在页面展开查看；操作登记与字段契约见`src/planning.py`，不在此重复完整schema。
 
+### 8.2 确认与业务规则
 
-| `operation`        | 执行主体  | 主图实际调用或行为                                                            |
-| ------------------ | --------- | ----------------------------------------------------------------------------- |
-| `order.list`       | order     | 查询本人订单集合，逐笔读取`get_order_details()`                               |
-| `order.details`    | order     | `get_order_details()`                                                         |
-| `order.status`     | order     | `get_order_status()`                                                          |
-| `order.shipment`   | order     | `track_shipment()`，仅样例运输状态                                            |
-| `payment.status`   | payment   | `get_payment_status()`                                                        |
-| `payment.prepare`  | payment   | 查询付款状态、收集方式选择、`prepare_action()`；已付款则无需再次支付          |
-| `refund.check`     | refund    | `check_refund_eligibility()`，只检查                                          |
-| `refund.prepare`   | refund    | 无目标时本人选单；有目标时检查资格并调用`prepare_action()`                    |
-| `faq.policies`     | faq       | `get_policies()` → `answer_faq()` → `compose()`                             |
-| `knowledge.search` | knowledge | 本地目录/别名定位与E5＋Qdrant检索；只返回证据，要求后置`answer.explain`依赖它 |
-| `search.web`       | search    | `search_web()` → `compose()`                                                 |
-| `escalate.ticket`  | escalate  | `escalate_to_human()`，生成本地工单                                           |
-| `answer.explain`   | assistant | `compose()` 基于依赖任务解释、比较或指出证据不足                              |
+退款检查本人订单、已付款、正余额、无已有退款，且订单为已下单或已签收。支付只处理待付款记录。选择、准备和最终确认分开；每次只确认当前动作，旧按钮不能推进下一项。退款申请已记录不代表到账。
 
-任务契约的关键字段：
+主图通过SQLite检查点保存进度，选择和确认恢复原计划。业务变更与动作结果在同一事务内提交，重复确认回放已有结果；未完成节点内的模型或只读调用仍可能重做。
 
+### 8.3 请求、任务与业务状态
 
-| 字段                                          | 校验或调度含义                                                                                                                          |
-| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `task_id` / `operation`                       | 编号为`t1`、`t2` 等，必须唯一；操作须在能力表内                                                                                         |
-| `targets` / `target_from`                     | 本任务的正整数订单号并去重，或引用上游返回且无错误的订单集合                                                                            |
-| `source_text`                                 | 非空，且必须是本轮用户消息的原文片段；仅验证片段存在，不能证明语义规划一定正确                                                          |
-| `depends_on`                                  | 只引用排在前面的任务；`target_from`、条件引用也自动加入依赖，前置任务须成功                                                             |
-| `conditions` / `condition_mode`               | 只接受登记字段与枚举，`eq` / `ne` 用单值、`in` / `not_in` 用列表；组合为 `all` 或 `any`                                                 |
-| `intent`                                      | 普通查询为`query`，两类准备为 `prepare`，工单为 `escalate`，必须与操作匹配                                                              |
-| `topics` / `query` / `reason`                 | FAQ接受旧五类及system；知识查询最多512字符，联网仍限128且二者非空；原因最多300字符，退款默认“客户申请退款”，工单只接受human/complaint |
-| `knowledge_kind` / `product_ref` / `category` | policy/product/all；商品引用及可选分类，默认分类为空；未知分类不强制过滤                                                                |
-| 计划级`memory_candidates`                     | 默认空数组；独立校验最多两条有效候选，错误项丢弃，不作为业务任务执行                                                                    |
+请求完成只表示本轮不再等待，不代表所有子任务成功。独立失败保留其他任务结果；取消或失败不满足后续成功依赖。知识政策用于解释，不直接改变本地退款资格。只有明确人工介入或正式投诉才生成本地工单，技术失败不会自动升级。
 
-`schedule()` 计算就绪任务，`dispatch()` 优先用 `Send` 完成一轮只读任务，再逐项执行准备或工单任务；每次执行后回到调度。遇到等待输入或待确认动作时先由 `review()` 汇总并进入 `wait()`，收到事件后由 `apply_input()` 处理并继续调度。主图使用 `recursion_limit=1000`，不是无限循环执行器。
+### 8.4 本地知识库与有来源的回答
 
-领域执行器实际调用工具取数；FAQ、联网搜索以及跨任务解释还调用模型组织回答。知识检索本身不调用DeepSeek，由后置综合任务统一生成答案。固定订单查询和业务回执由程序生成，不要求每个领域节点独立调用模型。并行结果按 `task_id` 合并；一个查询任务出错会保留失败事实或原因，不抹掉其他任务的结果。
+随项目提供200条虚构平台政策与200件商品资料。多语言E5 Small在CPU生成384维归一化向量，文档与问题分别带passage/query前缀。Qdrant检索片段，SQLite保存目录、别名和全文；首次导入可下载模型，普通查询只读本地缓存。
 
-规划提示要求完整订单详情通过 `order.details` 和 `payment.status` 两个领域取数，主图再把原始工具的 `status` 分别标记为 `order_status` 和 `payment_status`。`get_order_details()` 本身仍只返回订单字段，不会联查支付；应在任务及轨迹中核对两个领域是否真正执行。单查物流或支付只调用必要领域。付款后仍未发货的订单可以同时具有以下值：
+商品通过编号、名称、型号或别名精确定位，不用相似商品替代未知对象。普通检索召回12项，按文档与章节去重后最多保留6项；检索与综合说明各限制6000个E5 tokenizer tokens的证据，不是完整模型输入预算。综合任务只传入所需事实和证据，由模型返回回答、使用的来源编号与资料是否不足；程序检查来源编号是否属于本轮证据。来源编号合法不代表每句回答都忠实。
 
-
-| 任务事实字段     | 示例值       | 解释                                 |
-| ---------------- | ------------ | ------------------------------------ |
-| `order_status`   | `placed`     | 已下单、尚未发货，不用于推断是否付款 |
-| `payment_status` | `paid`       | 已付款，来自支付记录或实际执行回执   |
-| `method`         | `wechat_pay` | 本次已完成支付使用微信支付           |
-
-这些业务事实、金额及资金回执由程序构造。`answer.explain`根据上游资料进行比较或综合解释，不具有业务写权限；资料没有运输异常原因时，不能据天气推断某笔订单延误的原因。
-
-混合操作按任务顺序逐项完成：当前任务需要的选择、确认或取消处理完后，再准备下一项。未来任务等待前置操作，执行后自动续跑；调度按前置任务终态及逐订单错误过滤后续目标，独立任务继续处理。多订单任务可部分成功，取消一笔不等于取消同任务的其余订单。子任务固定绑定订单，不重复解析整句中的所有编号。11～16号案例是验收样例，新的合法组合使用同一调度规则。
-
-响应增加tasks、agents、pending_inputs，工具轨迹带task_id。选单和方式提交可携带input_id，多项时必须明确；资金确认继续使用action_id。聊天中的“确认”不能执行资金操作。
-
-### 8.2 规则必须在工具里重查
-
-退款分支确定申请意图后，由程序遍历用户明确指定或选中的订单。资格检查、准备和确认执行复用同一规则：本人订单、支付已完成、无已有退款、有正余额、状态为 placed 或 delivered。整单退款依据支付金额，使用 Decimal 按分比较。
-
-退款表对订单编号唯一，状态更新必须匹配 `none`。支付更新必须匹配 `pending`。多次或并发请求只有一次能完成对应状态变化。
-
-在这些状态保护之外，`requests` 保存聊天与确认请求，`pending_actions` 保存方案和最终结果。业务变更与动作结果在同一事务内提交，重复确认回放已有结果；最终办理回执不再依赖模型总结。这是本地请求与动作的幂等处理，不代表外部资金一致性。
-
-选择、方案准备、等待确认和执行均在唯一主图内。主图使用SQLite Checkpointer与sync持久化，interrupt等待，Command恢复。旧卡重放不会确认下一项，资金提交后会继续依赖任务。
-
-正文按订单归纳多个工具的事实与当前办理阶段，不逐条复述工具结果；1～3笔使用加粗标题和列表，4笔及以上使用汇总表。退款准备与确认所需的资格复查仍执行，重复资格不重复展示。政策、订单结果和综合说明分段；工具轨迹与办理明细可折叠核对。资金动作回执优先于此前的查询事实，不把已提交申请描述为退款到账。
-
-### 8.3 区分请求、任务、动作与业务状态
-
-
-| 层次                   | 当前状态                                                                                            | 含义                                                                                            |
-| ---------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| 原聊天请求`status`     | `processing`、`awaiting_selection`、`awaiting_payment_method`、`awaiting_confirmation`、`completed` | 处理未完成、等待选单、等待方式、等待动作决定、本轮结束；重查归属失败时另返回`failed`            |
-| 子任务`tasks[].status` | `pending`、`selected`、`awaiting_input`、`awaiting_confirmation`                                    | 未就绪、已选单待再准备、等待输入、等待动作决定；`selected` 是内部过渡态                         |
-| 子任务终态             | `succeeded`、`failed`、`rejected`、`skipped`、`cancelled`                                           | 已完成、技术/查询失败、业务拒绝、条件或依赖不满足、用户取消；成功值不是`success` 或 `completed` |
-| 动作`actions[].status` | `pending`、`completed`、`cancelled`、`rejected`                                                     | 待确认、业务提交成功、取消、执行时不再符合资格                                                  |
-| 订单`order_status`     | `placed`、`shipped`、`delivered`、`cancelled`                                                       | 履约进度                                                                                        |
-| 支付`payment_status`   | `pending`、`paid`、`refunded`                                                                       | 支付记录的状态；`UNPAID` 是退款拒绝原因码，不是支付状态                                         |
-| 退款`refund_status`    | `none`、`requested`、`approved`、`completed`                                                        | 数据契约支持的退款状态；当前申请工具只提交为`requested`                                         |
-
-条件字段 `status` 指子任务终态，其他字段指业务事实。前置任务须先成功，事实缺失或条件不满足的目标会跳过。原请求 `completed` 可以包含拒绝、取消、失败或跳过的子任务；多订单任务即使整体成功，也应逐笔查看 `facts`、`order_results` 和动作结果。
-
-支付动作 `completed` 表示本地支付记录已改为 `paid`；退款动作 `completed` 只表示申请写入 `requested`，不表示到账。付款不自动修改订单履约状态，申请退款不自动修改支付状态。当前没有真实支付回调或退款审批、到账处理器。
-
-### 8.4 第五阶段：本地知识库与有来源的回答
-
-`knowledge/manifest.json`登记200条平台政策（20类各10条）和200件虚构商品：前50件包含订单中的10种商品及40件相近款，后150件为15个其他品类。原文在`knowledge/policies/`和`knowledge/products/`；这些不是现实商家的条款或真实品牌规格，也不会新增业务订单。
-
-检索使用固定的`intfloat/multilingual-e5-small`，CPU运行、384维归一化向量，资料使用`passage: `、问题使用`query: `前缀。首次导入允许下载，普通查询仅加载本地缓存。`get_knowledge()`按数据目录缓存最多4个存储对象，编码锁避免同一对象重复加载及并行编码。Qdrant集合`support_knowledge`使用余弦距离、磁盘向量及doc_id/kind/product_id/category索引。
-
-导入解析TXT/MD、文字PDF（保留页码）、DOCX段落与表格；没有OCR或复杂版面识别。政策合并各章节后切片，商品按章节切片，按tokenizer为标题预留长度，正文窗口按预算切分并重叠60 tokens；导入设置模型最大长度480，批量32条编码。SQLite保存全文、目录、别名和索引状态，Qdrant保存片段原文、元数据和向量。
-
-商品定位先规范化编号、名称、型号和清单别名并做精确匹配；商品查询缺少引用或出现多个匹配时返回需明确身份的信息，不自动挑相似款。主图可复用依赖订单结果中唯一的商品名称。`all`类型指定商品时同时允许平台通用政策，`policy`查询不以商品引用限制通用规则。检索先取12个候选，以文档＋章节去重，最多保留6项；完整章节不超过1000 tokens且预算允许时补全文，否则保留命中片段。单次检索有6000个E5 tokenizer tokens预算，综合任务还对多个检索结果轮流取证、去重并限制到6000；不是整份DeepSeek输入的精确token上限。
-
-`Plan`校验要求每个`knowledge.search`都有后置`answer.explain`依赖。综合说明仅保留上游status/facts/answer/reason，避免把整份轨迹重复放进prompt。`compose()`识别知识证据后要求JSON中的answer、source_ids、insufficient，检查来源编号属于本轮证据及部分UUID引用一致性；校验失败返回可核验回答生成失败提示。此检查不能证明每句结论都由原文支持。空结果可解释资料不足，技术失败成为任务failed，不静默回退为联网或模型常识。
-
-更新采用维护窗口：应用持有共享文件锁，导入取得独占锁；拒绝与运行中的同目录应用同时导入。校验、解析和模型准备发生在写索引状态前，进入导入后状态为importing，失败记为failed，成功核对片段总数后为ready；搜索只允许ready。前期校验失败可能仍保留此前ready索引。未变化文件跳过编码，变化或移除文件同步更新/删除片段；失败后重试重新编码，模型/切片指纹变化会重建集合。版本字符串用于展示，不实现多版本历史隔离或按订单日期回溯规则。
-
-平台资料页只读浏览，每页20条，按类型、完整分类名和标题/文档编号/商品名/商品编号等筛选；全文来自SQLite，不从向量片段拼接。界面关键字筛选没有实现型号或别名搜索，这两者用于聊天商品定位。新增资料仍需下面的命令导入。
+应用运行与导入使用共享/独占文件锁，更新资料前须停止应用。进入索引写入后失败会阻止检索，前期校验失败可能保留旧索引。资料页提供分类筛选、分页与全文浏览；标题/商品名/编号关键词查询不等于型号或别名检索。资料缺失不以通用常识或联网替代平台规则。
 
 ### 8.5 导入你自己的外部知识资料
 
@@ -662,7 +440,9 @@ my_knowledge/
 
 以上路径按默认配置书写。使用自定义目录时，在启动 Python **之前**导出 `SUPPORT_DATA_DIR` 和需要的 `SUPPORT_QDRANT_URL`，导入与应用必须使用相同设置；仅修改 `.env` 不能可靠地配置全部数据连接。`compose.yaml` 的宿主机卷仍固定为 `./data/qdrant`，不会随 `SUPPORT_DATA_DIR` 自动移动；如需改变向量文件位置，应同时修改卷映射。业务库若被 `SUPPORT_AGENT_DB_URL` 覆盖，则应重置该地址对应的库，详见第6节。
 
-资料详情在页面第四个标签；记忆与知识目录的API参数、响应及错误边界统一见第7节。
+英文知识原文不是必需：当前多语言模型可跨语言召回，但不保证每个英文问题都命中。优先给商品补齐英文名称/别名，验证实际检索；面向英文客户发布正式条款时再准备人工校对的英文资料。双语文档需不同文档编号、统一商品编号及同步版本；当前没有语言字段或按语言过滤。见[模型说明](https://huggingface.co/intfloat/multilingual-e5-small)。
+
+资料详情在页面第三个标签；记忆与知识目录的API参数、响应及错误边界统一见第7节。
 
 ## 9 Memory 的设计
 
@@ -700,7 +480,7 @@ my_knowledge/
 
 会话展示最多保留最近50轮，包括处理中和待确认轮次；服务从这份展示快照中取最近6个 `completed` 轮次，即最多12条 HumanMessage/AIMessage，提供给入口规划。资料回答还可使用本轮事实与相应历史。`completed` 不要求每个子任务都成功。`requests` 不随展示裁剪而删除，Token 累计按该客户、该会话的全部聊天请求统计，但仍不能视为完整业务审计系统。工具消息不会作为未配对的片段保存为下一轮模型历史。
 
-输入最多2000字符。第五阶段对知识证据限制6000个E5 tokenizer tokens，但没有对历史、系统提示、业务事实等完整模型输入做精确总预算，也没有自动摘要。最近六轮可能遗漏重要旧约束；会话订单组与显式选单能缓解订单指代问题，但不能替代完整上下文管理。
+输入最多2000字符。当前对知识证据限制6000个E5 tokenizer tokens，但没有对历史、系统提示、业务事实等完整模型输入做精确总预算，也没有自动摘要。最近六轮可能遗漏重要旧约束；会话订单组与显式选单能缓解订单指代问题，但不能替代完整上下文管理。
 
 ### 9.5 偏好是数据 不是执行指令
 
@@ -710,23 +490,18 @@ my_knowledge/
 
 档案字段为 `tone` 和 `contact_preference`，保存时分别截取前50、100字符；自动提炼另存于`memories`与`memory_evidence`，不写回这两个手动字段。已提交的选单、方式和动作记录可持久恢复，尚未提交的页面开关草稿只在 Streamlit 会话内保存，不能当作跨进程持久数据。
 
-### 9.6 第五阶段：从对话提炼长期回复偏好
+### 9.6 从对话提炼长期回复偏好
 
-`make_plan()`在同一次DeepSeek规划调用中提取候选，不新增Memory Agent、后台队列或单独的提炼模型调用。`memory_candidates()`只接受detail/format/language/tone四类、explicit/observed两种来源及set/forget操作；value为1～100字符，evidence必须逐字存在于本轮用户原文。空值的明确forget归一为“已撤销”。候选错误独立丢弃，不阻断业务计划；不是把每条聊天都强行转成习惯。
+候选随同一次规划提取，不额外调用Memory Agent。回复偏好包括详略、组织、语言与语气；购物偏好包括下面三类。候选必须带本轮用户原话，每类最多一条、总共最多七条；无效候选单独丢弃。
 
-本轮响应最终completed后（包括DIRECT/CLARIFY），服务先保存候选，再调用`apply_memories()`。明确要求可直接active；观察习惯按同一用户、类别、相同value的证据计数，默认三次才active，前两次为candidate。同一user_id/request_id/key只记一次；记录原请求时间，不把恢复确认当成新的观察。每类只保留一个当前状态，并非维护所有历史候选的完整版本库；同义改写的归一仍依赖模型，数据库不做语义聚类。
+明确长期要求直接生效，普通观察按不同请求的同类同值证据累计三次；前两次仍为候选。同义表达的归一依赖模型。观察不覆盖明确设置或撤销；购物偏好生效后只能明确修改。忘记后可用新的明确要求重新启用。
 
-较早的时间不覆盖较新设置；observed不覆盖explicit或revoked，未满三次的观察也不替换已有active。忘记操作保留revoked状态，新的明确设置可再次启用；无登录认证前，不能把这个用户编号当成可信身份。
+只有原聊天全部结束才写入记忆，表单保存和恢复确认不累计观察。写入失败保留pending状态，不回滚业务；重放原请求可补写，没有后台补写队列。“已检查”不等于每条候选已生效。资料回答不接收候选偏好，手动与自动设置的冲突仍主要由提示解释。
 
-`profile()`返回手动字段、manual_updated_at以及候选candidate_preferences、有效learned_preferences，规划和回答使用该数据快照；候选被标为候选，不应作为已生效偏好。手动文本与自动偏好的冲突主要由提示解释，尚未实现统一的字段级优先级解析器或自动纠错引擎。保存偏好不会训练模型、选择支付方式或授权退款。
+### 9.6.1 购物偏好
 
-记忆写入异常记日志，不回滚已完成业务；原请求memory状态保留pending，重放同一请求可补做。applied只表示已检查这批候选，不表示全部升级，也没有后台自动重试。包含资金确认的原聊天须等整轮结束才处理记忆。
+对话可提取品牌、品类、预算三类摘要；明确长期设置直接生效，同类同值在不同请求中观察三次才首次生效。单次需求、代购和购买付款行为不应形成长期偏好。已生效购物偏好只接受明确修改；撤销后观察不会恢复。候选不用于资料回答，当前要求优先。预算保留用户说明的适用范围，不自动推断全局预算。页面支持查看证据与忘记，API沿用记忆查询和撤销接口。模型提取依赖自然语言理解，原话证据校验不能保证分类一定正确。现有商品资料没有品牌和售价字段，不能据此证明商品满足偏好。
 
-### 9.7 第五阶段：记忆转换页面与手工脚本
-
-“记忆与客户偏好”展示候选、有效和撤销数量；待转换项从实际证据计算1/3、2/3及还差几次，支持展开原话和撤销。明确设置显示直接保存。转换表达示例、当前会话最近六条请求的提取/待写入记录、手动表单和原始档案分别展示；表单本身不累计观察次数。当前没有真实候选时显示空状态，不注入示例记忆。
-
-“使用说明与多轮测试”从`docs/usage_and_scenarios.md`渲染五组共77轮脚本：记忆20轮、RAG18轮、支付12轮、条件退款12轮、客户隔离/联网/人工15轮。导入路径和模型说明集中在本README。旧16组已从前端撤下，原自动评估文件仍保留。脚本含按钮和重启步骤，不是77轮已全部通过的报告；API并发、事务和故障边界仍由自动测试检查。
 
 ## 10 数据初始化 观察与重置
 
@@ -900,10 +675,8 @@ Supabase 可以作为 PostgreSQL 和认证后端，但不能直接代替 Python 
 | 工单没人处理                 | 没有外部人工渠道                                  | 这是本地记录，需另接工单系统                                             |
 | 订单不存在或无权访问         | 当前客户不拥有该订单                              | 检查客户编号，A 为 1001–1007，B 为 1008–1010                           |
 
-## 14 项目说明与验证边界
+## 14 项目说明
 
-可以准确描述为：基于 LangGraph 实现按需多专家协作，由模型规划任务，主图的领域执行器按能力登记查询和准备操作，通过条件与依赖支持只读并行、混合方案和用户确认后续跑；将会话历史、跨会话客户档案与业务事实分离，并验证重启恢复和事务状态保护。第五阶段仍复用同一主图，增加知识证据与偏好候选，不等于每个领域都各自运行一个自主模型循环。
+本项目是使用模拟业务数据的电商订单与售后助手。模型理解请求并组织说明，程序负责订单归属、业务资格、动作确认与状态更新；知识资料提供解释依据，客户偏好提供交流参考。所有订单、资金状态及工单均保存在本地，不连接真实支付、物流或人工客服渠道。
 
-当前已实现基础本地RAG和有证据的自动回复记忆，但不能描述为真实支付退款、生产级认证、任意节点断点恢复、自动接通人工客服、在线知识发布、历史规则隔离或已验证的十万片段检索性能；不填写没有测量的准确率与费用优化比例。当前架构、确认恢复与取舍说明见 `ARCHITECTURE.md`；`docs/Ecommerce_Agent_Deep_Dive.docx` 及静态图片保留为历史参考。
-
-必要开源版权与许可见 `LICENSE`，整理范围见 `NOTICE.md`。说明文档与普通源码不包含仓库链接或作者宣传信息。
+README说明使用方式、架构和数据关系；[项目深挖文档](docs/Ecommerce_Agent_Deep_Dive.docx)展开业务流程与具体实现。[English deep dive](docs/Ecommerce_Agent_Deep_Dive.en.docx)提供对应英文说明。静态图片仅作参考，实际流程以当前源码和本文为准。版权与许可见`LICENSE`，修改说明见`NOTICE.md`。

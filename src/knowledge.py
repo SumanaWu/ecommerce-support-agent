@@ -65,6 +65,11 @@ class KnowledgeStore:
             rows = db.execute("SELECT json_remove(payload,'$.sections') FROM documents"+where+' ORDER BY id LIMIT ? OFFSET ?', [*args,limit,offset]).fetchall()
         return {'items':[json.loads(r[0]) for r in rows], 'total':total, 'index_status':self.status()}
 
+    def categories(self, kind=''):
+        with self.connect() as db:
+            rows = db.execute("SELECT DISTINCT json_extract(payload,'$.category') FROM documents WHERE (? = '' OR json_extract(payload,'$.kind') = ?) ORDER BY 1", (kind, kind)).fetchall()
+        return [row[0] for row in rows if row[0]]
+
     def document(self, document_id):
         with self.connect() as db:
             row = db.execute('SELECT payload FROM documents WHERE id=?', (document_id,)).fetchone()

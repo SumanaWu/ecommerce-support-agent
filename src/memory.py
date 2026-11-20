@@ -35,7 +35,8 @@ class ConversationMemory:
 
 
 
-MEMORY_KEYS = {'detail', 'format', 'language', 'tone'}
+SHOPPING_KEYS = {'shopping_brand', 'shopping_category', 'shopping_budget'}
+MEMORY_KEYS = {'detail', 'format', 'language', 'tone'} | SHOPPING_KEYS
 MEMORY_OBSERVATIONS_REQUIRED = 3
 
 
@@ -44,7 +45,7 @@ def memory_candidates(raw, message):
     if not isinstance(raw, list):
         return []
     result = []
-    for item in raw[:2]:
+    for item in raw[:7]:
         if not isinstance(item, dict):
             continue
         if (item.get('key') not in MEMORY_KEYS or item.get('origin') not in {'explicit','observed'}

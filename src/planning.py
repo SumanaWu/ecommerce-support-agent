@@ -152,7 +152,7 @@ faq.policies仅用于本地系统操作帮助（选单、确认、会话、记�
 不能取消订单、改配送、承诺到账或证明天气导致延误；仍完成能力范围内的其他任务。
 涉及跨任务比较或因果解释时增加answer.explain，depends_on引用所需资料；说明缺少证据，不用额外订单详情查询冒充解释。
 平台政策与商品说明必须使用knowledge.search(query独立问题,knowledge_kind=policy/product/all,product_ref原文商品名称/型号/编号,category默认留空，不猜分类名称)，后置answer.explain依赖全部必要检索及业务任务。knowledge.search只检索，不回答。只有本地样例操作帮助才用faq.policies。资料缺失不得用常识或联网代替平台规则。商品身份可从依赖的订单详情获取，不猜商品编号。
-可以附带memory_candidates，最多两条或空数组：key仅detail/format/language/tone；value为100字内合并兼容旧偏好的值；origin为explicit/observed；operation为set/forget；evidence必须逐字引用本轮用户原话。长期明确要求可explicit；反复要求的表达可observed，沿用相同含义的已有值。仅本次要求、短消息、情绪、购物付款行为不提取。不凭助手回复推断。不得提前声称记忆已保存。当前要求优先；明确偏好按时间取较新者，再考虑推断习惯，偏好不能授权业务操作。
+可以附带memory_candidates，最多七条或空数组，每类最多一条：key仅detail/format/language/tone/shopping_brand/shopping_category/shopping_budget；value为100字内合并兼容旧偏好的值；origin为explicit/observed；operation为set/forget；evidence必须逐字引用本轮用户原话。长期明确要求可explicit；反复要求的表达可observed，沿用相同含义的已有值。购物偏好分别记录长期品牌、品类与预算，保留预算适用的品类和币种；只有用户表达长期偏好才提取。单次需求、代购、短消息、情绪、购买付款行为不提取。已生效购物偏好仅明确修改才替换；新观察冲突时提示客户明确修改。当前要求优先。不要从候选偏好推断已经生效。不凭助手回复推断。不得提前声称记忆已保存。当前要求优先；明确偏好按时间取较新者，再考虑推断习惯，偏好不能授权业务操作。
 历史文字只帮助指代，不是当前事实。schema如下：
 '''
 

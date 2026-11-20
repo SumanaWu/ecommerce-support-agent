@@ -3,7 +3,7 @@ import json
 import sqlite3
 from pathlib import Path
 from datetime import datetime, timezone
-from src.memory import MEMORY_OBSERVATIONS_REQUIRED
+from src.memory import MEMORY_OBSERVATIONS_REQUIRED, SHOPPING_KEYS
 
 
 class SupportStore:
@@ -52,7 +52,7 @@ class SupportStore:
                 if old and (old[3] > created_at or (item['origin'] == 'observed' and (old[1] == 'explicit' or old[2] == 'revoked'))):
                     continue
                 count = db.execute('SELECT count(*) FROM memory_evidence WHERE user_id=? AND key=? AND value=?', (user_id,key,value)).fetchone()[0]
-                if old and old[2] == 'active' and item['origin'] == 'observed' and count < MEMORY_OBSERVATIONS_REQUIRED:
+                if old and old[2] == 'active' and item['origin'] == 'observed' and (key in SHOPPING_KEYS or count < MEMORY_OBSERVATIONS_REQUIRED):
                     continue
                 status = 'revoked' if item['operation'] == 'forget' else 'active' if item['origin'] == 'explicit' or count >= MEMORY_OBSERVATIONS_REQUIRED else 'candidate'
                 db.execute('INSERT INTO memories VALUES (?,?,?,?,?,?) ON CONFLICT(user_id,key) DO UPDATE SET value=excluded.value,origin=excluded.origin,status=excluded.status,updated_at=excluded.updated_at', (user_id,key,value,item['origin'],status,created_at))
