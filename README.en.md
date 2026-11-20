@@ -64,7 +64,6 @@ ecommerce-support-agent/
   knowledge/                Manifest and 400 fictional policy/product documents
   docs/                     Current implementation guides, usage scenarios and reference images
   README.md / README.en.md  Setup and behavior
-  ARCHITECTURE*.md          Navigation to architecture sections in this README
   IMPROVE*.md               Phase history and verification results
   requirements.in          Top-level dependency ranges
   requirements.txt         Pinned dependency snapshot

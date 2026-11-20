@@ -81,7 +81,6 @@ ecommerce-support-agent/
   knowledge/                  manifest.json及200条政策、200件商品Markdown
   docs/                       业务实现文档、多轮使用说明和参考图片
   README.md / README.en.md    中英文运行、代码导航与行为说明
-  ARCHITECTURE*.md             架构说明导航，正文已整合至README
   IMPROVE*.md                  中英文分阶段优化成果与验收记录
   requirements.txt            本次验证的精确依赖
   requirements.in             顶层依赖范围
